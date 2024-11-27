@@ -211,6 +211,21 @@ int reconstructRoom() {
 
 int main() {
     
+    // NELI MARK: - Read input.txt file from Data folder
+    const std::string inputFile = std::string("../../Data/input.txt");
+    std::ifstream inFile(inputFile);
+    
+    // write output file to output.txt in Result folder
+    std::ofstream outFile("../../Result/output.txt");
+    if (outFile.is_open()) {
+        std::string line;
+        while (std::getline(inFile, line)) {
+            outFile << line << std::endl;
+        }
+    }
+    // Close output file.
+    outFile.close();
+    
     // NELI MARK: - From Excerse 5 - uncomment if needed
     
 //	int result = 0;
