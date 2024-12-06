@@ -31,8 +31,7 @@
  * @note There is no error handling yet.
  */
 //TODO: Include depth
-static std::vector<std::pair<int, int>> GetLandmarks(const std::string& imagePath, const std::string& shapePredictorPath, bool saveResult=false, const std::string& resultPath="") {
-    std::vector<std::pair<int, int>> landmarks;
+static void GetLandmarks(const std::string& imagePath, const std::string& shapePredictorPath, bool saveResult=false, const std::string& resultPath="") {
 
     auto frontal_face_detector = dlib::get_frontal_face_detector();
     dlib::shape_predictor shape_predictor;
@@ -48,7 +47,7 @@ static std::vector<std::pair<int, int>> GetLandmarks(const std::string& imagePat
         for (int j = 0; j < shape.num_parts(); ++j) {
             int x = shape.part(j).x();
             int y = shape.part(j).y();
-            Vector3f coordinates = Vector3f(0, 0, 0);
+            //Vector3f coordinates = Vector3f(0, 0, 0);
             if(saveResult){ //TODO: more readable
                 dlib::rgb_pixel color;
                 if(j < 18){
