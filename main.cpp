@@ -6,6 +6,8 @@
 #include "SimpleMesh.h"
 #include "PointCloud.h"
 
+#include "FacialLandmarks.h"
+
 #define SHOW_BUNNY_CORRESPONDENCES 1
 
 #define USE_POINT_TO_PLANE	1
@@ -210,7 +212,6 @@ int reconstructRoom() {
 }
 
 int main() {
-    
     // NELI MARK: - Read input.txt file from Data folder
     const std::string inputFile = std::string("../../Data/input.txt");
     std::ifstream inFile(inputFile);
@@ -225,7 +226,13 @@ int main() {
     }
     // Close output file.
     outFile.close();
-    
+
+    const std::string imagePath = std::string("../../Data/face.png");
+    const std::string shapePredictorPath = std::string("../../Data/shape_predictor_68_face_landmarks.dat");
+    const std::string outputPath = std::string("../../Result/output.png");
+    //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
+    GetLandmarks(imagePath, shapePredictorPath, true, outputPath);
+
     // NELI MARK: - From Excerse 5 - uncomment if needed
     
 //	int result = 0;
