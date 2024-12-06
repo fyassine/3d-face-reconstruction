@@ -1,15 +1,20 @@
 cmake_minimum_required(VERSION 3.6)
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE TYPE INTERNAL FORCE)
-
+set(CMAKE_SYSTEM_NAME Windows)
 project(face_reconstruction)
 
 # Options
 set(LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Libs CACHE PATH "Path to lib folder")
 set(Eigen3_DIR ${LIBRARY_DIR}/Eigen/share/eigen3/cmake CACHE PATH "Path to installed Eigen")
-set(glog_DIR ${LIBRARY_DIR}/glog-lib/lib/cmake/glog CACHE PATH "Path to installed glog")
+set(glog_DIR ${LIBRARY_DIR}/Glog/lib/cmake/glog CACHE PATH "Path to installed glog")
 set(Ceres_DIR ${LIBRARY_DIR}/Ceres/CMake CACHE PATH "Path to installed Ceres")
 set(Flann_INCLUDE_DIR ${LIBRARY_DIR}/Flann-1.8.4/ CACHE PATH "Path to Flann source folder")
+#set(dlib_DIR ${LIBRARY_DIR}/dlib/dlib/lib/cmake_utils CACHE PATH "Path to Dlib build folder")
+#set(dlib_INCLUDE_DIR ${LIBRARY_DIR}/dlib/dlib/include CACHE PATH "Path to dlib source folder")
+set(OpenCV_DIR ${LIBRARY_DIR}/opencv/build/x64/vc16/lib CACHE PATH "Path to OpenCV folder")
+
+add_subdirectory(${LIBRARY_DIR}/dlib/examples/../dlib dlib_build)
 
 # Use pre-compiled libraries on Windows
 if(WIN32)
@@ -34,8 +39,12 @@ set(CMAKE_CXX_STANDARD 14)
 #find_package(nanoflann REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(glog REQUIRED)
+#find_package(dlib REQUIRED)
+find_package(OpenCV REQUIRED)
 get_target_property(GLOG_DLL_PATH_DEBUG glog::glog IMPORTED_LOCATION_DEBUG)
 get_target_property(GLOG_DLL_PATH_RELEASE glog::glog IMPORTED_LOCATION_RELEASE)
+
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_definitions("-D_DISABLE_EXTENDED_ALIGNED_STORAGE")
 
@@ -49,13 +58,14 @@ set(HEADER_FILES
 
 set(SOURCE_FILES 
     FreeImageHelper.cpp
+        FacialLandmarks.h
 )
 
 link_directories(${FreeImage_LIBRARY_DIR})
 add_executable(face_reconstruction main.cpp ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(face_reconstruction ceres freeimage Eigen3::Eigen)
-target_include_directories(face_reconstruction PUBLIC ${EIGEN3_INCLUDE_DIR} ${FreeImage_INCLUDE_DIR} ${Flann_INCLUDE_DIR})
+target_link_libraries(face_reconstruction ceres freeimage Eigen3::Eigen dlib::dlib)
 
+target_include_directories(face_reconstruction PUBLIC ${EIGEN3_INCLUDE_DIR} ${FreeImage_INCLUDE_DIR} ${Flann_INCLUDE_DIR})
 # On Windows copy dll to executable folder
 if(WIN32)
     # Visual Studio properties
@@ -68,15 +78,15 @@ if(WIN32)
             "${FreeImage_LIBRARY_DIR}/FreeImage.dll"
             ${CMAKE_BINARY_DIR})
     
-    add_custom_command(TARGET face_reconstruction POST_BUILD        
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different          
-            "${GLOG_DLL_PATH_DEBUG}"                           
-            ${CMAKE_BINARY_DIR})                     
+    #add_custom_command(TARGET face_reconstruction POST_BUILD
+    #    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    #        "${GLOG_DLL_PATH_DEBUG}"
+    #        ${CMAKE_BINARY_DIR})
     
-    add_custom_command(TARGET face_reconstruction POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${GLOG_DLL_PATH_RELEASE}"
-            ${CMAKE_BINARY_DIR})
+    #add_custom_command(TARGET face_reconstruction POST_BUILD
+    #    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    #        "${GLOG_DLL_PATH_RELEASE}"
+    #        ${CMAKE_BINARY_DIR})
 endif(WIN32)
 
 if(APPLE)
