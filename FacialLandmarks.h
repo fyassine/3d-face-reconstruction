@@ -83,6 +83,4 @@ static void DrawLandmarksOnImage(const std::string& imagePath, const std::string
     dlib::save_png(image, outputPath);
 }
 
-
-
 #endif //FACE_RECONSTRUCTION_FACIALLANDMARKS_H
