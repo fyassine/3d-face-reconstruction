@@ -231,7 +231,7 @@ int main() {
     const std::string shapePredictorPath = std::string("../../Data/shape_predictor_68_face_landmarks.dat");
     const std::string outputPath = std::string("../../Result/output.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
-    GetLandmarks(imagePath, shapePredictorPath, true, outputPath);
+    DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
 
     // NELI MARK: - From Excerse 5 - uncomment if needed
     
