@@ -7,6 +7,8 @@
 #include "PointCloud.h"
 
 #include "FacialLandmarks.h"
+#include "Optimization.h"
+#include "BFMParameters.h"
 
 #define SHOW_BUNNY_CORRESPONDENCES 1
 
@@ -226,13 +228,16 @@ int main() {
     }
     // Close output file.
     outFile.close();
-
-    const std::string imagePath = std::string("../../Data/face.png");
-    const std::string shapePredictorPath = std::string("../../Data/shape_predictor_68_face_landmarks.dat");
-    const std::string outputPath = std::string("../../Result/output.png");
+    const std::string imagePath = std::string("../../../Data/face.png");
+    const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
+    const std::string outputPath = std::string("../../../Result/output.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
+
     DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
 
+
+    const std::string h5TestFile = std::string("../../../Data/test.h5");
+    readH5File(h5TestFile);
     // NELI MARK: - From Excerse 5 - uncomment if needed
     
 //	int result = 0;

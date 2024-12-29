@@ -8,11 +8,13 @@ void Optimization::optimizeDenseTerms() {
     ceres::Problem problem;
 
     // Mock data
-    std::vector<Eigen::Vector3f> vertices; // Fill with actual data
+    std::vector<Eigen::Vector3d> vertices; // Fill with actual data
+    std::vector<Eigen::Vector3d> rgbData;
     std::vector<double> depths;
-    std::vector<Eigen::Vector3f> normals;
+    std::vector<Eigen::Vector3d> normals;
     std::vector<double> shapeParams(6, 0.0f);        // 6 elements, initialized to 0.0
     std::vector<double> expressionParams(150, 0.0f);  // prob not floats, but okay for testing purposes
+    std::vector<double> colorParams(3, 0.0f);
     //End Mock data
 
     for (size_t i = 0; i < vertices.size(); ++i) {
@@ -22,6 +24,11 @@ void Optimization::optimizeDenseTerms() {
                 nullptr,
                 shapeParams.data(),
                 expressionParams.data()
+                );
+        problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
+                new ColorOptimization(rgbData[i])),
+                nullptr,
+                colorParams.data()
                 );
     }
 
