@@ -2,6 +2,9 @@
 #include <vector>
 #include <iostream>
 
+double GetDepthForVertex(Eigen::Vector3d vertex){
+    return 0;
+}
 
 //Not sure about params and return type yet
 void Optimization::optimizeDenseTerms() {
@@ -20,7 +23,7 @@ void Optimization::optimizeDenseTerms() {
     for (size_t i = 0; i < vertices.size(); ++i) {
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 6, 50>(
-                        new GeometryOptimization(vertices[i], depths[i], normals[i])),
+                        new GeometryOptimization(vertices[i], GetDepthForVertex(vertices[i]), normals[i])),
                 nullptr,
                 shapeParams.data(),
                 expressionParams.data()

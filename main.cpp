@@ -233,10 +233,10 @@ int main() {
     const std::string outputPath = std::string("../../../Result/output.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
 
-    DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
+    //DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
 
 
-    const std::string h5TestFile = std::string("../../../Data/test.h5");
+    const std::string h5TestFile = std::string("../../../Data/model2019_fullHead.h5");
     readH5File(h5TestFile);
     // NELI MARK: - From Excerse 5 - uncomment if needed
     
