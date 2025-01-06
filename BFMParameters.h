@@ -29,6 +29,30 @@ struct BfmProperties {
     std::vector<float> expressionPcaVariance;
 };
 
+static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
+    std::vector<Eigen::Vector3f> vertices;
+    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
+        Eigen::Vector3f newVertex;
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
+        vertices.emplace_back(newVertex);
+    }
+    return vertices;
+}
+
+static std::vector<Eigen::Vector3i> getColorValues(BfmProperties properties){
+    std::vector<Eigen::Vector3i> colorValues;
+    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
+        Eigen::Vector3i newColorValue;
+        newColorValue.x() = (int) (properties.colorMean[i] * 255);
+        newColorValue.y() = (int) (properties.colorMean[i + 1] * 255);
+        newColorValue.z() = (int) (properties.colorMean[i + 2] * 255);
+        colorValues.emplace_back(newColorValue);
+    }
+    return colorValues;
+}
+
 static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, const std::string& datasetPath, std::vector<float>& target) {
     try {
         H5::Group group = file.openGroup(groupPath);
@@ -36,7 +60,7 @@ static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, c
 
         H5::DataSpace dataspace = dataset.getSpace();
         hsize_t dims[1];
-        dataspace.getSimpleExtentDims(dims, nullptr); // Assuming 1D data
+        dataspace.getSimpleExtentDims(dims, nullptr);
         target.resize(dims[0]);
 
         dataset.read(target.data(), H5::PredType::NATIVE_FLOAT);
