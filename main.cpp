@@ -8,6 +8,7 @@
 
 #include "FacialLandmarks.h"
 #include "Optimization.h"
+#include "Rendering.h"
 #include "BFMParameters.h"
 
 #define SHOW_BUNNY_CORRESPONDENCES 1
@@ -235,9 +236,15 @@ int main() {
 
     //DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
 
+    const std::string outputPlyPath = std::string("../../../Result/outputModel.ply");
+    const std::string h5TestFile = std::string("../../../Data/model2019_face12.h5");
+    convertParametersToPly(getProperties(h5TestFile), outputPlyPath);
+    //initializeBFM(h5TestFile);
+    //readH5File(h5TestFile);
+    //readModelPath(h5TestFile);
 
-    const std::string h5TestFile = std::string("../../../Data/model2019_fullHead.h5");
-    readH5File(h5TestFile);
+
+
     // NELI MARK: - From Excerse 5 - uncomment if needed
     
 //	int result = 0;
