@@ -26,14 +26,26 @@ void printStructure(const H5::Group& group, const std::string& prefix = "") {
 }
 
 void readH5File(const std::string& filename){
-    H5::H5File file(filename, H5F_ACC_RDONLY);
-    if (!file.getId()) {
-        std::cerr << "Error opening file!" << std::endl;
+    std::cout << "Hey" << std::endl;
+    std::cout << "Opening file: " << filename << std::endl;
+    /*if (!std::filesystem::exists(h5TestFile)) {
+        std::cerr << "File does not exist: " << h5TestFile << std::endl;
         return;
+    }*/
+    try {
+        H5::H5File file(filename, H5F_ACC_RDONLY);
+        std::cout << "File opened successfully!" << std::endl;
+        if (!file.getId()) {
+            std::cerr << "Error opening file!" << std::endl;
+            return;
+        }
+        std::cout << "File opened successfully!" << std::endl;
+        printStructure(file.openGroup("/"));
+        std::cout << "File size: " << file.getFileSize() << std::endl;
+    } catch (H5::FileIException& e) {
+        std::cerr << "HDF5 error: " << e.getDetailMsg() << std::endl;
     }
-    std::cout << "File opened successfully!" << std::endl;
-    printStructure(file.openGroup("/"));
-    std::cout << "File size: " << file.getFileSize() << std::endl;
+
 }
 
 

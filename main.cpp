@@ -236,9 +236,10 @@ int main() {
     DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
 
 
-    const std::string h5TestFile = std::string("../../../Data/test.h5");
+    const std::string h5TestFile = std::string("C:/Studium/3dScanning/CleanProject/FaceReconstruction/Data/model2019_face12.h5");
+
     readH5File(h5TestFile);
-    // NELI MARK: - From Excerse 5 - uncomment if needed
+    // NELI MARK: - From Exercise 5 - uncomment if needed
     
 //	int result = 0;
 //	if (RUN_SHAPE_ICP) // shape ICP
