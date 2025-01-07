@@ -237,8 +237,11 @@ int main() {
     //DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
 
     const std::string outputPlyPath = std::string("../../../Result/outputModel.ply");
+    const std::string outputLandmarkPlyPath = std::string("../../../Result/landmarks.ply");
+
     const std::string h5TestFile = std::string("../../../Data/model2019_face12.h5");
     convertParametersToPly(getProperties(h5TestFile), outputPlyPath);
+    convertLandmarksToPly(getProperties(h5TestFile), outputLandmarkPlyPath);
     //initializeBFM(h5TestFile);
     //readH5File(h5TestFile);
     //readModelPath(h5TestFile);
