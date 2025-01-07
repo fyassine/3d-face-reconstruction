@@ -47,9 +47,43 @@ static void convertParametersToPly(const BfmProperties& properties, const std::s
         auto b = colorValues[i].z();
         outFile << x << " " << y << " " << z << " " << r << " "<< g << " "<< b << " 255"<< std::endl;
     }
+
     //Faces
     for (int i = 0; i < properties.numberOfTriangles * 3; i+=3) {
         outFile << "3 " << properties.triangles[i] << " " << properties.triangles[i + 1] << " " << properties.triangles[i + 2] << std::endl;
+    }
+    outFile.close();
+}
+
+static void convertLandmarksToPly(const BfmProperties& properties, const std::string& resultPath){
+
+    std::ofstream outFile(resultPath);
+    //Header
+    outFile << "ply" << std::endl;
+    outFile << "format ascii 1.0" << std::endl;
+    outFile << "element vertex " << 68 << std::endl;
+    outFile << "property float x" << std::endl;
+    outFile << "property float y" << std::endl;
+    outFile << "property float z" << std::endl;
+    outFile << "property uchar red" << std::endl;
+    outFile << "property uchar green" << std::endl;
+    outFile << "property uchar blue" << std::endl;
+    outFile << "property uchar alpha" << std::endl;
+    outFile << "element face " << 0 << std::endl;
+    outFile << "property list uchar int vertex_indices" << std::endl;
+    outFile << "end_header" << std::endl;
+    //Vertices
+
+    for (int i = 0; i < 68; ++i) {
+        auto x = properties.landmarks[i].x();
+        auto y = properties.landmarks[i].y();
+        auto z = properties.landmarks[i].z();
+
+        auto r = 255;
+        auto g = 0;
+        auto b = 0;
+
+        outFile << x << " " << y << " " << z << " " << r << " "<< g << " "<< b << " 255"<< std::endl;
     }
     outFile.close();
 }
