@@ -17,10 +17,9 @@ public:
         Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
 
-        //because we ignore rotation for now, until we can test it
-        shape_offset.x() = shape[0];
-        shape_offset.y() = shape[1];
-        shape_offset.z() = shape[2];
+        for (int i = 0; i < num_shape_params; ++i) {
+
+        }
 
         for (int i = 0; i < num_expression_params; ++i) {
             expression_offset.x() += expression[i * 3];

@@ -8,6 +8,7 @@
 
 #include "FacialLandmarks.h"
 #include "Optimization.h"
+#include "Rendering.h"
 #include "BFMParameters.h"
 
 #define SHOW_BUNNY_CORRESPONDENCES 1
@@ -233,13 +234,18 @@ int main() {
     const std::string outputPath = std::string("../../../Result/output.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
 
-    DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
+    //DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
+
+    const std::string outputPlyPath = std::string("../../../Result/outputModel.ply");
+    const std::string h5TestFile = std::string("../../../Data/model2019_face12.h5");
+    convertParametersToPly(getProperties(h5TestFile), outputPlyPath);
+    //initializeBFM(h5TestFile);
+    //readH5File(h5TestFile);
+    //readModelPath(h5TestFile);
 
 
-    const std::string h5TestFile = std::string("C:/Studium/3dScanning/CleanProject/FaceReconstruction/Data/model2019_face12.h5");
 
-    readH5File(h5TestFile);
-    // NELI MARK: - From Exercise 5 - uncomment if needed
+    // NELI MARK: - From Excerse 5 - uncomment if needed
     
 //	int result = 0;
 //	if (RUN_SHAPE_ICP) // shape ICP
