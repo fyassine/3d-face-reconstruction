@@ -245,9 +245,36 @@ int main() {
     //initializeBFM(h5TestFile);
     //readH5File(h5TestFile);
     //readModelPath(h5TestFile);
+    BfmProperties properties;
+    properties = getProperties(h5TestFile);
+    //setupGLFW(800, 800);
+    std::vector<float> parsedVertices;
+    auto originalVertices = getVertices(properties);
+    for (int i = 0; i < originalVertices.size(); ++i) {
+        parsedVertices.push_back(originalVertices[i].x() / 250); // TODO: We have to change the division. We might be able to do this by setting up a projection matrix and camera view matrix and enabling the depth test
+        parsedVertices.push_back(originalVertices[i].y() / 250);
+        parsedVertices.push_back(originalVertices[i].z() / 250);
+        if(i == 0){
+            std::cout << originalVertices[i].x() << ", " << originalVertices[i].y() << ", " << originalVertices[i].z() << ";" << std::endl;
+        }
+    }
 
+    std::vector<int> parsedColor;
+    auto originalColorValues = getColorValues(properties);
+    for (int i = 0; i < originalColorValues.size(); ++i) {
+        parsedColor.push_back(originalColorValues[i].x());
+        parsedColor.push_back(originalColorValues[i].y());
+        parsedColor.push_back(originalColorValues[i].z());
+        if(i == 0){
+            std::cout << originalColorValues[i].x() / 255.0f << ", " << originalColorValues[i].y() / 255.0f<< ", " << originalColorValues[i].z() / 255.0f << ";" << std::endl;
+        }
+    }
 
+    //renderLoop(800, 800, parsedVertices, properties.triangles);
+    //renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/face.png");
+    renderEverything(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/Einstein.jpg");
 
+    //renderBackground();
     // NELI MARK: - From Excerse 5 - uncomment if needed
     
 //	int result = 0;
