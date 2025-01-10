@@ -19,6 +19,7 @@ GLuint loadTexture(const char* filename) {
     FIBITMAP* image32bit = FreeImage_ConvertTo32Bits(image);
     FreeImage_Unload(image);
 
+
     int width = FreeImage_GetWidth(image32bit);
     int height = FreeImage_GetHeight(image32bit);
     void* data = FreeImage_GetBits(image32bit);

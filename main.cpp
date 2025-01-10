@@ -73,7 +73,7 @@ int main() {
 
     //renderLoop(800, 800, parsedVertices, properties.triangles);
     //renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/face.png");
-    renderEverything(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/Einstein.jpg");
+    renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/Einstein.jpg");
 
     //renderBackground();
     // NELI MARK: - From Excerse 5 - uncomment if needed
