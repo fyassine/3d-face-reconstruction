@@ -52,44 +52,47 @@ void renderQuad(GLuint texture) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-static bool renderWithShaders(int width, int height,
-                      const std::vector<float>& vertices,
-                      const std::vector<int>& indices,
-                      const std::vector<int>& colors,
-                      const char* backgroundImage) {
-    if (!glfwInit()) {
-        std::cerr << "GLFW Init failed!" << std::endl;
-        return false;
+void renderTriangle(int verticesSize,
+                    const std::vector<int>& indices,
+                    unsigned int VAO){
+    glBindVertexArray(VAO);
+    if (indices.empty()) {
+        glDrawArrays(GL_TRIANGLES, 0, verticesSize / 3);
+    } else {
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     }
+}
 
-    GLFWwindow* window = glfwCreateWindow(width, height, "Rendering with Background (which doesn't work :((((((((()", NULL, NULL);
+GLFWwindow* setupRendering(int width, int height){
+    if (!glfwInit()) {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+    }
+    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Texture", nullptr, nullptr);
     if (!window) {
-        std::cerr << "Something is wrong with the window!" << std::endl;
+        std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();
-        return false;
     }
     glfwMakeContextCurrent(window);
+    glewInit();
+    return window;
+}
 
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "GLEW initialization failed!" << std::endl;
-        return false;
-    }
-
-    unsigned int texture = loadTexture(backgroundImage);
-    if (texture == 0) {
-        return false;
-    }
-
+std::vector<float> setupVertexData(const std::vector<float>& vertices,
+                                   const std::vector<int>& colors){
     std::vector<float> vertexData;
     for (size_t i = 0; i < vertices.size() / 3; ++i) {
-        vertexData.push_back(vertices[i * 3 + 0]);       // x
-        vertexData.push_back(vertices[i * 3 + 1]);       // y
-        vertexData.push_back(vertices[i * 3 + 2]);       // z
-        vertexData.push_back((float) colors[i * 3 + 0] / 255.0f); // r
-        vertexData.push_back((float) colors[i * 3 + 1] / 255.0f); // g
-        vertexData.push_back((float) colors[i * 3 + 2] / 255.0f); // b
+        vertexData.push_back(vertices[i * 3 + 0]);                  // x
+        vertexData.push_back(vertices[i * 3 + 1]);                  // y
+        vertexData.push_back(vertices[i * 3 + 2]);                  // z
+        vertexData.push_back((float) colors[i * 3 + 0] / 255.0f);   // r
+        vertexData.push_back((float) colors[i * 3 + 1] / 255.0f);   // g
+        vertexData.push_back((float) colors[i * 3 + 2] / 255.0f);   // b
     }
+    return vertexData;
+}
 
+unsigned int setupBuffers(const std::vector<int>& indices,
+                  const std::vector<float>& vertexData){
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -109,7 +112,10 @@ static bool renderWithShaders(int width, int height,
 
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    return VAO;
+}
 
+unsigned int setupShaders(){
     const char* vertexShaderSource = R"(
         #version 330 core
         layout(location = 0) in vec3 aPos;
@@ -146,55 +152,87 @@ static bool renderWithShaders(int width, int height,
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    glUseProgram(shaderProgram);
-
-    while (!glfwWindowShouldClose(window)) {
-        //glEnable(GL_DEPTH_TEST);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        renderQuad(texture);
-
-        glBindVertexArray(VAO);
-        if (indices.empty()) {
-            glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
-        } else {
-            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-        }
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glDeleteTextures(1, &texture);
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
-    return true;
+    //glUseProgram(shaderProgram);
+    return shaderProgram;
 }
 
-static void renderBackground(){
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-    }
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Texture", nullptr, nullptr);
-    if (!window) {
-        std::cerr << "Failed to create window" << std::endl;
-        glfwTerminate();
-    }
-    glfwMakeContextCurrent(window);
-    glewInit();
-    GLuint texture = loadTexture("../../../Data/face.png");
+unsigned int setupBackgroundShaders(){
+    const char* bgVertexShaderSource = R"(
+    #version 330 core
+    layout(location = 0) in vec3 aPos;
+    layout(location = 1) in vec2 aTexCoord;
+    out vec2 TexCoord;
+    void main() {
+        gl_Position = vec4(aPos, 1.0);
+        TexCoord = aTexCoord;
+    })";
 
+    const char* bgFragmentShaderSource = R"(
+    #version 330 core
+    in vec2 TexCoord;
+    out vec4 FragColor;
+    uniform sampler2D texture1;
+    void main() {
+        FragColor = texture(texture1, TexCoord);
+    })";
+
+
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &bgVertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &bgFragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    //glUseProgram(shaderProgram);
+    return shaderProgram;
+}
+
+void renderLoop(GLuint texture,
+                GLFWwindow* window,
+                const std::vector<float>& vertices,
+                const std::vector<int>& indices,
+                unsigned int VAO){
     while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+        //glUseProgram(setupBackgroundShaders());
+        glUseProgram(0);
         renderQuad(texture);
+
+        glUseProgram(setupShaders());
+        renderTriangle(vertices.size() / 3, indices, VAO);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    // Cleanup
+}
+
+void cleanUp(GLuint texture, GLFWwindow* window){
     glDeleteTextures(1, &texture);
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+static void renderFaceOnTopOfImage(int width, int height,
+                                    const std::vector<float>& vertices,
+                                    const std::vector<int>& indices,
+                                    const std::vector<int>& colors,
+                                    const char* backgroundImagePath) {
+    GLFWwindow* window = setupRendering(width, height); //just take width and height of background image?! -> create background struct with texture, width and height?
+    std::vector<float> vertexData = setupVertexData(vertices, colors);
+    GLuint texture = loadTexture(backgroundImagePath);
+    auto VAO = setupBuffers(indices, vertexData);
+    //setupShaders();
+    renderLoop(texture, window, vertices, indices, VAO);
+    cleanUp(texture, window);
 }
 
 static BfmProperties getProperties(const std::string& path){
