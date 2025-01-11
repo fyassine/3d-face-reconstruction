@@ -76,13 +76,4 @@ int main() {
     renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/Einstein.jpg");
 
     //renderBackground();
-    // NELI MARK: - From Excerse 5 - uncomment if needed
-    
-//	int result = 0;
-//	if (RUN_SHAPE_ICP) // shape ICP
-//		result += alignBunnyWithICP(); // STEP 1. call alignBunnyWithICP()
-//	if (RUN_SEQUENCE_ICP) // sequence ICP
-//		result += reconstructRoom();
-//
-//	return result;
 }
