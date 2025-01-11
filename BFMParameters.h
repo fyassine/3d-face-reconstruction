@@ -29,6 +29,10 @@ struct BfmProperties {
     std::vector<float> expressionMean;
     std::vector<float> expressionPcaBasis;
     std::vector<float> expressionPcaVariance;
+
+    std::vector<float> colorWeight;
+    std::vector<float> shapeWeight;
+    std::vector<float> expressionWeight;
 };
 
 static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
