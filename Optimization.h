@@ -57,30 +57,44 @@ private:
     static const int num_expression_params = 50; //TODO: Change!!!
 };
 
-struct ColorOptimization{
+struct ColorOptimization {
 public:
-    //datatype illumination
-    ColorOptimization(const Eigen::Vector3d& albedo):
-            m_albedo(albedo)
-    {}
+    ColorOptimization(const Eigen::Vector3d& albedo, const Eigen::Vector3d& illumination)
+        : m_albedo(albedo), m_illumination(illumination) {}
 
-    template<typename T>
-    bool operator()(const T* const color, T* residual) const {
-        Eigen::Matrix<T, 3, 1> color_offset = Eigen::Matrix<T, 3, 1>::Zero();
-        color_offset.x() = color[0];
-        color_offset.y() = color[1];
-        color_offset.z() = color[2];
-        residual[0] = (m_albedo.cast<T>() - color_offset).norm();
+    template <typename T>
+    bool operator()(const T* const color, T* residuals) const {
+        // Normalize illumination
+        T illumination_normalized[3];
+        T illum_sum = m_illumination.cast<T>().sum();
+        
+        if (illum_sum == T(0)) {
+            return false;
+        }
+
+        illumination_normalized[0] = T(m_illumination.x()) / illum_sum;
+        illumination_normalized[1] = T(m_illumination.y()) / illum_sum;
+        illumination_normalized[2] = T(m_illumination.z()) / illum_sum;
+
+        // Compute adjusted albedo with normalized illumination
+        Eigen::Matrix<T, 3, 1> adjusted_albedo = m_albedo.cast<T>().cwiseProduct(
+        Eigen::Matrix<T, 3, 1>(illumination_normalized[0], illumination_normalized[1], illumination_normalized[2]));
+
+        // Compute color offset
+        Eigen::Matrix<T, 3, 1> color_offset(color[0], color[1], color[2]);
+
+        // Compute per-channel residuals
+        residuals[0] = adjusted_albedo.x() - color_offset.x();
+        residuals[1] = adjusted_albedo.y() - color_offset.y();
+        residuals[2] = adjusted_albedo.z() - color_offset.z();
+
         return true;
     }
-    // TODO - convert h5 into usable parameters -> fix the library
-    // TODO - finish color residual block
 
 private:
     const Eigen::Vector3d m_albedo;
-    //TODO: Illumination
+    const Eigen::Vector3d m_illumination;
 };
-
 
 class Optimization {
 public:

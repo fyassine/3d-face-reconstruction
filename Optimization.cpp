@@ -29,7 +29,7 @@ void Optimization::optimizeDenseTerms() {
                 expressionParams.data()
                 );
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
-                new ColorOptimization(rgbData[i])),
+                new ColorOptimization(rgbData[i], rgbData[i])), // replace second rgbData[i] with illumination
                 nullptr,
                 colorParams.data()
                 );
