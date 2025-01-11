@@ -197,6 +197,7 @@ unsigned int setupBackgroundShaders(){
     return shaderProgram;
 }
 
+
 void renderLoop(GLuint texture,
                 GLFWwindow* window,
                 const std::vector<float>& vertices,

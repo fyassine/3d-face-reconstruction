@@ -73,7 +73,8 @@ int main() {
 
     //renderLoop(800, 800, parsedVertices, properties.triangles);
     //renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/face.png");
-    renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/Einstein.jpg");
+    //renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/Einstein.jpg");
+    renderFaceOnTopOfImage(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/face.png");
 
     //renderBackground();
 }
