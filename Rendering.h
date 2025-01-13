@@ -73,6 +73,10 @@ static GLFWwindow* setupRendering(int width, int height){
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
+    glewExperimental = GL_TRUE; // Ensure experimental extensions are enabled
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Failed to initialize GLEW" << std::endl;
+    }
     glewInit();
     return window;
 }
