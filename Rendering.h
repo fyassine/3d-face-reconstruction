@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 #include "FreeImage.h"
 
-GLuint loadTexture(const char* filename) {
+static GLuint loadTexture(const char* filename) {
     FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename, 0);
     FIBITMAP* image = FreeImage_Load(format, filename);
     if (!image) {
@@ -38,7 +38,7 @@ GLuint loadTexture(const char* filename) {
     return texture;
 }
 
-void renderQuad(GLuint texture) {
+static void renderQuad(GLuint texture) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -52,7 +52,7 @@ void renderQuad(GLuint texture) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void renderTriangle(int verticesSize,
+static void renderTriangle(int verticesSize,
                     const std::vector<int>& indices,
                     unsigned int VAO){
     glBindVertexArray(VAO);
@@ -63,7 +63,7 @@ void renderTriangle(int verticesSize,
     }
 }
 
-GLFWwindow* setupRendering(int width, int height){
+static GLFWwindow* setupRendering(int width, int height){
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
     }
@@ -77,7 +77,7 @@ GLFWwindow* setupRendering(int width, int height){
     return window;
 }
 
-std::vector<float> setupVertexData(const std::vector<float>& vertices,
+static std::vector<float> setupVertexData(const std::vector<float>& vertices,
                                    const std::vector<int>& colors){
     std::vector<float> vertexData;
     for (size_t i = 0; i < vertices.size() / 3; ++i) {
@@ -91,7 +91,7 @@ std::vector<float> setupVertexData(const std::vector<float>& vertices,
     return vertexData;
 }
 
-unsigned int setupBuffers(const std::vector<int>& indices,
+static unsigned int setupBuffers(const std::vector<int>& indices,
                   const std::vector<float>& vertexData){
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -115,7 +115,7 @@ unsigned int setupBuffers(const std::vector<int>& indices,
     return VAO;
 }
 
-unsigned int setupShaders(){
+static unsigned int setupShaders(){
     const char* vertexShaderSource = R"(
         #version 330 core
         layout(location = 0) in vec3 aPos;
@@ -156,7 +156,7 @@ unsigned int setupShaders(){
     return shaderProgram;
 }
 
-unsigned int setupBackgroundShaders(){
+static unsigned int setupBackgroundShaders(){
     const char* bgVertexShaderSource = R"(
     #version 330 core
     layout(location = 0) in vec3 aPos;
@@ -198,7 +198,7 @@ unsigned int setupBackgroundShaders(){
 }
 
 
-void renderLoop(GLuint texture,
+static void renderLoop(GLuint texture,
                 GLFWwindow* window,
                 const std::vector<float>& vertices,
                 const std::vector<int>& indices,
@@ -216,7 +216,7 @@ void renderLoop(GLuint texture,
     }
 }
 
-void cleanUp(GLuint texture, GLFWwindow* window){
+static void cleanUp(GLuint texture, GLFWwindow* window){
     glDeleteTextures(1, &texture);
     glfwDestroyWindow(window);
     glfwTerminate();

@@ -30,7 +30,7 @@ int main() {
     }
     // Close output file.
     outFile.close();
-    const std::string imagePath = std::string("../../../Data/face.png");
+    const std::string imagePath = std::string("../../../Data/testface.jpg");
     const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
     const std::string outputPath = std::string("../../../Result/output.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
@@ -47,7 +47,13 @@ int main() {
     //readH5File(h5TestFile);
     //readModelPath(h5TestFile);
     BfmProperties properties;
+    Eigen::Vector3f initialTest;
+    initialTest.x() = 0.1;
+    initialTest.y() = 0.1;
+    initialTest.z() = 0.1;
+    properties.initialOffset = initialTest;
     properties = getProperties(h5TestFile);
+
     //setupGLFW(800, 800);
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);
@@ -74,7 +80,8 @@ int main() {
     //renderLoop(800, 800, parsedVertices, properties.triangles);
     //renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/face.png");
     //renderWithShaders(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/Einstein.jpg");
-    renderFaceOnTopOfImage(800, 800, parsedVertices, properties.triangles, parsedColor, "../../../Data/face.png");
+
+    renderFaceOnTopOfImage(450, 450, parsedVertices, properties.triangles, parsedColor, "../../../Data/testface.jpg");
 
     //renderBackground();
 }

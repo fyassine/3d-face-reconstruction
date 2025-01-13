@@ -5,6 +5,7 @@
 #include <H5Cpp.h>
 #include "Eigen.h"
 #include "nlohmann/json.hpp"
+#include "ProcrustesAligner.h"
 
 //WIP
 struct BfmProperties {
@@ -13,9 +14,13 @@ struct BfmProperties {
     int numberOfVertices{};
     int numberOfTriangles{};
     std::vector<Eigen::Vector3f> vertices;
+    std::vector<Eigen::Vector3f> initialOffsets;
+    Eigen::Vector3f initialOffset;
     std::vector<int> triangles;
     std::vector<Eigen::Vector3f> landmarks;
     //TODO: landmarks?!
+
+    Matrix4f transformation;
 
     //Parameters:
     std::vector<float> colorMean;
@@ -35,13 +40,49 @@ struct BfmProperties {
     std::vector<float> expressionWeight;
 };
 
+/*static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties properties){
+    for (int i = 0; i < properties.shapeMean.size() / 3; ++i) {
+        Eigen::Vector3f offsetVector;
+        properties.initialOffsets[i].x() += initialOffset.x();
+        properties.initialOffsets[i].y() += initialOffset.y();
+        properties.initialOffsets[i].z() += initialOffset.z();
+    }
+}*/
+
+static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties& properties) {
+    properties.initialOffset.x() = initialOffset.x();
+    std::cout << "InitialOffset:" << properties.initialOffset.x() << std::endl;
+    properties.initialOffset.y() = initialOffset.y();
+    properties.initialOffset.z() = initialOffset.z();
+}
+
 static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     std::vector<Eigen::Vector3f> vertices;
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + properties.initialOffset.x();
+        if(i==0){
+            std::cout << "With InitialOffset:" << newVertex.x() << std::endl;
+            std::cout << "Without InitialOffset:" << properties.shapeMean[i] + properties.expressionMean[i] << std::endl;
+            std::cout << "InitialOffset:" << properties.initialOffset.x() << std::endl;
+        }
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + properties.initialOffset.y();
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + properties.initialOffset.z();
+        Eigen::Vector4f transformationVector;
+        if(i == 0){
+            std::cout << "Old Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << " VS. ";
+        }
+        transformationVector.x() = newVertex.x();
+        transformationVector.y() = newVertex.y();
+        transformationVector.z() = newVertex.z();
+        transformationVector.w() = 1.0f;
+        transformationVector = properties.transformation * transformationVector;
+        newVertex.x() = transformationVector.x();
+        newVertex.y() = transformationVector.y();
+        newVertex.z() = transformationVector.z();
+        if(i == 0){
+            std::cout << "New Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << ";" << std::endl;
+        }
         vertices.emplace_back(newVertex);
     }
     return vertices;
@@ -105,6 +146,23 @@ static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, c
     }
     std::cout << properties.landmarks.size() << std::endl;
 }*/
+
+Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& pt_2d, float depth, const Eigen::Matrix3f& K, const Eigen::Matrix3f& R, const Eigen::Vector3f& T) {
+    // Step 1: Invert the Intrinsic Matrix K
+    Eigen::Matrix3f K_inv = K.inverse();
+
+    // Step 2: Create a homogeneous 2D point (x, y, 1)
+    Eigen::Vector3f pt_2d_homogeneous(pt_2d.x(), pt_2d.y(), 1.0f);
+
+    // Step 3: Perform scalar multiplication with depth first, then matrix multiplication
+    Eigen::Vector3f pt_3d_camera = depth * pt_2d_homogeneous; // Depth multiplied with the homogeneous 2D point
+    pt_3d_camera = K_inv * pt_3d_camera;  // Now multiply with the inverse of K
+
+    // Step 4: Apply the extrinsic transformation (rotation R and translation T)
+    Eigen::Vector3f pt_3d_world = R * pt_3d_camera + T;
+
+    return pt_3d_world;
+}
 
 //@param path -> path to .h5 file
 //initializeMethod durch constructor ersetzen?!
@@ -224,14 +282,182 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
     landmarks.push_back({8140.39f, -31052.9f, 109408.0f});
     landmarks.push_back({-257.674f, -31426.9f, 110736.0f});
     landmarks.push_back({-9651.11f, -30987.6f, 108781.0f});
-
-
     for (int i = 0; i < landmarks.size(); ++i) {
         landmarks[i] /= 1000;
     }
     properties.landmarks = landmarks;
+
+
+    properties.initialOffset.x() = 0;
+    properties.initialOffset.y() = 0;
+    properties.initialOffset.z() = 0;
+    ProcrustesAligner aligner;
+    std::vector<Vector3f> sourcePoints;
+    std::vector<Vector3f> targetPoints;
+    std::vector<Vector2f> landmarksImage;
+
+    landmarksImage.emplace_back(118.63, 207.90);
+    landmarksImage.emplace_back(121.40, 238.45);
+    landmarksImage.emplace_back(129.03, 266.74);
+    landmarksImage.emplace_back(135.65, 290.42);
+    landmarksImage.emplace_back(144.91, 315.50);
+    landmarksImage.emplace_back(159.29, 338.10);
+    landmarksImage.emplace_back(176.18, 354.60);
+    landmarksImage.emplace_back(197.80, 368.85);
+    landmarksImage.emplace_back(231.05, 376.89);
+    landmarksImage.emplace_back(263.81, 368.39);
+    landmarksImage.emplace_back(284.42, 354.98);
+    landmarksImage.emplace_back(299.53, 338.77);
+    landmarksImage.emplace_back(312.64, 316.09);
+    landmarksImage.emplace_back(321.79, 291.46);
+    landmarksImage.emplace_back(327.73, 267.79);
+    landmarksImage.emplace_back(334.75, 239.87);
+    landmarksImage.emplace_back(338.17, 209.36);
+    landmarksImage.emplace_back(140.88, 189.96);
+    landmarksImage.emplace_back(152.32, 183.01);
+    landmarksImage.emplace_back(167.81, 181.91);
+    landmarksImage.emplace_back(183.30, 185.09);
+    landmarksImage.emplace_back(197.17, 189.60);
+    landmarksImage.emplace_back(258.65, 188.47);
+    landmarksImage.emplace_back(273.00, 184.76);
+    landmarksImage.emplace_back(288.51, 181.96);
+    landmarksImage.emplace_back(304.41, 183.74);
+    landmarksImage.emplace_back(315.77, 190.90);
+    landmarksImage.emplace_back(227.64, 218.48);
+    landmarksImage.emplace_back(227.83, 240.47);
+    landmarksImage.emplace_back(228.08, 262.71);
+    landmarksImage.emplace_back(228.03, 279.00);
+    landmarksImage.emplace_back(209.92, 283.81);
+    landmarksImage.emplace_back(217.74, 286.87);
+    landmarksImage.emplace_back(228.39, 289.29);
+    landmarksImage.emplace_back(238.74, 286.91);
+    landmarksImage.emplace_back(246.27, 283.88);
+    landmarksImage.emplace_back(160.67, 212.50);
+    landmarksImage.emplace_back(169.76, 206.67);
+    landmarksImage.emplace_back(183.94, 206.30);
+    landmarksImage.emplace_back(197.27, 214.27);
+    landmarksImage.emplace_back(185.12, 218.79);
+    landmarksImage.emplace_back(170.66, 218.54);
+    landmarksImage.emplace_back(257.29, 215.81);
+    landmarksImage.emplace_back(271.76, 208.94);
+    landmarksImage.emplace_back(286.64, 209.49);
+    landmarksImage.emplace_back(295.74, 214.61);
+    landmarksImage.emplace_back(285.68, 220.59);
+    landmarksImage.emplace_back(270.20, 219.98);
+    landmarksImage.emplace_back(189.80, 311.63);
+    landmarksImage.emplace_back(202.43, 308.06);
+    landmarksImage.emplace_back(219.75, 304.47);
+    landmarksImage.emplace_back(228.73, 305.60);
+    landmarksImage.emplace_back(237.76, 304.15);
+    landmarksImage.emplace_back(254.45, 306.87);
+    landmarksImage.emplace_back(267.31, 310.00);
+    landmarksImage.emplace_back(254.50, 320.58);
+    landmarksImage.emplace_back(242.90, 327.55);
+    landmarksImage.emplace_back(230.52, 329.15);
+    landmarksImage.emplace_back(218.24, 328.10);
+    landmarksImage.emplace_back(205.96, 322.16);
+    landmarksImage.emplace_back(194.03, 311.23);
+    landmarksImage.emplace_back(217.34, 312.62);
+    landmarksImage.emplace_back(228.73, 312.21);
+    landmarksImage.emplace_back(240.18, 312.04);
+    landmarksImage.emplace_back(264.51, 309.28);
+    landmarksImage.emplace_back(241.31, 315.35);
+    landmarksImage.emplace_back(229.96, 316.80);
+    landmarksImage.emplace_back(218.95, 315.88);
+
+    std::vector<float> depthValues;
+
+    depthValues.emplace_back(-81.9494f);
+    depthValues.emplace_back(-84.0708f);
+    depthValues.emplace_back(-86.1261f);
+    depthValues.emplace_back(-84.3486f);
+    depthValues.emplace_back(-75.0432f);
+    depthValues.emplace_back(-54.3234f);
+    depthValues.emplace_back(-26.7269f);
+    depthValues.emplace_back(-3.1504f);
+    depthValues.emplace_back(5.1858f);
+    depthValues.emplace_back(-3.5604f);
+    depthValues.emplace_back(-27.7868f);
+    depthValues.emplace_back(-55.2481f);
+    depthValues.emplace_back(-76.0480f);
+    depthValues.emplace_back(-85.3210f);
+    depthValues.emplace_back(-86.0624f);
+    depthValues.emplace_back(-83.5348f);
+    depthValues.emplace_back(-80.9916f);
+    depthValues.emplace_back(17.3624f);
+    depthValues.emplace_back(37.2231f);
+    depthValues.emplace_back(50.5675f);
+    depthValues.emplace_back(58.4185f);
+    depthValues.emplace_back(61.5788f);
+    depthValues.emplace_back(61.7214f);
+    depthValues.emplace_back(58.3998f);
+    depthValues.emplace_back(50.4918f);
+    depthValues.emplace_back(37.2096f);
+    depthValues.emplace_back(16.9451f);
+    depthValues.emplace_back(61.6455f);
+    depthValues.emplace_back(72.1690f);
+    depthValues.emplace_back(81.8564f);
+    depthValues.emplace_back(81.3163f);
+    depthValues.emplace_back(47.0413f);
+    depthValues.emplace_back(52.8052f);
+    depthValues.emplace_back(55.7183f);
+    depthValues.emplace_back(52.7529f);
+    depthValues.emplace_back(47.1556f);
+    depthValues.emplace_back(23.9380f);
+    depthValues.emplace_back(38.4398f);
+    depthValues.emplace_back(39.0451f);
+    depthValues.emplace_back(33.2425f);
+    depthValues.emplace_back(36.0291f);
+    depthValues.emplace_back(32.2369f);
+    depthValues.emplace_back(33.3726f);
+    depthValues.emplace_back(39.1702f);
+    depthValues.emplace_back(37.9189f);
+    depthValues.emplace_back(23.0803f);
+    depthValues.emplace_back(31.8327f);
+    depthValues.emplace_back(36.2982f);
+    depthValues.emplace_back(24.8443f);
+    depthValues.emplace_back(43.2507f);
+    depthValues.emplace_back(53.4487f);
+    depthValues.emplace_back(54.1908f);
+    depthValues.emplace_back(53.1766f);
+    depthValues.emplace_back(43.3501f);
+    depthValues.emplace_back(26.1465f);
+    depthValues.emplace_back(40.6935f);
+    depthValues.emplace_back(45.9826f);
+    depthValues.emplace_back(47.4366f);
+    depthValues.emplace_back(46.3287f);
+    depthValues.emplace_back(40.4743f);
+    depthValues.emplace_back(27.2977f);
+    depthValues.emplace_back(45.8984f);
+    depthValues.emplace_back(48.3717f);
+    depthValues.emplace_back(46.1922f);
+    depthValues.emplace_back(28.1654f);
+    depthValues.emplace_back(49.3157f);
+    depthValues.emplace_back(50.5824f);
+    depthValues.emplace_back(48.8912f);
+
+    Matrix3f K;
+    K << 0.005971, -0.001186, -0.002454,
+            0.006100, -0.001137, -0.002745,
+            0.000035, -0.000007, -0.000016;
+
+    Matrix3f R;
+    R << 0.403446, 0.169169, -0.899229,
+    0.573882, -0.812221, 0.104676,
+    0.712665, 0.558283, 0.424770;
+
+    Vector3f T(-212.836227, 294.292480, 107.552269);
+
+    //GetTargetLandmarks
+    for (int i = 0; i < landmarksImage.size(); ++i) {
+        targetPoints.emplace_back(convert2Dto3D(landmarksImage[i], depthValues[i], K, R, T));
+        std::cout << "Target: " << targetPoints[i] << std::endl;
+    }
+    //End GetTargetLandmarks
+    std::cout << targetPoints.size() << std::endl;
+
+    Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
+    properties.transformation = estimatedPose;
 }
-
-
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
