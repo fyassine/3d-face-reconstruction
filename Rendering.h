@@ -38,6 +38,41 @@ static GLuint loadTexture(const char* filename) {
     return texture;
 }
 
+static void saveFramebufferToFile(const char* filename, int width, int height) {
+    // Create a buffer to store the pixel data (RGBA format)
+    std::vector<unsigned char> pixels(width * height * 4); // RGBA format
+
+    // Read pixels from the framebuffer
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+    // Create a FreeImage bitmap from the pixel data
+    FIBITMAP* image = FreeImage_Allocate(width, height, 32); // 32-bit, RGBA format
+    if (!image) {
+        std::cerr << "Failed to allocate FreeImage bitmap." << std::endl;
+        return;
+    }
+
+    // Flip the image vertically (since OpenGL's origin is at the bottom-left)
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            unsigned char* pixel = FreeImage_GetScanLine(image, height - y - 1) + x * 4;
+            pixel[FI_RGBA_RED] = pixels[(y * width + x) * 4 + 0];   // Red
+            pixel[FI_RGBA_GREEN] = pixels[(y * width + x) * 4 + 1]; // Green
+            pixel[FI_RGBA_BLUE] = pixels[(y * width + x) * 4 + 2];  // Blue
+            pixel[FI_RGBA_ALPHA] = pixels[(y * width + x) * 4 + 3]; // Alpha
+        }
+    }
+
+    // Save the image as PNG or JPG
+    if (!FreeImage_Save(FIF_PNG, image, filename)) {
+        std::cerr << "Failed to save image to file." << std::endl;
+    }
+
+    // Unload the image
+    FreeImage_Unload(image);
+}
+
+
 static void renderQuad(GLuint texture) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -67,7 +102,7 @@ static GLFWwindow* setupRendering(int width, int height){
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
     }
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Texture", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL Texture", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();
@@ -160,53 +195,12 @@ static unsigned int setupShaders(){
     return shaderProgram;
 }
 
-static unsigned int setupBackgroundShaders(){
-    const char* bgVertexShaderSource = R"(
-    #version 330 core
-    layout(location = 0) in vec3 aPos;
-    layout(location = 1) in vec2 aTexCoord;
-    out vec2 TexCoord;
-    void main() {
-        gl_Position = vec4(aPos, 1.0);
-        TexCoord = aTexCoord;
-    })";
-
-    const char* bgFragmentShaderSource = R"(
-    #version 330 core
-    in vec2 TexCoord;
-    out vec4 FragColor;
-    uniform sampler2D texture1;
-    void main() {
-        FragColor = texture(texture1, TexCoord);
-    })";
-
-
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &bgVertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &bgFragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    //glUseProgram(shaderProgram);
-    return shaderProgram;
-}
-
-
 static void renderLoop(GLuint texture,
                 GLFWwindow* window,
                 const std::vector<float>& vertices,
                 const std::vector<int>& indices,
                 unsigned int VAO){
+    glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
         //glUseProgram(setupBackgroundShaders());
@@ -215,6 +209,9 @@ static void renderLoop(GLuint texture,
 
         glUseProgram(setupShaders());
         renderTriangle(vertices.size() / 3, indices, VAO);
+
+        saveFramebufferToFile("../../../Result/rendering.png", 450, 450); // TODO: Use real width and height!!!
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -308,6 +305,39 @@ static void convertLandmarksToPly(const BfmProperties& properties, const std::st
         auto x = properties.landmarks[i].x();
         auto y = properties.landmarks[i].y();
         auto z = properties.landmarks[i].z();
+
+        auto r = 255;
+        auto g = 0;
+        auto b = 0;
+
+        outFile << x << " " << y << " " << z << " " << r << " "<< g << " "<< b << " 255"<< std::endl;
+    }
+    outFile.close();
+}
+
+static void convertVerticesTest(const std::vector<Eigen::Vector3f>& vertices, const std::string& resultPath){
+
+    std::ofstream outFile(resultPath);
+    //Header
+    outFile << "ply" << std::endl;
+    outFile << "format ascii 1.0" << std::endl;
+    outFile << "element vertex " << 15 << std::endl;
+    outFile << "property float x" << std::endl;
+    outFile << "property float y" << std::endl;
+    outFile << "property float z" << std::endl;
+    outFile << "property uchar red" << std::endl;
+    outFile << "property uchar green" << std::endl;
+    outFile << "property uchar blue" << std::endl;
+    outFile << "property uchar alpha" << std::endl;
+    outFile << "element face " << 0 << std::endl;
+    outFile << "property list uchar int vertex_indices" << std::endl;
+    outFile << "end_header" << std::endl;
+    //Vertices
+
+    for (int i = 0; i < 15; ++i) {
+        auto x = vertices[i].x();
+        auto y = vertices[i].y();
+        auto z = vertices[i].z();
 
         auto r = 255;
         auto g = 0;

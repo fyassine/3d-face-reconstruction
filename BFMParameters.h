@@ -4,7 +4,6 @@
 #include <iostream>
 #include <H5Cpp.h>
 #include "Eigen.h"
-#include "nlohmann/json.hpp"
 #include "ProcrustesAligner.h"
 
 //WIP
@@ -77,9 +76,9 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
         transformationVector.z() = newVertex.z();
         transformationVector.w() = 1.0f;
         transformationVector = properties.transformation * transformationVector;
-        //newVertex.x() = transformationVector.x();
-        //newVertex.y() = transformationVector.y();
-        //newVertex.z() = transformationVector.z();
+        newVertex.x() = transformationVector.x();
+        newVertex.y() = transformationVector.y();
+        newVertex.z() = transformationVector.z();
         if(i == 0){
             std::cout << "New Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << ";" << std::endl;
         }
@@ -116,68 +115,100 @@ static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, c
     }
 }
 
-/*static void extractLandmarks(const H5::H5File& file, const BfmProperties& properties){
-    try {
-        H5::Group group = file.openGroup("/metadata/landmarks");
-        H5::DataSet dataset = group.openDataSet("json");
-        H5::StrType strType = dataset.getStrType();
-        ssize_t size = strType.getSize();
-        char* buffer = new char[size + 1];
-        dataset.read(buffer, strType);
-        buffer[size] = '\0';
-        std::string jsonString(buffer);
-        delete[] buffer;
-
-        nlohmann::json json = nlohmann::json::parse(jsonString);
-
-        std::vector<Eigen::Vector3f> coordinates;
-
-
-        // Iterate through the JSON array and extract coordinates
-        for (const auto& landmark : json) {
-
+static void readFaces(){
+    /*const std::string inputFile = std::string("../../../Data/faces.txt");
+    std::ifstream inFile(inputFile);
+    std::string line;
+    while (std::getline(inFile, line)) {
+        std::istringstream iss(line);
+        int firstInt;
+        int secondInt, thirdInt, fourthInt;
+        if (iss >> firstInt >> secondInt >> thirdInt >> fourthInt) {
+            properties.triangles.push_back(secondInt);
+            properties.triangles.push_back(thirdInt);
+            properties.triangles.push_back(fourthInt);
+        } else {
+            std::cerr << "Error: Incorrect input file" << std::endl;
         }
-        // For demonstration, print the coordinates
-        for (const auto& vec : coordinates) {
-            std::cout << "Coordinates: [" << vec.x() << ", " << vec.y() << ", " << vec.z() << "]" << std::endl;
-        }
-    } catch (H5::Exception& e) {
-        std::cerr << "Error reading BFM parameters: " << e.getDetailMsg() << std::endl;
     }
-    std::cout << properties.landmarks.size() << std::endl;
-}*/
+    properties.numberOfTriangles = properties.triangles.size() / 3;
+    std::cout << "Faces: " << properties.numberOfTriangles << std::endl;*/
+}
 
-Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& pt_2d, float depth, const Eigen::Matrix3f& K, const Eigen::Matrix3f& R, const Eigen::Vector3f& T, const Eigen::Matrix4f& extrinsics) {
-    /*// Step 1: Invert the Intrinsic Matrix K
-    Eigen::Matrix3f K_inv = K.inverse();
+static std::vector<Eigen::Vector3f> readLandmarksBFM(const std::string& path){
+    const std::string inputFile = std::string(path);
+    std::ifstream inFile(inputFile);
+    std::string line;
+    std::vector<Eigen::Vector3f> landmarks;
+    while (std::getline(inFile, line)) {
+        std::istringstream iss(line);
+        float first, second, third;
+        if (iss >> first >> second >> third) {
+            Eigen::Vector3f newLandmark;
+            newLandmark.x() = first;
+            newLandmark.y() = second;
+            newLandmark.z() = third;
+            landmarks.emplace_back(newLandmark);
+        } else {
+            std::cerr << "Error: Incorrect input file" << std::endl;
+        }
+    }
+    return landmarks;
+}
 
-    // Step 2: Create a homogeneous 2D point (x, y, 1)
-    Eigen::Vector3f pt_2d_homogeneous(pt_2d.x(), pt_2d.y(), 1.0f);
+static std::vector<Vector2f> readLandmarksInputImage(const std::string& path){
+    const std::string inputFile = std::string(path);
+    std::ifstream inFile(inputFile);
+    std::string line;
+    std::vector<Vector2f> landmarksImage;
+    while (std::getline(inFile, line)) {
+        std::istringstream iss(line);
+        float first, second;
+        if (iss >> first >> second) {
+            Eigen::Vector2f newLandmark;
+            newLandmark.x() = first;
+            newLandmark.y() = second;
+            landmarksImage.emplace_back(newLandmark);
+        } else {
+            std::cerr << "Error: Incorrect input file" << std::endl;
+        }
+    }
+    return landmarksImage;
+}
 
-    // Step 3: Perform scalar multiplication with depth first, then matrix multiplication
-    Eigen::Vector3f pt_3d_camera = depth * pt_2d_homogeneous; // Depth multiplied with the homogeneous 2D point
-    pt_3d_camera = K_inv * pt_3d_camera;  // Now multiply with the inverse of K
+static std::vector<float> readLandmarksDepthInputImage(const std::string& path){
+    const std::string inputFile = std::string(path);
+    std::ifstream inFile(inputFile);
+    std::string line;
+    std::vector<float> depthValues;
+    while (std::getline(inFile, line)) {
+        std::istringstream iss(line);
+        float first;
+        if (iss >> first) {
+            depthValues.emplace_back(first);
+        } else {
+            std::cerr << "Error: Incorrect input file" << std::endl;
+        }
+    }
+    return depthValues;
+}
 
-    // Step 4: Apply the extrinsic transformation (rotation R and translation T)
-    Eigen::Vector3f pt_3d_world = R * pt_3d_camera + T;
+static Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& point, float depth, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics) {
+    float fX = depthIntrinsics(0, 0);
+    float fY = depthIntrinsics(1, 1);
+    float cX = depthIntrinsics(0, 2);
+    float cY = depthIntrinsics(1, 2);
 
-    return pt_3d_world;*/
+    float x = (point.x() - cX) * depth / fX;
+    float y = (point.y() - cY) * depth / fY;
+    float z = depth;
 
-    float Xcoord = (pt_2d.x() - K(0,2)) / K(0,0); // Xc
-    float Ycoord = (pt_2d.y() - K(1,2)) / K(1,1); // Yc
-    float Zcoord = depth; // Zc
+    Matrix4f depthExtrinsicsInv = extrinsics.inverse();
 
-    // Step 2: Create camera coordinates
-    Eigen::Vector3f cameraCoords(Xcoord * Zcoord, Ycoord * Zcoord, Zcoord);
+    Vector4f cameraCoord = Vector4f(x, y, z, 1.0f);
+    Vector4f worldCoords = depthExtrinsicsInv * cameraCoord;
 
-    // Step 3: Apply extrinsic transformation (inverse of extrinsics already includes rotation and translation)
-    Eigen::Vector4f pt_3d_world_4f = extrinsics.inverse() * Eigen::Vector4f(cameraCoords.x(), cameraCoords.y(), cameraCoords.z(), 1);
-
-    // Step 4: Convert to 3D world coordinates
-    Eigen::Vector3f pt_3d_world(pt_3d_world_4f.x(), pt_3d_world_4f.y(), pt_3d_world_4f.z());
-    std::cout << "Target: " << pt_3d_world << std::endl;
-
-    return pt_3d_world;
+    return Eigen::Vector3f(worldCoords.x(), worldCoords.y(), worldCoords.z());
 }
 
 //@param path -> path to .h5 file
@@ -298,6 +329,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
     landmarks.push_back({8140.39f, -31052.9f, 109408.0f});
     landmarks.push_back({-257.674f, -31426.9f, 110736.0f});
     landmarks.push_back({-9651.11f, -30987.6f, 108781.0f});
+
     for (int i = 0; i < landmarks.size(); ++i) {
         landmarks[i] /= 1000;
     }
@@ -309,79 +341,60 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
     properties.initialOffset.z() = 0;
     ProcrustesAligner aligner;
     std::vector<Vector3f> sourcePoints;
-    std::vector<Vector3f> targetPoints;
-    std::vector<Vector2f> landmarksImage;
 
-    landmarksImage.emplace_back(118.63, 207.90);
-    landmarksImage.emplace_back(121.40, 238.45);
-    landmarksImage.emplace_back(129.03, 266.74);
-    landmarksImage.emplace_back(135.65, 290.42);
-    landmarksImage.emplace_back(144.91, 315.50);
-    landmarksImage.emplace_back(159.29, 338.10);
-    landmarksImage.emplace_back(176.18, 354.60);
-    landmarksImage.emplace_back(197.80, 368.85);
-    landmarksImage.emplace_back(231.05, 376.89);
-    landmarksImage.emplace_back(263.81, 368.39);
-    landmarksImage.emplace_back(284.42, 354.98);
-    landmarksImage.emplace_back(299.53, 338.77);
-    landmarksImage.emplace_back(312.64, 316.09);
-    landmarksImage.emplace_back(321.79, 291.46);
-    landmarksImage.emplace_back(327.73, 267.79);
-    landmarksImage.emplace_back(334.75, 239.87);
-    landmarksImage.emplace_back(338.17, 209.36);
-    landmarksImage.emplace_back(140.88, 189.96);
-    landmarksImage.emplace_back(152.32, 183.01);
-    landmarksImage.emplace_back(167.81, 181.91);
-    landmarksImage.emplace_back(183.30, 185.09);
-    landmarksImage.emplace_back(197.17, 189.60);
-    landmarksImage.emplace_back(258.65, 188.47);
-    landmarksImage.emplace_back(273.00, 184.76);
-    landmarksImage.emplace_back(288.51, 181.96);
-    landmarksImage.emplace_back(304.41, 183.74);
-    landmarksImage.emplace_back(315.77, 190.90);
-    landmarksImage.emplace_back(227.64, 218.48);
-    landmarksImage.emplace_back(227.83, 240.47);
-    landmarksImage.emplace_back(228.08, 262.71);
-    landmarksImage.emplace_back(228.03, 279.00);
-    landmarksImage.emplace_back(209.92, 283.81);
-    landmarksImage.emplace_back(217.74, 286.87);
-    landmarksImage.emplace_back(228.39, 289.29);
-    landmarksImage.emplace_back(238.74, 286.91);
-    landmarksImage.emplace_back(246.27, 283.88);
-    landmarksImage.emplace_back(160.67, 212.50);
-    landmarksImage.emplace_back(169.76, 206.67);
-    landmarksImage.emplace_back(183.94, 206.30);
-    landmarksImage.emplace_back(197.27, 214.27);
-    landmarksImage.emplace_back(185.12, 218.79);
-    landmarksImage.emplace_back(170.66, 218.54);
-    landmarksImage.emplace_back(257.29, 215.81);
-    landmarksImage.emplace_back(271.76, 208.94);
-    landmarksImage.emplace_back(286.64, 209.49);
-    landmarksImage.emplace_back(295.74, 214.61);
-    landmarksImage.emplace_back(285.68, 220.59);
-    landmarksImage.emplace_back(270.20, 219.98);
-    landmarksImage.emplace_back(189.80, 311.63);
-    landmarksImage.emplace_back(202.43, 308.06);
-    landmarksImage.emplace_back(219.75, 304.47);
-    landmarksImage.emplace_back(228.73, 305.60);
-    landmarksImage.emplace_back(237.76, 304.15);
-    landmarksImage.emplace_back(254.45, 306.87);
-    landmarksImage.emplace_back(267.31, 310.00);
-    landmarksImage.emplace_back(254.50, 320.58);
-    landmarksImage.emplace_back(242.90, 327.55);
-    landmarksImage.emplace_back(230.52, 329.15);
-    landmarksImage.emplace_back(218.24, 328.10);
-    landmarksImage.emplace_back(205.96, 322.16);
-    landmarksImage.emplace_back(194.03, 311.23);
-    landmarksImage.emplace_back(217.34, 312.62);
-    landmarksImage.emplace_back(228.73, 312.21);
-    landmarksImage.emplace_back(240.18, 312.04);
-    landmarksImage.emplace_back(264.51, 309.28);
-    landmarksImage.emplace_back(241.31, 315.35);
-    landmarksImage.emplace_back(229.96, 316.80);
-    landmarksImage.emplace_back(218.95, 315.88);
+    //Landmarks3d
 
-    std::vector<float> depthValues;
+    std::vector<Vector3f> landmarksImage3D;
+
+    // Define the arrays for x, y, and z values
+    std::vector<float> x_values = {118.633575, 121.40035, 129.03134, 135.65099, 144.90646, 159.28775,
+                                   176.17978, 197.80319, 231.05284, 263.81207, 284.41855, 299.53244,
+                                   312.6431, 321.78937, 327.72693, 334.74503, 338.16705, 140.88348,
+                                   152.31776, 167.80539, 183.29922, 197.17053, 258.6491, 273.00055,
+                                   288.51187, 304.41492, 315.76587, 227.64235, 227.82626, 228.08022,
+                                   228.03061, 209.92389, 217.74379, 228.39432, 238.74161, 246.2651,
+                                   160.67302, 169.76, 183.93503, 197.26814, 185.1238, 170.65523,
+                                   257.28702, 271.75507, 286.64493, 295.73615, 285.6814, 270.19943,
+                                   189.80122, 202.42989, 219.74544, 228.72658, 237.7608, 254.45328,
+                                   267.30786, 254.50342, 242.89995, 230.52003, 218.24008, 205.95857,
+                                   194.02777, 217.33896, 228.73225, 240.18138, 264.51337, 241.31241,
+                                   229.95511, 218.95059};
+
+    std::vector<float> y_values = {207.89679, 238.44565, 266.74094, 290.42352, 315.50366, 338.1003,
+                                   354.59723, 368.85245, 376.88562, 368.3873, 354.9839, 338.77045,
+                                   316.0865, 291.46332, 267.78693, 239.8689, 209.36215, 189.96228,
+                                   183.01056, 181.90622, 185.08984, 189.59637, 188.46643, 184.75644,
+                                   181.96451, 183.7356, 190.89777, 218.48036, 240.47267, 262.70953,
+                                   278.99994, 283.8117, 286.87433, 289.287, 286.91333, 283.88385,
+                                   212.50165, 206.66745, 206.30171, 214.27065, 218.79277, 218.53519,
+                                   215.80704, 208.94217, 209.48972, 214.60966, 220.58864, 219.9838,
+                                   311.62946, 308.06317, 304.47278, 305.59863, 304.14722, 306.86954,
+                                   309.99823, 320.577, 327.54572, 329.1473, 328.09967, 322.15704,
+                                   311.22595, 312.6209, 312.2082, 312.0429, 309.28287, 315.35104,
+                                   316.79926, 315.88007};
+
+    std::vector<float> z_values = {-81.94941, -84.07083, -86.126144, -84.3486, -75.04321, -54.323433,
+                                   -26.726929, -3.1503677, 5.185814, -3.5604172, -27.786797, -55.24808,
+                                   -76.047966, -85.321014, -86.06242, -83.53477, -80.991585, 17.362434,
+                                   37.223076, 50.567467, 58.418495, 61.578804, 61.721413, 58.39985,
+                                   50.4918, 37.209602, 16.945091, 61.645515, 72.16903, 81.85641,
+                                   81.31628, 47.041298, 52.8052, 55.71827, 52.75286, 47.155617,
+                                   23.93798, 38.43978, 39.045067, 33.24253, 36.029137, 32.236855,
+                                   33.372612, 39.170235, 37.91886, 23.080315, 31.83274, 36.29818,
+                                   24.844307, 43.250725, 53.44866, 54.190773, 53.176598, 43.35009,
+                                   26.146507, 40.69346, 45.982567, 47.436638, 46.328682, 40.47431,
+                                   27.29766, 45.89837, 48.37171, 46.19216, 28.165382, 49.315742,
+                                   50.58239, 48.891167};
+
+    // Populate the landmarksImage vector
+    for (size_t i = 0; i < x_values.size(); ++i) {
+        landmarksImage3D.emplace_back(x_values[i], y_values[i], z_values[i]);
+    }
+
+    //End Landmarks 3d
+
+
+    /*std::vector<float> depthValues;
 
     depthValues.emplace_back(-81.9494f);
     depthValues.emplace_back(-84.0708f);
@@ -457,28 +470,30 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
             0.006100, -0.001137, -0.002745,
             0.000035, -0.000007, -0.000016;
 
-    Matrix3f R;
-    R << 0.403446, 0.169169, -0.899229,
-    0.573882, -0.812221, 0.104676,
-    0.712665, 0.558283, 0.424770;
-
     Matrix4f extrinsics;
     extrinsics << 0.403446, 0.169169, -0.899229, -212.836227,
     0.573882, -0.812221, 0.104676, 294.292480,
     0.712665, 0.558283, 0.424770, 107.552269,
     0.000000, 0.000000, 0.000000, 1.000000;
 
-    Vector3f T(-212.836227, 294.292480, 107.552269);
+    Vector4f trajectory(-159.669983, 214.991211, -267.878876, 1.0);
 
     //GetTargetLandmarks
     for (int i = 0; i < landmarksImage.size(); ++i) {
-        targetPoints.emplace_back(convert2Dto3D(landmarksImage[i], depthValues[i], K, R, T, extrinsics));
-    }
+        targetPoints.emplace_back(convert2Dto3D(landmarksImage[i], depthValues[i], K, extrinsics));
+        if(i == 0){
+            std::cout << "Landmarks Image:" << landmarksImage[i] << std::endl;
+        }
+    }*/
     //End GetTargetLandmarks
-    std::cout << targetPoints.size() << std::endl;
+    //std::cout << targetPoints.size() << std::endl;
+    Eigen::Matrix4f rotationMatrix = Eigen::Matrix4f::Identity();
+    rotationMatrix(0, 0) = -1; // cos(180°) = -1
+    rotationMatrix(1, 1) = -1; // cos(180°) = -1
+    Matrix4f estimatedPose = aligner.estimatePose(landmarks, landmarksImage3D);
+    properties.transformation = estimatedPose * rotationMatrix;
 
-    Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
-    properties.transformation = estimatedPose;
+
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
