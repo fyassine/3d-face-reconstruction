@@ -15,6 +15,21 @@
 using namespace Eigen;
 using namespace std;
 
+// TODO define marker for data folder
+
+int runPipeline() {
+    BfmProperties bfmProperties;
+    initializeBFM("model2019_face12.h5", bfmProperties);
+    // TODO decouple Procrutes from bfm initialization
+    // getVertices() returns the transformed bfm vertices
+    Optimization::optimizeSparseTerms();
+    // TODO implement sparse optimization (use formulas from the lecture)
+    Optimization::optimizeDenseTerms();
+    // TODO include code from regularization inside optimizeDenseTerms
+    // TODO save end result
+}
+
+
 int main() {
     // NELI MARK: - Read input.txt file from Data folder
     const std::string inputFile = std::string("../../Data/input.txt");
