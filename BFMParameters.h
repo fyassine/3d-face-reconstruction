@@ -77,9 +77,9 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
         transformationVector.z() = newVertex.z();
         transformationVector.w() = 1.0f;
         transformationVector = properties.transformation * transformationVector;
-        newVertex.x() = transformationVector.x();
-        newVertex.y() = transformationVector.y();
-        newVertex.z() = transformationVector.z();
+        //newVertex.x() = transformationVector.x();
+        //newVertex.y() = transformationVector.y();
+        //newVertex.z() = transformationVector.z();
         if(i == 0){
             std::cout << "New Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << ";" << std::endl;
         }
@@ -147,8 +147,8 @@ static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, c
     std::cout << properties.landmarks.size() << std::endl;
 }*/
 
-Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& pt_2d, float depth, const Eigen::Matrix3f& K, const Eigen::Matrix3f& R, const Eigen::Vector3f& T) {
-    // Step 1: Invert the Intrinsic Matrix K
+Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& pt_2d, float depth, const Eigen::Matrix3f& K, const Eigen::Matrix3f& R, const Eigen::Vector3f& T, const Eigen::Matrix4f& extrinsics) {
+    /*// Step 1: Invert the Intrinsic Matrix K
     Eigen::Matrix3f K_inv = K.inverse();
 
     // Step 2: Create a homogeneous 2D point (x, y, 1)
@@ -160,6 +160,22 @@ Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& pt_2d, float depth, const E
 
     // Step 4: Apply the extrinsic transformation (rotation R and translation T)
     Eigen::Vector3f pt_3d_world = R * pt_3d_camera + T;
+
+    return pt_3d_world;*/
+
+    float Xcoord = (pt_2d.x() - K(0,2)) / K(0,0); // Xc
+    float Ycoord = (pt_2d.y() - K(1,2)) / K(1,1); // Yc
+    float Zcoord = depth; // Zc
+
+    // Step 2: Create camera coordinates
+    Eigen::Vector3f cameraCoords(Xcoord * Zcoord, Ycoord * Zcoord, Zcoord);
+
+    // Step 3: Apply extrinsic transformation (inverse of extrinsics already includes rotation and translation)
+    Eigen::Vector4f pt_3d_world_4f = extrinsics.inverse() * Eigen::Vector4f(cameraCoords.x(), cameraCoords.y(), cameraCoords.z(), 1);
+
+    // Step 4: Convert to 3D world coordinates
+    Eigen::Vector3f pt_3d_world(pt_3d_world_4f.x(), pt_3d_world_4f.y(), pt_3d_world_4f.z());
+    std::cout << "Target: " << pt_3d_world << std::endl;
 
     return pt_3d_world;
 }
@@ -446,12 +462,17 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
     0.573882, -0.812221, 0.104676,
     0.712665, 0.558283, 0.424770;
 
+    Matrix4f extrinsics;
+    extrinsics << 0.403446, 0.169169, -0.899229, -212.836227,
+    0.573882, -0.812221, 0.104676, 294.292480,
+    0.712665, 0.558283, 0.424770, 107.552269,
+    0.000000, 0.000000, 0.000000, 1.000000;
+
     Vector3f T(-212.836227, 294.292480, 107.552269);
 
     //GetTargetLandmarks
     for (int i = 0; i < landmarksImage.size(); ++i) {
-        targetPoints.emplace_back(convert2Dto3D(landmarksImage[i], depthValues[i], K, R, T));
-        std::cout << "Target: " << targetPoints[i] << std::endl;
+        targetPoints.emplace_back(convert2Dto3D(landmarksImage[i], depthValues[i], K, R, T, extrinsics));
     }
     //End GetTargetLandmarks
     std::cout << targetPoints.size() << std::endl;
