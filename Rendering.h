@@ -210,7 +210,7 @@ static void renderLoop(GLuint texture,
         glUseProgram(setupShaders());
         renderTriangle(vertices.size() / 3, indices, VAO);
 
-        saveFramebufferToFile("../../../Result/rendering.png", 450, 450); // TODO: Use real width and height!!!
+        saveFramebufferToFile("../../../Result/rendering.png", 1280, 720); // TODO: Use real width and height!!!
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -237,9 +237,9 @@ static void renderFaceOnTopOfImage(int width, int height,
     cleanUp(texture, window);
 }
 
-static BfmProperties getProperties(const std::string& path){
+static BfmProperties getProperties(const std::string& path, const InputImage& inputImage){
     BfmProperties properties;
-    initializeBFM(path, properties);
+    initializeBFM(path, properties, inputImage);
     return properties;
 }
 
@@ -310,6 +310,41 @@ static void convertLandmarksToPly(const BfmProperties& properties, const std::st
         auto g = 0;
         auto b = 0;
 
+        outFile << x << " " << y << " " << z << " " << r << " "<< g << " "<< b << " 255"<< std::endl;
+    }
+    outFile.close();
+}
+
+static void getPointCloud(const std::vector<Eigen::Vector2f>& vertices, const std::vector<float>& depth, const std::vector<Eigen::Vector3i>& colorValues, const std::string& resultPath,
+                          const Matrix3f& depthIntrinsics, const Matrix4f& extrinsics){
+
+    std::ofstream outFile(resultPath);
+    //Header
+    outFile << "ply" << std::endl;
+    outFile << "format ascii 1.0" << std::endl;
+    outFile << "element vertex " << vertices.size() << std::endl;
+    outFile << "property float x" << std::endl;
+    outFile << "property float y" << std::endl;
+    outFile << "property float z" << std::endl;
+    outFile << "property uchar red" << std::endl;
+    outFile << "property uchar green" << std::endl;
+    outFile << "property uchar blue" << std::endl;
+    outFile << "property uchar alpha" << std::endl;
+    outFile << "element face " << 0 << std::endl;
+    outFile << "property list uchar int vertex_indices" << std::endl;
+    outFile << "end_header" << std::endl;
+    //Vertices
+    for (int i = 0; i < vertices.size(); i++) {
+        //Position
+        Eigen::Vector3f vertex3D = convert2Dto3D(vertices[i], depth[i], depthIntrinsics, extrinsics);
+
+        auto x = (float) vertex3D.x();
+        auto y = (float) vertex3D.y();
+        auto z = (float) vertex3D.z();
+        //Color
+        auto r = colorValues[i].x();
+        auto g = colorValues[i].y();
+        auto b = colorValues[i].z();
         outFile << x << " " << y << " " << z << " " << r << " "<< g << " "<< b << " 255"<< std::endl;
     }
     outFile.close();
