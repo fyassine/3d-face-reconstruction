@@ -20,6 +20,7 @@ using namespace std;
 int runPipeline() {
     BfmProperties bfmProperties;
     initializeBFM("model2019_face12.h5", bfmProperties);
+    // TODO: Use our own data -> get landmarks with dlib -> get respective depth values -> convert to 3d
     // TODO decouple Procrutes from bfm initialization
     // getVertices() returns the transformed bfm vertices
     Optimization::optimizeSparseTerms();
@@ -102,7 +103,7 @@ int main() {
                                    27.29766, 45.89837, 48.37171, 46.19216, 28.165382, 49.315742,
                                    50.58239, 48.891167};
 
-    for (size_t i = 0; i < 15; ++i) {
+    for (size_t i = 0; i < 68; ++i) {
         landmarksImage3D.emplace_back(x_values[i], y_values[i], z_values[i]);
     }
     convertVerticesTest(landmarksImage3D, "../../../Result/testLandmarks.ply");

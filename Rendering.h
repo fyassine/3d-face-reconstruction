@@ -321,7 +321,7 @@ static void convertVerticesTest(const std::vector<Eigen::Vector3f>& vertices, co
     //Header
     outFile << "ply" << std::endl;
     outFile << "format ascii 1.0" << std::endl;
-    outFile << "element vertex " << 15 << std::endl;
+    outFile << "element vertex " << vertices.size() << std::endl;
     outFile << "property float x" << std::endl;
     outFile << "property float y" << std::endl;
     outFile << "property float z" << std::endl;
@@ -334,7 +334,7 @@ static void convertVerticesTest(const std::vector<Eigen::Vector3f>& vertices, co
     outFile << "end_header" << std::endl;
     //Vertices
 
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i < vertices.size(); ++i) {
         auto x = vertices[i].x();
         auto y = vertices[i].y();
         auto z = vertices[i].z();

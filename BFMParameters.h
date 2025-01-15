@@ -388,14 +388,17 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
 
     // Populate the landmarksImage vector
     for (size_t i = 0; i < x_values.size(); ++i) {
-        landmarksImage3D.emplace_back(x_values[i], y_values[i], z_values[i]);
+        landmarksImage3D.emplace_back(x_values[i], y_values[i], z_values[i]); //test shift: -224, -300, -100
     }
 
+    //Maybe x and y are in pixel space?! This would mean z is the depth
+    std::vector<Vector2f> landmarksImage2D;
     //End Landmarks 3d
+    for (size_t i = 0; i < x_values.size(); ++i) {
+        landmarksImage2D.emplace_back(x_values[i], y_values[i]);
+    }
 
-
-    /*std::vector<float> depthValues;
-
+    std::vector<float> depthValues;
     depthValues.emplace_back(-81.9494f);
     depthValues.emplace_back(-84.0708f);
     depthValues.emplace_back(-86.1261f);
@@ -476,24 +479,29 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
     0.712665, 0.558283, 0.424770, 107.552269,
     0.000000, 0.000000, 0.000000, 1.000000;
 
-    Vector4f trajectory(-159.669983, 214.991211, -267.878876, 1.0);
-
+    std::vector<Eigen::Vector3f> targetPoints;
     //GetTargetLandmarks
-    for (int i = 0; i < landmarksImage.size(); ++i) {
-        targetPoints.emplace_back(convert2Dto3D(landmarksImage[i], depthValues[i], K, extrinsics));
+    for (int i = 0; i < landmarksImage2D.size(); ++i) {
+        targetPoints.emplace_back(convert2Dto3D(landmarksImage2D[i], depthValues[i], K, extrinsics));
         if(i == 0){
-            std::cout << "Landmarks Image:" << landmarksImage[i] << std::endl;
+            std::cout << "Landmarks Image:" << landmarksImage2D[i] << std::endl;
         }
-    }*/
+    }
     //End GetTargetLandmarks
     //std::cout << targetPoints.size() << std::endl;
     Eigen::Matrix4f rotationMatrix = Eigen::Matrix4f::Identity();
     rotationMatrix(0, 0) = -1; // cos(180°) = -1
     rotationMatrix(1, 1) = -1; // cos(180°) = -1
+
+    for (int i = 0; i < landmarksImage3D.size(); ++i) {
+        Eigen::Vector4f transformedLandmarks(landmarksImage3D[i].x(), landmarksImage3D[i].y(), landmarksImage3D[i].z(), 1.0);
+        Eigen::Vector4f result = rotationMatrix * transformedLandmarks;
+        landmarksImage3D[i] = Eigen::Vector3f(result.x(), result.y(), result.z());
+    }
     Matrix4f estimatedPose = aligner.estimatePose(landmarks, landmarksImage3D);
-    properties.transformation = estimatedPose * rotationMatrix;
+    //+ translation: Halbe width und halbe height abziehen:
 
-
+    properties.transformation = estimatedPose;
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
