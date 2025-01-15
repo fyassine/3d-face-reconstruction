@@ -171,10 +171,50 @@ static void writeDepthToPng(rs2::depth_frame depth){
     } else {
         std::cerr << "Failed to create bitmap from color frame." << std::endl;
     }
-
     // Deinitialize FreeImage
     FreeImage_DeInitialise();
+}
 
+static void writeDepthToPngFromFloat(const InputImage& inputImage){
+    int width = inputImage.width;
+    int height = inputImage.height;
+
+    // Convert RGB to BGR
+    std::vector<uint8_t> bgr_data(width * height * 3); // Allocate storage for BGR data
+    for (int i = 0; i < width * height; ++i) {
+        int x = i % width;
+        int y = i / width;
+        auto color = inputImage.depthValues[i] * 5;
+        bgr_data[i * 3 + 0] = color; // B
+        bgr_data[i * 3 + 1] = color; // G
+        bgr_data[i * 3 + 2] = color; // R
+    }
+
+    // Initialize FreeImage
+    FreeImage_Initialise();
+
+    // Create a FreeImage bitmap
+    FIBITMAP* bitmap = FreeImage_ConvertFromRawBits(
+            bgr_data.data(), width, height, width * 3, 24,
+            0x0000FF, 0x00FF00, 0xFF0000, true // Now using BGR data and flipping vertically
+    );
+
+    if (bitmap) {
+        // Save the bitmap as a PNG file
+        std::string outputFileName = "../../../Result/greyscaleFromFloat.png";
+        if (FreeImage_Save(FIF_PNG, bitmap, outputFileName.c_str())) {
+            std::cout << "Saved color frame to " << outputFileName << std::endl;
+        } else {
+            std::cerr << "Failed to save the color frame." << std::endl;
+        }
+
+        // Free the bitmap
+        FreeImage_Unload(bitmap);
+    } else {
+        std::cerr << "Failed to create bitmap from color frame." << std::endl;
+    }
+    // Deinitialize FreeImage
+    FreeImage_DeInitialise();
 }
 
 static InputImage readVideoData(std::string path){
@@ -261,6 +301,7 @@ static InputImage readVideoData(std::string path){
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
     }
+    writeDepthToPngFromFloat(inputImage);
     return inputImage;
 }
 

@@ -153,7 +153,7 @@ void test2(){
 }
 
 int main() {
-    InputImage inputImage = readVideoData("../../../Data/20250115_190527.bag");
+    InputImage inputImage = readVideoData("../../../Data/20250115_171024.bag");
     const std::string imagePath = std::string("../../../Result/color_frame_corrected.png");
     //const std::string imagePath = std::string("../../../Data/testmyface.png");
     const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
@@ -209,9 +209,9 @@ int main() {
     }
 
     std::vector<Eigen::Vector2f> pointCloudVertices;
-    for (int i = 0; i < inputImage.width; ++i) {
-        for (int j = 0; j < inputImage.height; ++j) {
-            pointCloudVertices.emplace_back(Eigen::Vector2f(i, j));
+    for (int i = 0; i < inputImage.height; ++i) {
+        for (int j = 0; j < inputImage.width; ++j) {
+            pointCloudVertices.emplace_back(Eigen::Vector2f(j, i));
         }
     }
 
@@ -220,8 +220,8 @@ int main() {
         color255.emplace_back(Eigen::Vector3i(inputImage.color[i].x() * 255, inputImage.color[i].y() * 255, inputImage.color[i].z() * 255));
     }
 
-    getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/plshelp", inputImage.intrinsics, inputImage.extrinsics);
-    convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht");
+    getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
+    convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
     renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png");
 
 }

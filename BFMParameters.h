@@ -338,9 +338,6 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     //GetTargetLandmarks
     for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
         targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
-        if(i == 0){
-            std::cout << "Landmarks Image:" << inputImage.landmarks[i] << std::endl;
-        }
     }
     //End GetTargetLandmarks
     //std::cout << targetPoints.size() << std::endl;
