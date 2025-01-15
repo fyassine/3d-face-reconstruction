@@ -39,15 +39,6 @@ struct BfmProperties {
     std::vector<float> expressionWeight;
 };
 
-/*static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties properties){
-    for (int i = 0; i < properties.shapeMean.size() / 3; ++i) {
-        Eigen::Vector3f offsetVector;
-        properties.initialOffsets[i].x() += initialOffset.x();
-        properties.initialOffsets[i].y() += initialOffset.y();
-        properties.initialOffsets[i].z() += initialOffset.z();
-    }
-}*/
-
 static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties& properties) {
     properties.initialOffset.x() = initialOffset.x();
     std::cout << "InitialOffset:" << properties.initialOffset.x() << std::endl;
@@ -116,6 +107,7 @@ static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, c
 }
 
 static void readFaces(){
+//TODO: Not done
     /*const std::string inputFile = std::string("../../../Data/faces.txt");
     std::ifstream inFile(inputFile);
     std::string line;
