@@ -5,6 +5,7 @@
 #include <H5Cpp.h>
 #include "Eigen.h"
 #include "ProcrustesAligner.h"
+#include "ImageExtraction.h"
 
 //WIP
 struct BfmProperties {
@@ -205,7 +206,7 @@ static Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& point, float depth, 
 
 //@param path -> path to .h5 file
 //initializeMethod durch constructor ersetzen?!
-static void initializeBFM(const std::string& path, BfmProperties& properties){
+static void initializeBFM(const std::string& path, BfmProperties& properties, const InputImage& inputImage){
 
     //BfmProperties properties;
     H5::H5File file(path, H5F_ACC_RDONLY);
@@ -332,168 +333,22 @@ static void initializeBFM(const std::string& path, BfmProperties& properties){
     properties.initialOffset.y() = 0;
     properties.initialOffset.z() = 0;
     ProcrustesAligner aligner;
-    std::vector<Vector3f> sourcePoints;
-
-    //Landmarks3d
-
-    std::vector<Vector3f> landmarksImage3D;
-
-    // Define the arrays for x, y, and z values
-    std::vector<float> x_values = {118.633575, 121.40035, 129.03134, 135.65099, 144.90646, 159.28775,
-                                   176.17978, 197.80319, 231.05284, 263.81207, 284.41855, 299.53244,
-                                   312.6431, 321.78937, 327.72693, 334.74503, 338.16705, 140.88348,
-                                   152.31776, 167.80539, 183.29922, 197.17053, 258.6491, 273.00055,
-                                   288.51187, 304.41492, 315.76587, 227.64235, 227.82626, 228.08022,
-                                   228.03061, 209.92389, 217.74379, 228.39432, 238.74161, 246.2651,
-                                   160.67302, 169.76, 183.93503, 197.26814, 185.1238, 170.65523,
-                                   257.28702, 271.75507, 286.64493, 295.73615, 285.6814, 270.19943,
-                                   189.80122, 202.42989, 219.74544, 228.72658, 237.7608, 254.45328,
-                                   267.30786, 254.50342, 242.89995, 230.52003, 218.24008, 205.95857,
-                                   194.02777, 217.33896, 228.73225, 240.18138, 264.51337, 241.31241,
-                                   229.95511, 218.95059};
-
-    std::vector<float> y_values = {207.89679, 238.44565, 266.74094, 290.42352, 315.50366, 338.1003,
-                                   354.59723, 368.85245, 376.88562, 368.3873, 354.9839, 338.77045,
-                                   316.0865, 291.46332, 267.78693, 239.8689, 209.36215, 189.96228,
-                                   183.01056, 181.90622, 185.08984, 189.59637, 188.46643, 184.75644,
-                                   181.96451, 183.7356, 190.89777, 218.48036, 240.47267, 262.70953,
-                                   278.99994, 283.8117, 286.87433, 289.287, 286.91333, 283.88385,
-                                   212.50165, 206.66745, 206.30171, 214.27065, 218.79277, 218.53519,
-                                   215.80704, 208.94217, 209.48972, 214.60966, 220.58864, 219.9838,
-                                   311.62946, 308.06317, 304.47278, 305.59863, 304.14722, 306.86954,
-                                   309.99823, 320.577, 327.54572, 329.1473, 328.09967, 322.15704,
-                                   311.22595, 312.6209, 312.2082, 312.0429, 309.28287, 315.35104,
-                                   316.79926, 315.88007};
-
-    std::vector<float> z_values = {-81.94941, -84.07083, -86.126144, -84.3486, -75.04321, -54.323433,
-                                   -26.726929, -3.1503677, 5.185814, -3.5604172, -27.786797, -55.24808,
-                                   -76.047966, -85.321014, -86.06242, -83.53477, -80.991585, 17.362434,
-                                   37.223076, 50.567467, 58.418495, 61.578804, 61.721413, 58.39985,
-                                   50.4918, 37.209602, 16.945091, 61.645515, 72.16903, 81.85641,
-                                   81.31628, 47.041298, 52.8052, 55.71827, 52.75286, 47.155617,
-                                   23.93798, 38.43978, 39.045067, 33.24253, 36.029137, 32.236855,
-                                   33.372612, 39.170235, 37.91886, 23.080315, 31.83274, 36.29818,
-                                   24.844307, 43.250725, 53.44866, 54.190773, 53.176598, 43.35009,
-                                   26.146507, 40.69346, 45.982567, 47.436638, 46.328682, 40.47431,
-                                   27.29766, 45.89837, 48.37171, 46.19216, 28.165382, 49.315742,
-                                   50.58239, 48.891167};
-
-    // Populate the landmarksImage vector
-    for (size_t i = 0; i < x_values.size(); ++i) {
-        landmarksImage3D.emplace_back(x_values[i], y_values[i], z_values[i]); //test shift: -224, -300, -100
-    }
-
-    //Maybe x and y are in pixel space?! This would mean z is the depth
-    std::vector<Vector2f> landmarksImage2D;
-    //End Landmarks 3d
-    for (size_t i = 0; i < x_values.size(); ++i) {
-        landmarksImage2D.emplace_back(x_values[i], y_values[i]);
-    }
-
-    std::vector<float> depthValues;
-    depthValues.emplace_back(-81.9494f);
-    depthValues.emplace_back(-84.0708f);
-    depthValues.emplace_back(-86.1261f);
-    depthValues.emplace_back(-84.3486f);
-    depthValues.emplace_back(-75.0432f);
-    depthValues.emplace_back(-54.3234f);
-    depthValues.emplace_back(-26.7269f);
-    depthValues.emplace_back(-3.1504f);
-    depthValues.emplace_back(5.1858f);
-    depthValues.emplace_back(-3.5604f);
-    depthValues.emplace_back(-27.7868f);
-    depthValues.emplace_back(-55.2481f);
-    depthValues.emplace_back(-76.0480f);
-    depthValues.emplace_back(-85.3210f);
-    depthValues.emplace_back(-86.0624f);
-    depthValues.emplace_back(-83.5348f);
-    depthValues.emplace_back(-80.9916f);
-    depthValues.emplace_back(17.3624f);
-    depthValues.emplace_back(37.2231f);
-    depthValues.emplace_back(50.5675f);
-    depthValues.emplace_back(58.4185f);
-    depthValues.emplace_back(61.5788f);
-    depthValues.emplace_back(61.7214f);
-    depthValues.emplace_back(58.3998f);
-    depthValues.emplace_back(50.4918f);
-    depthValues.emplace_back(37.2096f);
-    depthValues.emplace_back(16.9451f);
-    depthValues.emplace_back(61.6455f);
-    depthValues.emplace_back(72.1690f);
-    depthValues.emplace_back(81.8564f);
-    depthValues.emplace_back(81.3163f);
-    depthValues.emplace_back(47.0413f);
-    depthValues.emplace_back(52.8052f);
-    depthValues.emplace_back(55.7183f);
-    depthValues.emplace_back(52.7529f);
-    depthValues.emplace_back(47.1556f);
-    depthValues.emplace_back(23.9380f);
-    depthValues.emplace_back(38.4398f);
-    depthValues.emplace_back(39.0451f);
-    depthValues.emplace_back(33.2425f);
-    depthValues.emplace_back(36.0291f);
-    depthValues.emplace_back(32.2369f);
-    depthValues.emplace_back(33.3726f);
-    depthValues.emplace_back(39.1702f);
-    depthValues.emplace_back(37.9189f);
-    depthValues.emplace_back(23.0803f);
-    depthValues.emplace_back(31.8327f);
-    depthValues.emplace_back(36.2982f);
-    depthValues.emplace_back(24.8443f);
-    depthValues.emplace_back(43.2507f);
-    depthValues.emplace_back(53.4487f);
-    depthValues.emplace_back(54.1908f);
-    depthValues.emplace_back(53.1766f);
-    depthValues.emplace_back(43.3501f);
-    depthValues.emplace_back(26.1465f);
-    depthValues.emplace_back(40.6935f);
-    depthValues.emplace_back(45.9826f);
-    depthValues.emplace_back(47.4366f);
-    depthValues.emplace_back(46.3287f);
-    depthValues.emplace_back(40.4743f);
-    depthValues.emplace_back(27.2977f);
-    depthValues.emplace_back(45.8984f);
-    depthValues.emplace_back(48.3717f);
-    depthValues.emplace_back(46.1922f);
-    depthValues.emplace_back(28.1654f);
-    depthValues.emplace_back(49.3157f);
-    depthValues.emplace_back(50.5824f);
-    depthValues.emplace_back(48.8912f);
-
-    Matrix3f K;
-    K << 0.005971, -0.001186, -0.002454,
-            0.006100, -0.001137, -0.002745,
-            0.000035, -0.000007, -0.000016;
-
-    Matrix4f extrinsics;
-    extrinsics << 0.403446, 0.169169, -0.899229, -212.836227,
-    0.573882, -0.812221, 0.104676, 294.292480,
-    0.712665, 0.558283, 0.424770, 107.552269,
-    0.000000, 0.000000, 0.000000, 1.000000;
 
     std::vector<Eigen::Vector3f> targetPoints;
     //GetTargetLandmarks
-    for (int i = 0; i < landmarksImage2D.size(); ++i) {
-        targetPoints.emplace_back(convert2Dto3D(landmarksImage2D[i], depthValues[i], K, extrinsics));
-        if(i == 0){
-            std::cout << "Landmarks Image:" << landmarksImage2D[i] << std::endl;
-        }
+    for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
+        targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
     }
     //End GetTargetLandmarks
     //std::cout << targetPoints.size() << std::endl;
-    Eigen::Matrix4f rotationMatrix = Eigen::Matrix4f::Identity();
-    rotationMatrix(0, 0) = -1; // cos(180°) = -1
-    rotationMatrix(1, 1) = -1; // cos(180°) = -1
+    //Eigen::Matrix4f rotationMatrix = Eigen::Matrix4f::Identity();
+    //rotationMatrix(0, 0) = -1; // cos(180°) = -1
+    //rotationMatrix(1, 1) = -1; // cos(180°) = -1
 
-    for (int i = 0; i < landmarksImage3D.size(); ++i) {
-        Eigen::Vector4f transformedLandmarks(landmarksImage3D[i].x(), landmarksImage3D[i].y(), landmarksImage3D[i].z(), 1.0);
-        Eigen::Vector4f result = rotationMatrix * transformedLandmarks;
-        landmarksImage3D[i] = Eigen::Vector3f(result.x(), result.y(), result.z());
-    }
-    Matrix4f estimatedPose = aligner.estimatePose(landmarks, landmarksImage3D);
+    Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
     //+ translation: Halbe width und halbe height abziehen:
 
-    properties.transformation = estimatedPose;
+    properties.transformation = estimatedPose;// * rotationMatrix;
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
