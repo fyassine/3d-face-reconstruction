@@ -195,22 +195,59 @@ static unsigned int setupShaders(){
     return shaderProgram;
 }
 
+void setProjectionMatrix(const InputImage& inputImage, float nearPlane, float farPlane) {
+    float fx = inputImage.intrinsics(0, 0);
+    float fy = inputImage.intrinsics(1, 1);
+    float cx = inputImage.intrinsics(0, 2);
+    float cy = inputImage.intrinsics(1, 2);
+    int width = inputImage.width;
+    int height = inputImage.height;
+
+    float left = -cx * nearPlane / fx;
+    float right = (width - cx) * nearPlane / fx;
+    float bottom = (cy - height) * nearPlane / fy;
+    float top = cy * nearPlane / fy;
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(left, right, bottom, top, nearPlane, farPlane);
+}
+
+void setModelViewMatrix(const InputImage& inputImage) {
+    const auto& E = inputImage.extrinsics;
+    Eigen::Matrix4f modelView = E.transpose();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(modelView.data());
+}
+
 static void renderLoop(GLuint texture,
                 GLFWwindow* window,
                 const std::vector<float>& vertices,
                 const std::vector<int>& indices,
-                unsigned int VAO){
+                unsigned int VAO, const InputImage& inputImage){
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
         //glUseProgram(setupBackgroundShaders());
         glUseProgram(0);
+
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();           // Save current projection matrix
+        glLoadIdentity();         // Use an identity projection for the background
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();           // Save current model-view matrix
+        glLoadIdentity();
+
         renderQuad(texture);
+
+        setProjectionMatrix(inputImage, 0.1f, 100.0f);
+        setModelViewMatrix(inputImage);
 
         glUseProgram(setupShaders());
         renderTriangle(vertices.size() / 3, indices, VAO);
 
-        saveFramebufferToFile("../../../Result/rendering.png", 1280, 720); // TODO: Use real width and height!!!
+        saveFramebufferToFile("../../../Result/rendering.png", 1280, 720); // TODO: Use real width and height!!! and real output Path
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -227,13 +264,13 @@ static void renderFaceOnTopOfImage(int width, int height,
                                     const std::vector<float>& vertices,
                                     const std::vector<int>& indices,
                                     const std::vector<int>& colors,
-                                    const char* backgroundImagePath) {
+                                    const char* backgroundImagePath, const InputImage& inputImage) {
     GLFWwindow* window = setupRendering(width, height); //just take width and height of background image?! -> create background struct with texture, width and height?
     std::vector<float> vertexData = setupVertexData(vertices, colors);
     GLuint texture = loadTexture(backgroundImagePath);
     auto VAO = setupBuffers(indices, vertexData);
     //setupShaders();
-    renderLoop(texture, window, vertices, indices, VAO);
+    renderLoop(texture, window, vertices, indices, VAO, inputImage);
     cleanUp(texture, window);
 }
 
@@ -302,9 +339,12 @@ static void convertLandmarksToPly(const BfmProperties& properties, const std::st
     //Vertices
 
     for (int i = 0; i < 68; ++i) {
-        auto x = properties.landmarks[i].x();
-        auto y = properties.landmarks[i].y();
-        auto z = properties.landmarks[i].z();
+        Eigen::Vector4f transformedLandmark(properties.landmarks[i].x(), properties.landmarks[i].y(), properties.landmarks[i].z(), 1.0f);
+        auto currentLandmark = properties.transformation * transformedLandmark;
+
+        auto x = currentLandmark.x();
+        auto y = currentLandmark.y();
+        auto z = currentLandmark.z();
 
         auto r = 255;
         auto g = 0;

@@ -1,7 +1,7 @@
 #ifndef FACE_RECONSTRUCTION_FACIALLANDMARKS_H
 #define FACE_RECONSTRUCTION_FACIALLANDMARKS_H
 
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 #include <dlib/opencv.h>
 #include <dlib/image_processing.h>
 #include <dlib/image_processing/frontal_face_detector.h>

@@ -79,6 +79,80 @@ static void printInputImage(const InputImage& inputImage) {
     }
 }
 
+static std::vector<Eigen::Vector2i> getRelevantKernelPixels(Eigen::Vector2f coordinate, int step){
+    std::vector<Eigen::Vector2i> pixelCoordinates;
+    //Top + top corners
+    for (int i = -step; i < step + 1; ++i) {
+        Eigen::Vector2i newCoordinate((int) coordinate.x() + i, (int) coordinate.y() - step);
+        pixelCoordinates.emplace_back(newCoordinate);
+    }
+    //Bottom + bottom corners
+    for (int i = -step; i < step + 1; ++i) {
+        Eigen::Vector2i newCoordinate((int) coordinate.x() + i, (int) coordinate.y() + step);
+        pixelCoordinates.emplace_back(newCoordinate);
+    }
+    //Left
+    for (int i = -step + 1; i < step; ++i) {
+        Eigen::Vector2i newCoordinate((int) coordinate.x() - step, (int) coordinate.y() + i);
+        pixelCoordinates.emplace_back(newCoordinate);
+    }
+    //Right
+    for (int i = -step + 1; i < step; ++i) {
+        Eigen::Vector2i newCoordinate((int) coordinate.x() + step, (int) coordinate.y() + i);
+        pixelCoordinates.emplace_back(newCoordinate);
+    }
+    return pixelCoordinates;
+}
+
+static float useKernel(const InputImage& inputImage, const Eigen::Vector2f& coordinate, float avg, float stdDev){
+    //Ignore values out of bounds
+    int distance = 1; //offset for x and y
+    float currentDepth = 1000000.0f;
+    Eigen::Vector2f currentCoordinate;
+    int currentStepSize = 0;
+
+    while(abs(avg - currentDepth) > stdDev){
+        currentStepSize++;
+        auto coordinates = getRelevantKernelPixels(coordinate, currentStepSize);
+        for (int i = 0; i < coordinates.size(); ++i) {
+            if(coordinates[i].y() < 0 || coordinates[i].y() > inputImage.height - 1 || coordinates[i].x() < 0 || coordinates[i].x() > inputImage.width - 1){
+                continue;
+            }
+            float depth = inputImage.depthValues[coordinates[i].y() * inputImage.width + coordinates[i].x()];
+            currentDepth = depth < currentDepth ? depth : currentDepth;
+            if(abs(avg - currentDepth) > stdDev){
+                return currentDepth;
+            }
+        }
+    }
+    return currentDepth;
+}
+
+static void correctDepthOfLandmarks(InputImage& inputImage){
+    //TODO:
+    float avg = 0;
+    unsigned int n = 17;//inputImage.depthValuesLandmarks.size(); //n = 17?! only jaw
+    for (int i = 0; i < n; ++i) {
+        avg += inputImage.depthValuesLandmarks[i];
+    }
+    avg /= (float) n;
+
+    float stdDev = 0;
+    for (int i = 0; i < n; ++i) {
+        stdDev += powf(inputImage.depthValuesLandmarks[i] - avg, 2);
+    }
+    stdDev /= (float) n;
+    stdDev = sqrtf(stdDev);
+
+    //stdDev has to be bigger!!! Otherwise there would be flagged depth values in a perfect model
+    //Shouldn't I use abs(avg) and abs(inputImage.depthValuesLandmarks[i]) as a negative depth value might otherwise lead to a wrong result
+    for (int i = 0; i < n; ++i) {
+        if(abs(avg - inputImage.depthValuesLandmarks[i]) > stdDev){
+            inputImage.depthValuesLandmarks[i] = useKernel(inputImage, inputImage.landmarks[i], avg, stdDev);
+        }
+    }
+}
+
 static void calculateDepthValuesLandmarks(InputImage& inputImage){
     for (int i = 0; i < inputImage.landmarks.size(); ++i) {
         Eigen::Vector2f landmark = inputImage.landmarks[i];
@@ -87,6 +161,7 @@ static void calculateDepthValuesLandmarks(InputImage& inputImage){
         float depth_value = inputImage.depthValues[pixel_y * inputImage.width + pixel_x];
         inputImage.depthValuesLandmarks.emplace_back(depth_value);
     }
+    correctDepthOfLandmarks(inputImage);
 }
 
 static void writeColorToPng(rs2::video_frame color){
@@ -220,6 +295,8 @@ static void writeDepthToPngFromFloat(const InputImage& inputImage){
 static InputImage readVideoData(std::string path){
 
     InputImage inputImage;
+    auto align_to = RS2_STREAM_COLOR;
+    rs2::align align(align_to);
     try {
         rs2::pipeline pipe;
         rs2::config cfg;
@@ -234,8 +311,10 @@ static InputImage readVideoData(std::string path){
         // Wait a moment for frames to populate
         //std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
+        rs2::frameset unaligned_frames;
         rs2::frameset frames;
-        frames = pipe.wait_for_frames();  // Blocking call to get frames
+        unaligned_frames = pipe.wait_for_frames();  // Blocking call to get frames
+        frames = align.process(unaligned_frames);
         std::cout << "Number of frames: " << frames.size() << std::endl;
 
         // Get depth and color frames

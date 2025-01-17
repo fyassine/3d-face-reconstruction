@@ -153,7 +153,7 @@ void test2(){
 }
 
 int main() {
-    InputImage inputImage = readVideoData("../../../Data/20250115_171024.bag");
+    InputImage inputImage = readVideoData("../../../Data/20250116_182138.bag");
     const std::string imagePath = std::string("../../../Result/color_frame_corrected.png");
     //const std::string imagePath = std::string("../../../Data/testmyface.png");
     const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
@@ -172,22 +172,17 @@ int main() {
     const std::string h5TestFile = std::string("../../../Data/model2019_face12.h5");
 
     BfmProperties properties;
-    Eigen::Vector3f initialTest;
-    initialTest.x() = 0.1;
-    initialTest.y() = 0.1;
-    initialTest.z() = 0.1;
-    properties.initialOffset = initialTest;
     properties = getProperties(h5TestFile, inputImage);
 
     //setupGLFW(800, 800);
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);
     for (int i = 0; i < originalVertices.size(); ++i) {
-        parsedVertices.push_back(originalVertices[i].x() / 250); // TODO: We have to change the division. We might be able to do this by setting up a projection matrix and camera view matrix and enabling the depth test
-        parsedVertices.push_back(originalVertices[i].y() / 250);
-        parsedVertices.push_back(originalVertices[i].z() / 250);
+        parsedVertices.push_back(originalVertices[i].x()); // TODO: We have to change the division. We might be able to do this by setting up a projection matrix and camera view matrix and enabling the depth test
+        parsedVertices.push_back(originalVertices[i].y());
+        parsedVertices.push_back(originalVertices[i].z());
         if(i == 0){
-            std::cout << originalVertices[i].x() << ", " << originalVertices[i].y() << ", " << originalVertices[i].z() << ";" << std::endl;
+            std::cout << "TestVertex: " << originalVertices[i].x() << ", " << originalVertices[i].y() << ", " << originalVertices[i].z() << ";" << std::endl;
         }
     }
 
@@ -222,6 +217,8 @@ int main() {
 
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
-    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png");
+    convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");
+    convertParametersToPly(properties, "../../../Result/BBBBBFFFFFFMMMMMMM.ply");
+    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png", inputImage);
 
 }

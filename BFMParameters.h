@@ -327,11 +327,6 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
         landmarks[i] /= 1000;
     }
     properties.landmarks = landmarks;
-
-
-    properties.initialOffset.x() = 0;
-    properties.initialOffset.y() = 0;
-    properties.initialOffset.z() = 0;
     ProcrustesAligner aligner;
 
     std::vector<Eigen::Vector3f> targetPoints;
