@@ -51,14 +51,14 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     std::vector<Eigen::Vector3f> vertices;
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + properties.initialOffset.x();
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
         if(i==0){
             std::cout << "With InitialOffset:" << newVertex.x() << std::endl;
             std::cout << "Without InitialOffset:" << properties.shapeMean[i] + properties.expressionMean[i] << std::endl;
             std::cout << "InitialOffset:" << properties.initialOffset.x() << std::endl;
         }
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + properties.initialOffset.y();
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + properties.initialOffset.z();
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
         Eigen::Vector4f transformationVector;
         if(i == 0){
             std::cout << "Old Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << " VS. ";

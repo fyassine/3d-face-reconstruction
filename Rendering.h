@@ -155,7 +155,8 @@ static unsigned int setupBuffers(const std::vector<int>& indices,
 }
 
 static unsigned int setupShaders(){
-    const char* vertexShaderSource = R"(
+    //TODO: Shader umschreiben, sodass sie mit Modelviewmatrix und projection matrix compatible sind?
+    /*const char* vertexShaderSource = R"(
         #version 330 core
         layout(location = 0) in vec3 aPos;
         layout(location = 1) in vec3 aColor;
@@ -164,7 +165,22 @@ static unsigned int setupShaders(){
             gl_Position = vec4(aPos, 1.0);
             vertexColor = aColor;
         }
+    )";*/
+    const char* vertexShaderSource = R"(
+        #version 330 core
+        layout(location = 0) in vec3 aPos;
+        layout(location = 1) in vec3 aColor;
+
+        uniform mat4 view;
+        uniform mat4 projection;
+
+        out vec3 vertexColor;
+        void main() {
+            gl_Position = projection * view * vec4(aPos, 1.0);
+            vertexColor = aColor;
+        }
     )";
+
 
     const char* fragmentShaderSource = R"(
         #version 330 core
@@ -195,7 +211,7 @@ static unsigned int setupShaders(){
     return shaderProgram;
 }
 
-void setProjectionMatrix(const InputImage& inputImage, float nearPlane, float farPlane) {
+static void setProjectionMatrix(const InputImage& inputImage, float nearPlane, float farPlane) {
     float fx = inputImage.intrinsics(0, 0);
     float fy = inputImage.intrinsics(1, 1);
     float cx = inputImage.intrinsics(0, 2);
@@ -203,21 +219,53 @@ void setProjectionMatrix(const InputImage& inputImage, float nearPlane, float fa
     int width = inputImage.width;
     int height = inputImage.height;
 
+    // Left, Right, Bottom, Top
     float left = -cx * nearPlane / fx;
     float right = (width - cx) * nearPlane / fx;
     float bottom = (cy - height) * nearPlane / fy;
     float top = cy * nearPlane / fy;
 
+    // Use orthographic projection instead of frustum for a more direct projection
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(left, right, bottom, top, nearPlane, farPlane);
+    glOrtho(left, right, bottom, top, nearPlane, farPlane);
+    //std::cout << "Left: " << left << "; Right: " << right << "; Bot: " << bottom << "; Top: " << top << std::endl;
 }
 
-void setModelViewMatrix(const InputImage& inputImage) {
+static void setModelViewMatrix(const InputImage& inputImage) {
     const auto& E = inputImage.extrinsics;
-    Eigen::Matrix4f modelView = E.transpose();
+    Eigen::Matrix4f modelView = E;  //E.transpose()?! Use it directly, assuming it's in the correct world-to-camera form
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(modelView.data());
+    //std::cout << "modelView: " << modelView.data() << std::endl;
+}
+
+static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, float aspect_ratio) {
+    float fx = intrinsics(0, 0);
+    float fy = intrinsics(1, 1);
+    float cx = intrinsics(0, 2);
+    float cy = intrinsics(1, 2);
+
+    // Build the OpenGL projection matrix from intrinsics
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+    projection(0, 0) = 2.0f * fx / aspect_ratio;
+    projection(1, 1) = 2.0f * fy;
+    projection(0, 2) = 2.0f * (cx / aspect_ratio) - 1.0f;
+    projection(1, 2) = 2.0f * cy - 1.0f;
+    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
+    projection(2, 3) = -2.0f * far_plane * near_plane / (far_plane - near_plane);
+    projection(3, 2) = -1.0f;
+
+    return projection;
+}
+
+static Eigen::Matrix4f inverseExtrinsics(const Eigen::Matrix4f& extrinsics) {
+    return extrinsics.inverse();
+}
+
+static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
+    Eigen::Matrix4f transposed = mat.transpose();
+    return transposed.data();
 }
 
 static void renderLoop(GLuint texture,
@@ -229,7 +277,7 @@ static void renderLoop(GLuint texture,
     glDepthFunc(GL_LESS);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-        //glUseProgram(setupBackgroundShaders());
+        /*//glUseProgram(setupBackgroundShaders());
         glUseProgram(0);
 
         glMatrixMode(GL_PROJECTION);
@@ -239,12 +287,21 @@ static void renderLoop(GLuint texture,
         glPushMatrix();           // Save current model-view matrix
         glLoadIdentity();
 
-        renderQuad(texture);
+        renderQuad(texture);*/
 
-        setProjectionMatrix(inputImage, 0.1f, 100.0f);
-        setModelViewMatrix(inputImage);
+        //setProjectionMatrix(inputImage, 0.1f, 100.0f);
+        //setModelViewMatrix(inputImage);
 
         glUseProgram(setupShaders());
+
+        Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.1f, 100.0f, 1280.0f/720.0f);
+        Eigen::Matrix4f view = inverseExtrinsics(inputImage.extrinsics);
+        GLuint modelLoc = glGetUniformLocation(setupShaders(), "model");
+        GLint projectionLoc = glGetUniformLocation(setupShaders(), "projection");
+        GLint viewLoc = glGetUniformLocation(setupShaders(), "view");
+        glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
+        glUniformMatrix4fv(viewLoc, 1, GL_TRUE, eigenToOpenGL(view));
+
         renderTriangle(vertices.size() / 3, indices, VAO);
 
         saveFramebufferToFile("../../../Result/rendering.png", 1280, 720); // TODO: Use real width and height!!! and real output Path
