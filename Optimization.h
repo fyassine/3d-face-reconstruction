@@ -23,9 +23,9 @@ public:
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
 
         for (int i = 0; i < num_shape_params; ++i) {
-            expression_offset.x() += shape[i * 3];
-            expression_offset.y() += shape[i * 3 + 1];
-            expression_offset.z() += shape[i * 3 + 2];
+            shape_offset.x() += shape[i * 3];
+            shape_offset.y() += shape[i * 3 + 1];
+            shape_offset.z() += shape[i * 3 + 2];
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
@@ -54,8 +54,8 @@ private:
     const float m_depth;
     const Eigen::Vector3f m_normal;
 
-    static const int num_shape_params = 100; //0, 1, 2: translation; 3, 4, 5: rotation
-    static const int num_expression_params = 199; //TODO: Change!!!
+    static const int num_shape_params = 100;
+    static const int num_expression_params = 199;
 };
 
 struct ColorOptimization {

@@ -24,9 +24,9 @@ int runPipeline() {
     // TODO: Use our own data -> get landmarks with dlib -> get respective depth values -> convert to 3d
     // TODO decouple Procrutes from bfm initialization
     // getVertices() returns the transformed bfm vertices
-    Optimization::optimizeSparseTerms();
+    //Optimization::optimizeSparseTerms();
     // TODO implement sparse optimization (use formulas from the lecture)
-    Optimization::optimizeDenseTerms();
+    //Optimization::optimizeDenseTerms();
     // TODO include code from regularization inside optimizeDenseTerms
     // TODO save end result
     return -1;

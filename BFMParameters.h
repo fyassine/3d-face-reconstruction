@@ -35,9 +35,9 @@ struct BfmProperties {
     Eigen::MatrixXf expressionPcaBasis;
     std::vector<float> expressionPcaVariance;
 
-    Eigen::VectorXf colorWeight;
-    Eigen::VectorXf shapeWeight;
-    Eigen::VectorXf expressionWeight;
+    Eigen::VectorXf colorParams;
+    Eigen::VectorXf shapeParams;
+    Eigen::VectorXf expressionParams;
 };
 
 static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties& properties) {
@@ -52,9 +52,9 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
 
     std::cout << "Start" << std::endl;
     Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
-    Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (shapeVar.cwiseSqrt().cwiseProduct(properties.shapeWeight));
+    Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (shapeVar.cwiseSqrt().cwiseProduct(properties.shapeParams));
     Eigen::VectorXf expressionVar = Eigen::Map<Eigen::VectorXf>(properties.expressionPcaVariance.data(), properties.expressionPcaVariance.size());
-    Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionWeight));
+    Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionParams));
     std::cout << "End" << std::endl;
 
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
@@ -86,7 +86,7 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
 
 static std::vector<Eigen::Vector3i> getColorValues(BfmProperties properties){
     Eigen::VectorXf colorVar = Eigen::Map<Eigen::VectorXf>(properties.colorPcaVariance.data(), properties.colorPcaVariance.size());
-    Eigen::VectorXf modifiedColor = properties.colorPcaBasis * (colorVar.cwiseSqrt().cwiseProduct(properties.colorWeight));
+    Eigen::VectorXf modifiedColor = properties.colorPcaBasis * (colorVar.cwiseSqrt().cwiseProduct(properties.colorParams));
 
     std::vector<Eigen::Vector3i> colorValues;
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
@@ -115,7 +115,7 @@ static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, c
     }
 }
 
-void readHDF5DataMatrix(const H5::H5File& file, const std::string& groupPath, const std::string& datasetPath, Eigen::MatrixXf& target) {
+static void readHDF5DataMatrix(const H5::H5File& file, const std::string& groupPath, const std::string& datasetPath, Eigen::MatrixXf& target) {
     try {
         // Open the specified group and dataset
         H5::Group group = file.openGroup(groupPath);
@@ -265,7 +265,8 @@ static Eigen::Vector2f convert3Dto2D(const Eigen::Vector3f& point, const Eigen::
 }
 
 static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vector<float> depthValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
-
+    auto pixelCoordinates = convert3Dto2D(point, depthIntrinsics, extrinsics);
+    return depthValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
 }
 
 //@param path -> path to .h5 file
@@ -291,17 +292,17 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     readHDF5DataMatrix(file, "/expression/model", "pcaBasis", properties.expressionPcaBasis);
     readHDF5Data(file, "/expression/model", "pcaVariance", properties.expressionPcaVariance);
 
-    properties.shapeWeight = Eigen::VectorXf(199);
-    properties.expressionWeight = Eigen::VectorXf(100);
-    properties.colorWeight = Eigen::VectorXf(199);
+    properties.shapeParams = Eigen::VectorXf(199);
+    properties.expressionParams = Eigen::VectorXf(100);
+    properties.colorParams = Eigen::VectorXf(199);
 
     for (int i = 0; i < 199; ++i) {
-        properties.shapeWeight[i] = 0.0f;
-        properties.colorWeight[i] = 0.0f;
+        properties.shapeParams[i] = 0.0f;
+        properties.colorParams[i] = 0.0f;
     }
 
     for (int i = 0; i < 100; ++i) {
-        properties.expressionWeight[i] = 0.0f;
+        properties.expressionParams[i] = 0.0f;
     }
 
     properties.numberOfVertices = properties.shapeMean.size() / 3;

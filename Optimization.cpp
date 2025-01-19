@@ -11,32 +11,31 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Problem problem;
 
     // Mock data
-    std::vector<Eigen::Vector3d> vertices; // Fill with actual data
     std::vector<Eigen::Vector3d> rgbData;
     std::vector<double> depths;
-    std::vector<Eigen::Vector3d> normals;
-    std::vector<double> shapeParams(6, 0.0f);        // 6 elements, initialized to 0.0
-    std::vector<double> expressionParams(150, 0.0f);  // prob not floats, but okay for testing purposes
-    std::vector<double> colorParams(3, 0.0f);
+    std::vector<Eigen::Vector3f> normals;
+    int width = 1280;
+    int height = 720;
 
     //End Mock data
 
     auto bfmVertices = getVertices(properties);
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
-        float depthInputImage = getDepthValueFromInputImage()
-        problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
-                        new GeometryOptimization(bfmVertices[i], 10.0f, bfmVertices[i])),
+        float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
+
+        /*problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 100, 199>(
+                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i])),
                 nullptr,
-                properties.shapeWeight,
-                properties.expressionWeight
-                );
-        problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
+                properties.shapeParams.data(),
+                properties.expressionParams.data()
+        );*/
+        /*problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
                 new ColorOptimization(rgbData[i], rgbData[i])), // replace second rgbData[i] with illumination
                 nullptr,
                 colorParams.data()
-                );
+                );*/
     }
 
     ceres::Solver::Options options;
