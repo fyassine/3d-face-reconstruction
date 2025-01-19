@@ -51,19 +51,21 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     std::vector<Eigen::Vector3f> vertices;
 
     std::cout << "Start" << std::endl;
-    Eigen::VectorXf var = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
-    Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (var.cwiseSqrt().cwiseProduct(properties.shapeWeight));
+    Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
+    Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (shapeVar.cwiseSqrt().cwiseProduct(properties.shapeWeight));
+    Eigen::VectorXf expressionVar = Eigen::Map<Eigen::VectorXf>(properties.expressionPcaVariance.data(), properties.expressionPcaVariance.size());
+    Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionWeight));
     std::cout << "End" << std::endl;
 
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
         //Eigen::VectorXf pcaStuff = properties.shapePcaBasis * properties.shapeWeight;
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i];
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
         //auto modifiedVector = properties.shapePcaBasis * properties.shapeWeight;
 
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
         Eigen::Vector4f transformationVector;
 
         transformationVector.x() = newVertex.x();
@@ -83,12 +85,15 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
 }
 
 static std::vector<Eigen::Vector3i> getColorValues(BfmProperties properties){
+    Eigen::VectorXf colorVar = Eigen::Map<Eigen::VectorXf>(properties.colorPcaVariance.data(), properties.colorPcaVariance.size());
+    Eigen::VectorXf modifiedColor = properties.colorPcaBasis * (colorVar.cwiseSqrt().cwiseProduct(properties.colorWeight));
+
     std::vector<Eigen::Vector3i> colorValues;
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3i newColorValue;
-        newColorValue.x() = (int) (properties.colorMean[i] * 255);
-        newColorValue.y() = (int) (properties.colorMean[i + 1] * 255);
-        newColorValue.z() = (int) (properties.colorMean[i + 2] * 255);
+        newColorValue.x() = (int) ((properties.colorMean[i] + modifiedColor[i]) * 255);
+        newColorValue.y() = (int) ((properties.colorMean[i + 1] + modifiedColor[i + 1]) * 255);
+        newColorValue.z() = (int) ((properties.colorMean[i + 2] + modifiedColor[i + 1]) * 255);
         colorValues.emplace_back(newColorValue);
     }
     return colorValues;
