@@ -19,7 +19,7 @@ using namespace std;
 // TODO define marker for data folder
 
 int runPipeline() {
-    BfmProperties bfmProperties;
+    //BfmProperties bfmProperties;
     //initializeBFM("model2019_face12.h5", bfmProperties);
     // TODO: Use our own data -> get landmarks with dlib -> get respective depth values -> convert to 3d
     // TODO decouple Procrutes from bfm initialization
@@ -159,7 +159,7 @@ int main() {
     const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
     const std::string outputPath = std::string("../../../Result/output_corrected.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
-    //DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
+    DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
     auto landmarks2D = GetLandmarkVector(imagePath, shapePredictorPath);
     inputImage.landmarks = landmarks2D;
     //printInputImage(inputImage);
@@ -218,7 +218,7 @@ int main() {
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
     convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");
-    convertParametersToPly(properties, "../../../Result/AlignedBfmModel.ply");
+    convertParametersToPly(properties, "../../../Result/BfmModel.ply");
     renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png", inputImage, properties.transformation);
 
 }

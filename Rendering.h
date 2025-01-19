@@ -155,17 +155,6 @@ static unsigned int setupBuffers(const std::vector<int>& indices,
 }
 
 static unsigned int setupShaders(){
-    //TODO: Shader umschreiben, sodass sie mit Modelviewmatrix und projection matrix compatible sind?
-    /*const char* vertexShaderSource = R"(
-        #version 330 core
-        layout(location = 0) in vec3 aPos;
-        layout(location = 1) in vec3 aColor;
-        out vec3 vertexColor;
-        void main() {
-            gl_Position = vec4(aPos, 1.0);
-            vertexColor = aColor;
-        }
-    )";*/
     const char* vertexShaderSource = R"(
         #version 330 core
         layout(location = 0) in vec3 aPos;
@@ -173,14 +162,15 @@ static unsigned int setupShaders(){
 
         uniform mat4 view;
         uniform mat4 projection;
+        uniform mat4 model;
 
         out vec3 vertexColor;
         void main() {
-            gl_Position = projection * view * vec4(aPos, 1.0);
+            gl_Position = projection * model * view * vec4(aPos, 1.0);
             vertexColor = aColor;
         }
     )";
-
+//TODO Work on model matrix
 
     const char* fragmentShaderSource = R"(
         #version 330 core
@@ -225,15 +215,15 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
 
     projection(0, 0) = 2 * near_plane / (r - l);
-    projection(1, 1) = -((2 * near_plane) / (t - b));
+    projection(1, 1) = ((2 * near_plane) / (t - b));
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
 
-    projection(2, 3) = -0.7;
+    projection(2, 3) = -10;
     projection(3, 2) = (-2 * far_plane * near_plane) / (far_plane - near_plane);
 
-    projection(3, 3) = 1;
+    projection(3, 3) = 0;
     return projection;
 }
 
@@ -268,7 +258,7 @@ static Eigen::Matrix4f orthographicProjectionFromIntrinsics(const Eigen::Matrix3
 }
 
 static Eigen::Matrix4f inverseExtrinsics(const Eigen::Matrix4f& extrinsics) {
-    Eigen::Vector3f translation = extrinsics.block<3, 1>(0, 3);
+    /*Eigen::Vector3f translation = extrinsics.block<3, 1>(0, 3);
 
     // Move camera slightly back along z-axis
     translation.z() -= 950.0f;  // Adjust this value as needed
@@ -277,8 +267,8 @@ static Eigen::Matrix4f inverseExtrinsics(const Eigen::Matrix4f& extrinsics) {
     Eigen::Matrix4f newExtrinsics = extrinsics;
     newExtrinsics.block<3, 1>(0, 3) = translation;
 
-    // Return the inverse to get the view matrix
-    return newExtrinsics.inverse();
+    // Return the inverse to get the view matrix*/
+    return extrinsics.inverse();
 }
 
 static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
@@ -300,7 +290,7 @@ static void renderLoop(GLuint texture,
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
         //glUseProgram(setupBackgroundShaders());
-        glUseProgram(0);
+        /*glUseProgram(0);
 
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();           // Save current projection matrix
@@ -309,20 +299,22 @@ static void renderLoop(GLuint texture,
         glPushMatrix();           // Save current model-view matrix
         glLoadIdentity();
 
-        renderQuad(texture);
+        renderQuad(texture);*/
 
         //setProjectionMatrix(inputImage, 0.1f, 100.0f);
         //setModelViewMatrix(inputImage);
         GLuint shaderProgram = setupShaders();
         glUseProgram(shaderProgram);
 
-        Eigen::Matrix4f projection = orthographicProjectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
+        Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
         Eigen::Matrix4f view = inverseExtrinsics(inputImage.extrinsics); //inverse?!
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
+        GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_TRUE, eigenToOpenGL(view));
+        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, eigenToOpenGL(modelTransform));
 
         renderTriangle(vertices.size() / 3, indices, VAO);
 
