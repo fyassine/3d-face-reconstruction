@@ -218,7 +218,7 @@ int main() {
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
     convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");
-    convertParametersToPly(properties, "../../../Result/BBBBBFFFFFFMMMMMMM.ply");
-    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png", inputImage);
+    convertParametersToPly(properties, "../../../Result/AlignedBfmModel.ply");
+    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png", inputImage, properties.transformation);
 
 }

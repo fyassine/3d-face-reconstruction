@@ -326,6 +326,8 @@ static InputImage readVideoData(std::string path){
         // Retrieve camera intrinsics for the depth frame
         rs2::video_stream_profile depth_profile = depth.get_profile().as<rs2::video_stream_profile>();
         rs2_intrinsics intrinsics = depth_profile.get_intrinsics();
+        auto ex = depth_profile.get_extrinsics_to(color.get_profile().as<rs2::video_stream_profile>());
+        std::cout << "Rotation: " << ex.translation[0] << "; " << ex.rotation[1] << "; " << ex.rotation[2] << std::endl;
 
         // Print intrinsics
         std::cout << "Depth Intrinsics:" << std::endl;
@@ -342,6 +344,10 @@ static InputImage readVideoData(std::string path){
                 0, intrinsics.fy, intrinsics.ppy,
                 0, 0, 1;
 
+        std::cout << "FX: " << intrinsics.fx << std::endl;
+        std::cout << "FY: " << intrinsics.fy << std::endl;
+        std::cout << "ppx: " << intrinsics.ppx << std::endl;
+        std::cout << "ppy: " << intrinsics.ppy << std::endl;
         // Extract depth values from depth frame
         inputImage.depthValues.resize(inputImage.width * inputImage.height);
         for (int i = 0; i < inputImage.height; i++) {
@@ -374,6 +380,7 @@ static InputImage readVideoData(std::string path){
             extrinsics(i, 3) = depth_to_color.translation[i]; // Fill translation vector
         }
         inputImage.extrinsics = extrinsics;
+        std::cout << "Extrinsics:\n" << extrinsics << std::endl;
 
     } catch (const rs2::error& e) {
         std::cerr << "RealSense error calling " << e.get_failed_function() << "(" << e.get_failed_args() << "):\n    " << e.what() << std::endl;
