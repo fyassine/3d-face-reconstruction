@@ -7,7 +7,7 @@ double GetDepthForVertex(Eigen::Vector3d vertex){
 }
 
 //Not sure about params and return type yet
-void Optimization::optimizeDenseTerms() {
+void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inputImage) {
     ceres::Problem problem;
 
     // Mock data
@@ -18,15 +18,19 @@ void Optimization::optimizeDenseTerms() {
     std::vector<double> shapeParams(6, 0.0f);        // 6 elements, initialized to 0.0
     std::vector<double> expressionParams(150, 0.0f);  // prob not floats, but okay for testing purposes
     std::vector<double> colorParams(3, 0.0f);
+
     //End Mock data
 
-    for (size_t i = 0; i < vertices.size(); ++i) {
+    auto bfmVertices = getVertices(properties);
+    for (size_t i = 0; i < bfmVertices.size(); ++i) {
+        Eigen::Vector3f vertexBfm = bfmVertices[i];
+        float depthInputImage = getDepthValueFromInputImage()
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 6, 50>(
-                        new GeometryOptimization(vertices[i], GetDepthForVertex(vertices[i]), normals[i])),
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
+                        new GeometryOptimization(bfmVertices[i], 10.0f, bfmVertices[i])),
                 nullptr,
-                shapeParams.data(),
-                expressionParams.data()
+                properties.shapeWeight,
+                properties.expressionWeight
                 );
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
                 new ColorOptimization(rgbData[i], rgbData[i])), // replace second rgbData[i] with illumination

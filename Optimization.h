@@ -2,14 +2,15 @@
 #define FACE_RECONSTRUCTION_OPTIMIZATION_H
 #include <ceres/ceres.h>
 #include "Eigen.h"
+#include "BFMParameters.h"
 
 //TODO: THIS SCRIPT IS SUBJECT TO CHANGE!!! Don't look!!! It's ugly!!!
 
 struct GeometryOptimization{
 public:
-    GeometryOptimization(const Eigen::Vector3d& vertex,
+    GeometryOptimization(const Eigen::Vector3f& vertex,
                          const float& depth,
-                         const Eigen::Vector3d& normal):
+                         const Eigen::Vector3f& normal):
             m_vertex(vertex), m_depth(depth), m_normal(normal)
     {}
 
@@ -49,12 +50,12 @@ public:
     }
 
 private:
-    const Eigen::Vector3d m_vertex;
+    const Eigen::Vector3f m_vertex;
     const float m_depth;
-    const Eigen::Vector3d m_normal;
+    const Eigen::Vector3f m_normal;
 
-    static const int num_shape_params = 6; //0, 1, 2: translation; 3, 4, 5: rotation
-    static const int num_expression_params = 50; //TODO: Change!!!
+    static const int num_shape_params = 100; //0, 1, 2: translation; 3, 4, 5: rotation
+    static const int num_expression_params = 199; //TODO: Change!!!
 };
 
 struct ColorOptimization {
@@ -98,7 +99,7 @@ private:
 
 class Optimization {
 public:
-    static void optimizeDenseTerms();
+    static void optimizeDenseTerms(BfmProperties&, InputImage&);
     static void optimizeSparseTerms();
 
 private:

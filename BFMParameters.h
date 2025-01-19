@@ -245,6 +245,29 @@ static Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& point, float depth, 
     return Eigen::Vector3f(worldCoords.x(), worldCoords.y(), worldCoords.z());
 }
 
+static Eigen::Vector2f convert3Dto2D(const Eigen::Vector3f& point, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics) {
+    Eigen::Matrix4f depthExtrinsicsInv = extrinsics.inverse();
+    Eigen::Vector4f worldCoord(point.x(), point.y(), point.z(), 1.0f);
+    Eigen::Vector4f cameraCoord = depthExtrinsicsInv * worldCoord;
+
+    float fX = depthIntrinsics(0, 0); // focal length in x direction
+    float fY = depthIntrinsics(1, 1); // focal length in y direction
+    float cX = depthIntrinsics(0, 2); // optical center in x direction
+    float cY = depthIntrinsics(1, 2); // optical center in y direction
+
+    float x = cameraCoord.x() / cameraCoord.z();
+    float y = cameraCoord.y() / cameraCoord.z();
+
+    float u = fX * x + cX;
+    float v = fY * y + cY;
+
+    return Eigen::Vector2f(u, v);
+}
+
+static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vector<float> depthValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
+
+}
+
 //@param path -> path to .h5 file
 //initializeMethod durch constructor ersetzen?!
 static void initializeBFM(const std::string& path, BfmProperties& properties, const InputImage& inputImage){
