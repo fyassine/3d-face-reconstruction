@@ -11,24 +11,32 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Problem problem;
 
     // Mock data
+    std::vector<Eigen::Vector3f> vertices; // Fill with actual data
+
+
     std::vector<Eigen::Vector3d> rgbData;
     std::vector<double> depths;
     std::vector<Eigen::Vector3f> normals;
+    auto bfmVertices = getVertices(properties);
+
+    for (int i = 0; i < bfmVertices.size(); ++i) {
+        normals.emplace_back(0, 0, 0);
+    }
     int width = 1280;
     int height = 720;
 
     //End Mock data
 
-    auto bfmVertices = getVertices(properties);
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
 
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 100, 199>(
-                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i])),
+                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i])
+                ),
                 nullptr,
-                properties.shapeParams.data(),
+                properties.shapeParams.data(),  //müssen das doubles sein?!
                 properties.expressionParams.data()
         );
         /*problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
