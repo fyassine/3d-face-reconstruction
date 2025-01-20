@@ -35,7 +35,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
 
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 100, 199>(
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 100 * 3, 199 * 3>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i])
                 ),
                 nullptr,
@@ -52,6 +52,13 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Solver::Options options;
     configureSolver(options);
     ceres::Solver::Summary summary;
+
+    std::cout << "Expression Comparisons: " << std::endl;
+    for (int i = 0; i < 100; ++i) {
+        std::cout << "Original: " << properties.expressionParams(i) << " || " << "AfterOpt: " << expressionParamsD(i) << std::endl;
+    }
+    std::cout << "Comparison End" << std::endl;
+
     ceres::Solve(options, &problem, &summary);
 
     std::cout << summary.BriefReport() << std::endl;

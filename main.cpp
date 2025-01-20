@@ -223,5 +223,4 @@ int main() {
     convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");
     convertParametersToPly(properties, "../../../Result/BfmModel.ply");
     renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png", inputImage, properties.transformation);
-
 }

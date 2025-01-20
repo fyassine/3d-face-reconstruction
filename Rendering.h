@@ -290,7 +290,7 @@ static void renderLoop(GLuint texture,
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
         //glUseProgram(setupBackgroundShaders());
-        /*glUseProgram(0);
+        glUseProgram(0);
 
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();           // Save current projection matrix
@@ -299,7 +299,7 @@ static void renderLoop(GLuint texture,
         glPushMatrix();           // Save current model-view matrix
         glLoadIdentity();
 
-        renderQuad(texture);*/
+        renderQuad(texture);
 
         //setProjectionMatrix(inputImage, 0.1f, 100.0f);
         //setModelViewMatrix(inputImage);

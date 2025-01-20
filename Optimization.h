@@ -54,8 +54,8 @@ private:
     const float m_depth;
     const Eigen::Vector3f m_normal;
 
-    static const int num_shape_params = 100;
-    static const int num_expression_params = 199;
+    static const int num_shape_params = 199;
+    static const int num_expression_params = 100;
 };
 
 struct ColorOptimization {
