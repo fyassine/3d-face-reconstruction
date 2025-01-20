@@ -213,14 +213,15 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
 
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
 
-    projection(0, 0) = ((2 * near_plane) / (r - l)); //TODO move - to model
-    projection(1, 1) = ((2 * near_plane) / (t - b)); //TODO move - to model
+    projection(0, 0) = ((2 * near_plane) / (r - l));   //TODO: Move - to model?!
+    projection(1, 1) = - ((2 * near_plane) / (t - b)); //TODO: Move - to model?!
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = - (far_plane + near_plane) / (far_plane - near_plane);
 
     projection(3, 2) = (-2 * far_plane * near_plane) / (far_plane - near_plane);
-
+    projection(2, 3) = 1.01f;
+    //projection(1, 3) = -5.0f;
     projection(3, 3) = 0;
     return projection;
 }
@@ -310,6 +311,23 @@ static void renderLoop(GLuint texture,
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
         //GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
+        view(3, 0) = 0.0f;
+        double angle = -1.2f;
+        angle *= (3.1415926535 / 180.0);
+        view(0, 0) = (float) cos(angle);
+        view(2, 2) = (float) cos(angle);
+        view(2, 0) = (float) sin(angle);
+        view(0, 2) = (float) -sin(angle);
+
+        Eigen::Matrix4f zrot = Eigen::Matrix4f::Identity();
+        double zAngle = 0.045f;
+        zrot(0, 0) = (float) cos(zAngle);
+        zrot(1, 1) = (float) cos(zAngle);
+        zrot(0, 1) = (float) sin(zAngle);
+        zrot(1, 0) = (float) -sin(zAngle);
+
+        view *= zrot;
+
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_TRUE, eigenToOpenGL(view));
         /*auto modelMatrix = modelTransform;
