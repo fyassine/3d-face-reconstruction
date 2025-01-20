@@ -162,11 +162,10 @@ static unsigned int setupShaders(){
 
         uniform mat4 view;
         uniform mat4 projection;
-        uniform mat4 model;
 
         out vec3 vertexColor;
         void main() {
-            gl_Position = projection * model * view * vec4(aPos, 1.0);
+            gl_Position = projection * view * vec4(aPos, 1.0);
             vertexColor = aColor;
         }
     )";
@@ -214,13 +213,12 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
 
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
 
-    projection(0, 0) = 2 * near_plane / (r - l);
-    projection(1, 1) = ((2 * near_plane) / (t - b));
+    projection(0, 0) = ((2 * near_plane) / (r - l)); //TODO move - to model
+    projection(1, 1) = ((2 * near_plane) / (t - b)); //TODO move - to model
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
-    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
+    projection(2, 2) = - (far_plane + near_plane) / (far_plane - near_plane);
 
-    projection(2, 3) = -10;
     projection(3, 2) = (-2 * far_plane * near_plane) / (far_plane - near_plane);
 
     projection(3, 3) = 0;
@@ -311,10 +309,19 @@ static void renderLoop(GLuint texture,
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
-        GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
+        //GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_TRUE, eigenToOpenGL(view));
-        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, eigenToOpenGL(modelTransform));
+        /*auto modelMatrix = modelTransform;
+        modelMatrix(0, 0) = -modelMatrix(0, 0);
+        modelMatrix(1, 1) = -modelMatrix(1, 1);
+        modelMatrix(2, 2) = -modelMatrix(2, 2);
+        std::cout << "Z-Axis: " << modelMatrix(3, 2) << std::endl;
+        Eigen::Vector4f testVector = Eigen::Vector4f(0, 0, 0, 1.0f);
+        std::cout << projection * modelMatrix * view * testVector << std::endl;
+        modelMatrix(2, 3) += 6;
+        std::cout << projection * modelMatrix * view  * testVector << std::endl;
+        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, eigenToOpenGL(modelMatrix));*/
 
         renderTriangle(vertices.size() / 3, indices, VAO);
 

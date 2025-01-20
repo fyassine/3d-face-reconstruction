@@ -69,14 +69,14 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
         newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
         Eigen::Vector4f transformationVector;
 
-        //transformationVector.x() = newVertex.x();
-        //transformationVector.y() = newVertex.y();
-        //transformationVector.z() = newVertex.z();
-        //transformationVector.w() = 1.0f;
-        //transformationVector = properties.transformation * transformationVector;
-        //newVertex.x() = transformationVector.x();
-        //newVertex.y() = transformationVector.y();
-        //newVertex.z() = transformationVector.z();
+        transformationVector.x() = newVertex.x();
+        transformationVector.y() = newVertex.y();
+        transformationVector.z() = newVertex.z();
+        transformationVector.w() = 1.0f;
+        transformationVector = properties.transformation * transformationVector;
+        newVertex.x() = transformationVector.x();
+        newVertex.y() = transformationVector.y();
+        newVertex.z() = transformationVector.z();
         if(i == 0){
             std::cout << "New Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << ";" << std::endl;
         }

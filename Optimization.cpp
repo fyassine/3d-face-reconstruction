@@ -29,7 +29,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     Eigen::VectorXd shapeParamsD = properties.shapeParams.cast<double>();
     Eigen::VectorXd expressionParamsD = properties.expressionParams.cast<double>();
 
-    std::cout << "Heyy" << std::endl;
+    std::cout << "Heyy: " << shapeParamsD.data() << std::endl;
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
