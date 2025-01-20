@@ -24,13 +24,13 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
 
-        /*problem.AddResidualBlock(
+        problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 100, 199>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i])),
                 nullptr,
                 properties.shapeParams.data(),
                 properties.expressionParams.data()
-        );*/
+        );
         /*problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
                 new ColorOptimization(rgbData[i], rgbData[i])), // replace second rgbData[i] with illumination
                 nullptr,

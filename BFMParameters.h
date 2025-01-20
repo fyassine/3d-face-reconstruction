@@ -2,6 +2,7 @@
 #define FACE_RECONSTRUCTION_BFMPARAMETERS_H
 
 #include <iostream>
+#include "fstream"
 #include <H5Cpp.h>
 #include "Eigen.h"
 #include "ProcrustesAligner.h"
