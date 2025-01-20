@@ -215,6 +215,9 @@ int main() {
         color255.emplace_back(Eigen::Vector3i(inputImage.color[i].x() * 255, inputImage.color[i].y() * 255, inputImage.color[i].z() * 255));
     }
 
+
+    Optimization optimizer;
+    optimizer.optimizeDenseTerms(properties, inputImage);
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
     convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");

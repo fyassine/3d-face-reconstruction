@@ -20,13 +20,16 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     auto bfmVertices = getVertices(properties);
 
     for (int i = 0; i < bfmVertices.size(); ++i) {
-        normals.emplace_back(0, 0, 0);
+        normals.emplace_back(1, 0, 0);
     }
     int width = 1280;
     int height = 720;
 
     //End Mock data
+    Eigen::VectorXd shapeParamsD = properties.shapeParams.cast<double>();
+    Eigen::VectorXd expressionParamsD = properties.expressionParams.cast<double>();
 
+    std::cout << "Heyy" << std::endl;
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
@@ -36,8 +39,8 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i])
                 ),
                 nullptr,
-                properties.shapeParams.data(),  //müssen das doubles sein?!
-                properties.expressionParams.data()
+                shapeParamsD.data(),
+                expressionParamsD.data()
         );
         /*problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorOptimization, 1, 3>(
                 new ColorOptimization(rgbData[i], rgbData[i])), // replace second rgbData[i] with illumination
@@ -52,6 +55,8 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Solve(options, &problem, &summary);
 
     std::cout << summary.BriefReport() << std::endl;
+    properties.shapeParams = shapeParamsD.cast<float>();
+    properties.expressionParams = expressionParamsD.cast<float>();
 }
 
 void Optimization::optimizeSparseTerms() {
