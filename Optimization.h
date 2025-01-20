@@ -3,10 +3,49 @@
 #include <ceres/ceres.h>
 #include "Eigen.h"
 #include "BFMParameters.h"
+#include <iostream>
+#include <fstream>
+#include <nlohmann/json.hpp>
+
+// TODO: Put illumination in seperate header file
+
+using json = nlohmann::json;
+
+struct Illumination {
+    
+    static Eigen::Vector3f computeIllumination(const Eigen::Vector3f& normal,
+                                               const Eigen::Matrix3f& gammaMatrix) {
+        // Compute SH basis functions (up to order 2)
+        double x = normal.x();
+        double y = normal.y();
+        double z = normal.z();
+        std::vector<double> B(9);
+        B[0] = 1.0;              // l=0
+        B[1] = y;                // l=1
+        B[2] = z;                // l=1
+        B[3] = x;                // l=1
+        B[4] = x * y;            // l=2
+        B[5] = y * z;            // l=2
+        B[6] = 2 * z * z - x * x - y * y; // l=2
+        B[7] = x * z;            // l=2
+        B[8] = x * x - y * y;    // l=2
+        
+        // Compute illumination for each color channel using the gammaMatrix
+        float L_R = 0.0f, L_G = 0.0f, L_B = 0.0f; // Use float for consistent types
+        for (int i = 0; i < 9; ++i) {
+              L_R += gammaMatrix(0, i % 3) * B[i];  // Red: coefficients in row 0
+              L_G += gammaMatrix(1, i % 3) * B[i];  // Green: coefficients in row 1
+              L_B += gammaMatrix(2, i % 3) * B[i];  // Blue: coefficients in row 2
+          }
+        
+        // Return the RGB illumination as an Eigen::Vector3f
+        return Eigen::Vector3f(L_R, L_G, L_B);
+    }
+};
 
 //TODO: THIS SCRIPT IS SUBJECT TO CHANGE!!! Don't look!!! It's ugly!!!
 
-struct GeometryOptimization{
+struct GeometryOptimization {
 public:
     GeometryOptimization(const Eigen::Vector3f& vertex,
                          const float& depth,

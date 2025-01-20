@@ -26,6 +26,37 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     int height = 720;
 
     //End Mock data
+    
+    // Start Illumination
+    std::ifstream inputFile("../../Data/face_39652.rps");
+    json jsonData;
+    inputFile >> jsonData;
+
+    // Extract the RGB gamma coefficients from the "environmentMap" field
+    auto coefficients = jsonData["environmentMap"]["coefficients"];
+
+    // Create the Matrix3f and fill it with the extracted coefficients
+    Matrix3f gammaMatrix;
+    gammaMatrix(0, 0) = coefficients[0][0];
+    gammaMatrix(0, 1) = coefficients[0][1];
+    gammaMatrix(0, 2) = coefficients[0][2];
+
+    gammaMatrix(1, 0) = coefficients[1][0];
+    gammaMatrix(1, 1) = coefficients[1][1];
+    gammaMatrix(1, 2) = coefficients[1][2];
+
+    gammaMatrix(2, 0) = coefficients[2][0];
+    gammaMatrix(2, 1) = coefficients[2][1];
+    gammaMatrix(2, 2) = coefficients[2][2];
+    
+    
+    std::vector<Eigen::Vector3f> illumination = std::vector<Vector3f>(bfmVertices.size(),
+                                                                      Vector3f::Zero());
+    for (size_t i = 0; i < bfmVertices.size(); i++) {
+        illumination[i] = Illumination::computeIllumination(normals[i],
+                                                            gammaMatrix);
+    }
+    // End illumination
     Eigen::VectorXd shapeParamsD = properties.shapeParams.cast<double>();
     Eigen::VectorXd expressionParamsD = properties.expressionParams.cast<double>();
 
