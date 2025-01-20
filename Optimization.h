@@ -45,7 +45,7 @@ struct Illumination {
 
 //TODO: THIS SCRIPT IS SUBJECT TO CHANGE!!! Don't look!!! It's ugly!!!
 
-struct GeometryOptimization{
+struct GeometryOptimization {
 public:
     GeometryOptimization(const Eigen::Vector3f& vertex,
                          const float& depth,

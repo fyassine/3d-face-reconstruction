@@ -62,6 +62,37 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     int width = 1280;
     int height = 720;
 
+    // Start Illumination
+    std::ifstream inputFile("../../Data/face_39652.rps");
+    json jsonData;
+    inputFile >> jsonData;
+
+    // Extract the RGB gamma coefficients from the "environmentMap" field
+    auto coefficients = jsonData["environmentMap"]["coefficients"];
+
+    // Create the Matrix3f and fill it with the extracted coefficients
+    Matrix3f gammaMatrix;
+    gammaMatrix(0, 0) = coefficients[0][0];
+    gammaMatrix(0, 1) = coefficients[0][1];
+    gammaMatrix(0, 2) = coefficients[0][2];
+
+    gammaMatrix(1, 0) = coefficients[1][0];
+    gammaMatrix(1, 1) = coefficients[1][1];
+    gammaMatrix(1, 2) = coefficients[1][2];
+
+    gammaMatrix(2, 0) = coefficients[2][0];
+    gammaMatrix(2, 1) = coefficients[2][1];
+    gammaMatrix(2, 2) = coefficients[2][2];
+    
+    
+    std::vector<Eigen::Vector3f> illumination = std::vector<Vector3f>(bfmVertices.size(),
+                                                                      Vector3f::Zero());
+    for (size_t i = 0; i < bfmVertices.size(); i++) {
+        illumination[i] = Illumination::computeIllumination(normals[i],
+                                                            gammaMatrix);
+    }
+    // End illumination
+        
     // Debug parameters
     std::cout << "\n=== Parameters Setup ===\n";
     Eigen::VectorXd shapeParamsD = properties.shapeParams.cast<double>();
@@ -105,7 +136,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 3, 199>(
-                        new ColorOptimization(bfmColors[i], bfmColors[i])
+                        new ColorOptimization(bfmColors[i], illumination[i])
                 ),
                 nullptr,
                 colorParamsD.data()
