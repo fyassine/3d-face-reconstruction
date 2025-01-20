@@ -216,8 +216,8 @@ int main() {
     }
 
 
-    //Optimization optimizer;
-    //optimizer.optimizeDenseTerms(properties, inputImage);
+    Optimization optimizer;
+    optimizer.optimizeDenseTerms(properties, inputImage);
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
     convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");
