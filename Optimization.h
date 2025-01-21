@@ -82,7 +82,7 @@ public:
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
 
-        transformedVertex = m_vertex.cast<T>(); //TODO: Remove the line and think of a solution for the pcaBasis
+        //transformedVertex = m_vertex.cast<T>(); //TODO: Remove the line and think of a solution for the pcaBasis
 
         T point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
                                                   transformedVertex.y(),
