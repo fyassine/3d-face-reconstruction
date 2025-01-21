@@ -174,7 +174,29 @@ int main() {
     BfmProperties properties;
     properties = getProperties(h5TestFile, inputImage);
 
-    //setupGLFW(800, 800);
+
+
+    std::vector<Eigen::Vector3f> targetPoints;
+    //GetTargetLandmarks
+    for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
+        targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
+    }
+
+    std::vector<Eigen::Vector2f> pointCloudVertices;
+    for (int i = 0; i < inputImage.height; ++i) {
+        for (int j = 0; j < inputImage.width; ++j) {
+            pointCloudVertices.emplace_back(Eigen::Vector2f(j, i));
+        }
+    }
+
+    std::vector<Eigen::Vector3i> color255;
+    for (int i = 0; i < inputImage.color.size(); ++i) {
+        color255.emplace_back(Eigen::Vector3i(inputImage.color[i].x() * 255, inputImage.color[i].y() * 255, inputImage.color[i].z() * 255));
+    }
+
+    Optimization optimizer;
+    optimizer.optimizeDenseTerms(properties, inputImage);
+
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);
     for (int i = 0; i < originalVertices.size(); ++i) {
@@ -197,27 +219,6 @@ int main() {
         }
     }
 
-    std::vector<Eigen::Vector3f> targetPoints;
-    //GetTargetLandmarks
-    for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
-        targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
-    }
-
-    std::vector<Eigen::Vector2f> pointCloudVertices;
-    for (int i = 0; i < inputImage.height; ++i) {
-        for (int j = 0; j < inputImage.width; ++j) {
-            pointCloudVertices.emplace_back(Eigen::Vector2f(j, i));
-        }
-    }
-
-    std::vector<Eigen::Vector3i> color255;
-    for (int i = 0; i < inputImage.color.size(); ++i) {
-        color255.emplace_back(Eigen::Vector3i(inputImage.color[i].x() * 255, inputImage.color[i].y() * 255, inputImage.color[i].z() * 255));
-    }
-
-
-    Optimization optimizer;
-    optimizer.optimizeDenseTerms(properties, inputImage);
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
     convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");

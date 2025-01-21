@@ -298,12 +298,12 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     properties.colorParams = Eigen::VectorXf(199);
 
     for (int i = 0; i < 199; ++i) {
-        properties.shapeParams[i] = 0.0f;
-        properties.colorParams[i] = 0.0f;
+        properties.shapeParams[i] = 0.02f;
+        properties.colorParams[i] = 0.02f;
     }
 
     for (int i = 0; i < 100; ++i) {
-        properties.expressionParams[i] = 0.0f;
+        properties.expressionParams[i] = 0.02f;
     }
 
     properties.numberOfVertices = properties.shapeMean.size() / 3;
