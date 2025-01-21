@@ -95,7 +95,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
-                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties.shapePcaBasis, i)
+                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties.shapePcaBasis, properties.expressionPcaBasis, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
@@ -128,7 +128,6 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             colorParamsD.data(),
             expressionParamsD.data()
     );
-
     std::cout << "Valid residual blocks added: " << validResiduals << std::endl;
     std::cout << "Invalid depth values encountered: " << invalidDepthValues << std::endl;
 
@@ -166,8 +165,111 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 5; //maybe make it 100
+    options.max_num_iterations = 10; //maybe make it 100
     options.num_threads = 12;
 }
 
+
+
+
+
+void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
+    optimizeSparseTerms();
+    optimizeDenseTerms(bfm, inputImage);
+    //regularize(bfm);
+}
+
+/*void Optimization::optimizeDenseTerms(BfmProperties& bfm, InputImage& inputImage) {
+
+    ceres::Problem problem;
+    auto bfmVertices = getVertices(bfm);
+    auto normals = getNormals(bfm);
+
+    Eigen::VectorXd shapeParamsD = bfm.shapeParams.cast<double>();
+    Eigen::VectorXd expressionParamsD = bfm.expressionParams.cast<double>();
+    Eigen::VectorXd colorParamsD = bfm.colorParams.cast<double>();
+
+    for (size_t i = 0; i < bfmVertices.size(); ++i) {
+        auto vertexBfm = bfmVertices[i];
+        int width = 1280;
+        int height = 720;
+        float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
+
+        auto geometryFunction = new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
+                new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], bfm.shapePcaBasis, i)
+        );
+
+        problem.AddResidualBlock(
+                geometryFunction,
+                nullptr,
+                shapeParamsD.data(),
+                expressionParamsD.data()
+        );
+    }
+    ceres::Solver::Options options;
+    configureSolver(options);
+    ceres::Solver::Summary summary;
+    std::cout << "\n=== Starting Optimization ===\n";
+    ceres::Solve(options, &problem, &summary);
+
+    bfm.shapeParams = shapeParamsD.cast<float>();
+    bfm.expressionParams = expressionParamsD.cast<float>();
+    bfm.colorParams = colorParamsD.cast<float>();
+}*/
+
+void Optimization::regularize(BfmProperties& bfm) {
+
+    ceres::Problem problem;
+
+    Eigen::VectorXd shapeParamsD = bfm.shapeParams.cast<double>();
+    Eigen::VectorXd expressionParamsD = bfm.expressionParams.cast<double>();
+    Eigen::VectorXd colorParamsD = bfm.colorParams.cast<double>();
+// Initialize standard deviation vectors from PCA variance
+    std::vector<double> identity_std_dev(199);
+    std::vector<double> albedo_std_dev(199);
+    std::vector<double> expression_std_dev(100);
+
+    // Fill identity and albedo standard deviations
+    for (int i = 0; i < 199; ++i) {
+        identity_std_dev[i] = std::sqrt(bfm.shapePcaVariance[i]);
+        albedo_std_dev[i] = std::sqrt(bfm.colorPcaVariance[i]);
+    }
+
+    // Fill expression standard deviations
+    for (int i = 0; i < 100; ++i) {
+        expression_std_dev[i] = std::sqrt(bfm.expressionPcaVariance[i]);
+    }
+
+    problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<RegularizationTerm, 1, 199, 199, 100>(
+                    new RegularizationTerm(identity_std_dev, albedo_std_dev, expression_std_dev)),
+            nullptr,
+            shapeParamsD.data(),
+            colorParamsD.data(),
+            expressionParamsD.data()
+    );
+
+    /*problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<RegularizationFunction, 199, 199>(
+                    new RegularizationFunction(5, 199)),
+            nullptr,
+            shapeParamsD.data()
+    );
+
+    problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<RegularizationFunction, 100, 100>(
+                    new RegularizationFunction(5, 100)),
+            nullptr,
+            expressionParamsD.data()
+    );*/
+    ceres::Solver::Options options;
+    configureSolver(options);
+    ceres::Solver::Summary summary;
+    std::cout << "\n=== Starting Regularization ===\n";
+    ceres::Solve(options, &problem, &summary);
+
+    bfm.shapeParams = shapeParamsD.cast<float>();
+    bfm.expressionParams = expressionParamsD.cast<float>();
+    bfm.colorParams = colorParamsD.cast<float>();
+}
 

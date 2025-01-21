@@ -51,9 +51,10 @@ public:
                          const float& depth,
                          const Eigen::Vector3f& normal,
                          const Eigen::MatrixXf& shapePcaBasis,
+                         const Eigen::MatrixXf& expressionPcaBasis,
                          int vertex_id) :
             m_vertex(vertex), m_depth(depth), m_normal(normal),
-            m_shapePcaBasis(shapePcaBasis), m_vertex_id(vertex_id) {}
+            m_shapePcaBasis(shapePcaBasis), m_expressionBasis{expressionPcaBasis}, m_vertex_id(vertex_id) {}
 
     template<typename T>
     bool operator()(const T* const shape,
@@ -74,10 +75,11 @@ public:
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
+            int vertex_idx = m_vertex_id * 3;
             expression_offset += Eigen::Matrix<T, 3, 1>(
-                    T(expression[i]),
-                    T(expression[i]),
-                    T(expression[i])
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i)))
             );
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
@@ -106,6 +108,7 @@ private:
     static const int num_expression_params = 100;
 
     const Eigen::MatrixXf& m_shapePcaBasis;
+    const Eigen::MatrixXf& m_expressionBasis;
     const int m_vertex_id;
 };
 
@@ -150,11 +153,32 @@ private:
 
 class Optimization {
 public:
-    static void optimizeDenseTerms(BfmProperties&, InputImage&);
-    static void optimizeSparseTerms();
-
+    static void optimize(BfmProperties&, InputImage&);
 private:
     static void configureSolver(ceres::Solver::Options& options);
+    static void optimizeSparseTerms();
+    static void optimizeDenseTerms(BfmProperties&, InputImage&);
+    static void regularize(BfmProperties&);
+};
+
+struct RegularizationFunction
+{
+    RegularizationFunction(double weight, int number)
+            : m_weight { weight }, m_number {number}
+    {}
+
+    template<typename T>
+    bool operator()(T const* params, T* residuals) const
+    {
+        for (int i = 0; i < m_number; ++i) {
+            residuals[i] = params[i] * T(sqrt(m_weight));
+        }
+        return true;
+    }
+
+private:
+    const double m_weight;
+    const int m_number;
 };
 
 struct RegularizationTerm {

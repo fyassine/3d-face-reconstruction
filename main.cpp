@@ -153,7 +153,7 @@ void test2(){
 }
 
 int main() {
-    InputImage inputImage = readVideoData("../../../Data/20250116_182138.bag");
+    InputImage inputImage = readVideoData("../../../Data/20250116_183206.bag");
     const std::string imagePath = std::string("../../../Result/color_frame_corrected.png");
     //const std::string imagePath = std::string("../../../Data/testmyface.png");
     const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
@@ -195,7 +195,7 @@ int main() {
     }
 
     Optimization optimizer;
-    optimizer.optimizeDenseTerms(properties, inputImage);
+    optimizer.optimize(properties, inputImage);
 
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);

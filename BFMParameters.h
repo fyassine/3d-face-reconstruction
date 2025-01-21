@@ -61,10 +61,7 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
-        //Eigen::VectorXf pcaStuff = properties.shapePcaBasis * properties.shapeWeight;
         newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
-        //auto modifiedVector = properties.shapePcaBasis * properties.shapeWeight;
-
         newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
         newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
         Eigen::Vector4f transformationVector;
@@ -83,6 +80,30 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
         vertices.emplace_back(newVertex);
     }
     return vertices;
+}
+
+static std::vector<Eigen::Vector3f> getNormals(BfmProperties properties){
+    auto bfmVertices = getVertices(properties);
+    std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
+
+    for (size_t i = 0; i < properties.triangles.size(); i+=3) {
+        auto triangle0 = properties.triangles[i];
+        auto triangle1 = properties.triangles[i+1];
+        auto triangle2 = properties.triangles[i+2];
+        Vector3f faceNormal = (bfmVertices[triangle1] - bfmVertices[triangle0]).cross(bfmVertices[triangle2] - bfmVertices[triangle0]);
+        normals[triangle0] += faceNormal;
+        normals[triangle1] += faceNormal;
+        normals[triangle2] += faceNormal;
+    }
+    // Normalize normals
+    int zeroNormals = 0;
+    for (size_t i = 0; i < bfmVertices.size(); i++) {
+        if (normals[i].norm() < 1e-10) {
+            zeroNormals++;
+        }
+        normals[i].normalize();
+    }
+    return normals;
 }
 
 static std::vector<Eigen::Vector3i> getColorValues(BfmProperties properties){

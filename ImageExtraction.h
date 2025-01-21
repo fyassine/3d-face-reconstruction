@@ -119,8 +119,12 @@ static float useKernel(const InputImage& inputImage, const Eigen::Vector2f& coor
                 continue;
             }
             float depth = inputImage.depthValues[coordinates[i].y() * inputImage.width + coordinates[i].x()];
+            if(depth < 0.0001) {
+                continue;
+            }
             currentDepth = depth < currentDepth ? depth : currentDepth;
             if(abs(avg - currentDepth) > stdDev){
+                std::cout << "Adjusted Depth " << currentDepth << "Coord: " << coordinates[i] << std::endl;
                 return currentDepth;
             }
         }
@@ -143,14 +147,18 @@ static void correctDepthOfLandmarks(InputImage& inputImage){
     }
     stdDev /= (float) n;
     stdDev = sqrtf(stdDev);
+    std::cout << "STD-Deviation: " << stdDev << std::endl;
 
     //stdDev has to be bigger!!! Otherwise there would be flagged depth values in a perfect model
     //Shouldn't I use abs(avg) and abs(inputImage.depthValuesLandmarks[i]) as a negative depth value might otherwise lead to a wrong result
+    std::cout << "Depth Distance: " << std::endl;
     for (int i = 0; i < n; ++i) {
+        std::cout << abs(avg - inputImage.depthValuesLandmarks[i]) << std::endl;
         if(abs(avg - inputImage.depthValuesLandmarks[i]) > stdDev){
             inputImage.depthValuesLandmarks[i] = useKernel(inputImage, inputImage.landmarks[i], avg, stdDev);
         }
     }
+    std::cout << "Depth Distance End" << std::endl;
 }
 
 static void calculateDepthValuesLandmarks(InputImage& inputImage){
