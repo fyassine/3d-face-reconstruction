@@ -114,14 +114,16 @@ private:
 
 struct ColorOptimization {
 public:
-    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& illumination)
-        : m_albedo(albedo), m_illumination(illumination) {}
+    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const Eigen::Vector3f& illumination, const MatrixXf& colorPcaBasis, int color_id)
+        : m_albedo(albedo), m_image_color(image_color), m_illumination(illumination), m_colorPcaBasis(colorPcaBasis), m_color_id(color_id) {}
 
     template <typename T>
     bool operator()(const T* const color, T* residuals) const {
         // Normalize illumination
-        T illumination_normalized[3];
+        /*T illumination_normalized[3];
         T illum_sum = m_illumination.cast<T>().sum();
+
+
         
         if (illum_sum == T(0)) {
             return false;
@@ -133,22 +135,38 @@ public:
 
         // Compute adjusted albedo with normalized illumination
         Eigen::Matrix<T, 3, 1> adjusted_albedo = m_albedo.cast<T>().cwiseProduct(
-        Eigen::Matrix<T, 3, 1>(illumination_normalized[0], illumination_normalized[1], illumination_normalized[2]));
+        Eigen::Matrix<T, 3, 1>(illumination_normalized[0], illumination_normalized[1], illumination_normalized[2]));*/
 
         // Compute color offset
-        Eigen::Matrix<T, 3, 1> color_offset(color[0], color[1], color[2]);
+        Eigen::Matrix<T, 3, 1> color_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        for (int i = 0; i < num_color_params; ++i) {
+            int color_idx = m_color_id * 3;
+            color_offset += Eigen::Matrix<T, 3, 1>(
+                    T(color[i] * T(m_colorPcaBasis(color_idx, i))),
+                    T(color[i] * T(m_colorPcaBasis(color_idx, i))),
+                    T(color[i] * T(m_colorPcaBasis(color_idx, i)))
+            );
+        }
+        Eigen::Matrix<T, 3, 1> modifiedColor = m_albedo.cast<T>() + color_offset;
 
+        T resulting_color = Eigen::Matrix<T, 3, 1>(modifiedColor.x() - T(m_image_color.x()),
+                                                   modifiedColor.y() - T(m_image_color.y()),
+                                                   modifiedColor.z() - T(m_image_color.z())).norm();
         // Compute per-channel residuals
-        residuals[0] = adjusted_albedo.x() - color_offset.x();
-        residuals[1] = adjusted_albedo.y() - color_offset.y();
-        residuals[2] = adjusted_albedo.z() - color_offset.z();
-
+        //residuals[0] = adjusted_albedo.x() - color_offset.x();
+        //residuals[1] = adjusted_albedo.y() - color_offset.y();
+        //residuals[2] = adjusted_albedo.z() - color_offset.z();
+        residuals[0] = resulting_color;
         return true;
     }
 
 private:
     const Eigen::Vector3f m_albedo;
+    const Eigen::Vector3f m_image_color;
     const Eigen::Vector3f m_illumination;
+    const Eigen::MatrixXf m_colorPcaBasis;
+    const int m_color_id;
+    static const int num_color_params = 199;
 };
 
 class Optimization {

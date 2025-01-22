@@ -63,7 +63,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     int height = 720;
 
     // Start Illumination
-    std::ifstream inputFile(dataFolderPath + "face_39652.rps");
+    std::ifstream inputFile(dataFolderPath + "face_39736.rps");
     json jsonData;
     inputFile >> jsonData;
 
@@ -110,6 +110,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
 
         if (std::isnan(depthInputImage) || std::isinf(depthInputImage)) {
             invalidDepthValues++;
@@ -135,8 +136,8 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         );
 
         problemColor.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<ColorOptimization, 3, 199>(
-                        new ColorOptimization(bfmColors[i], illumination[i])
+                new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
+                        new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
                 ),
                 nullptr,
                 colorParamsD.data()

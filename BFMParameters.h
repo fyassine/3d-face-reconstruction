@@ -310,6 +310,11 @@ static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vect
     return depthValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
 }
 
+static Eigen::Vector3f getColorValueFromInputImage(const Eigen::Vector3f& point, std::vector<Eigen::Vector3f> colorValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
+    auto pixelCoordinates = convert3Dto2D(point, depthIntrinsics, extrinsics);
+    return colorValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
+}
+
 //@param path -> path to .h5 file
 //initializeMethod durch constructor ersetzen?!
 static void initializeBFM(const std::string& path, BfmProperties& properties, const InputImage& inputImage){
