@@ -63,7 +63,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     int height = 720;
 
     // Start Illumination
-    std::ifstream inputFile("../../../Data/face_39652.rps");
+    std::ifstream inputFile(dataFolderPath + "face_39652.rps");
     json jsonData;
     inputFile >> jsonData;
 
@@ -204,12 +204,16 @@ void Optimization::optimizeSparseTerms() {
 void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.use_nonmonotonic_steps = false;
-    options.linear_solver_type = ceres::DENSE_QR;
-    //options.linear_solver_type = ceres::DENSE_SCHUR;
+    //options.linear_solver_type = ceres::DENSE_QR;
+    options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 70; //maybe make it 100
+    options.max_num_iterations = 5; //maybe make it 100
     options.num_threads = 12;
 }
+
+
+
+
 
 void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     optimizeSparseTerms();

@@ -343,7 +343,7 @@ static void renderLoop(GLuint texture,
 
         renderTriangle(vertices.size() / 3, indices, VAO);
 
-        saveFramebufferToFile("../../../Result/rendering.png", 1280, 720); // TODO: Use real width and height!!! and real output Path
+        saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720); // TODO: Use real width and height!!! and real output Path
 
         glfwSwapBuffers(window);
         glfwPollEvents();
