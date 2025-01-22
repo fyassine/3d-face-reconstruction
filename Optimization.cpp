@@ -63,7 +63,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     int height = 720;
 
     // Start Illumination
-    std::ifstream inputFile("../../Data/face_39652.rps");
+    std::ifstream inputFile(dataFolderPath + "face_39652.rps");
     json jsonData;
     inputFile >> jsonData;
 

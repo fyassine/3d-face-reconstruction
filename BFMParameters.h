@@ -8,6 +8,10 @@
 #include "ProcrustesAligner.h"
 #include "ImageExtraction.h"
 
+
+const std::string dataFolderPath = DATA_FOLDER_PATH;
+const std::string resultFolderPath = RESULT_FOLDER_PATH;
+
 //WIP
 struct BfmProperties {
 
@@ -185,26 +189,26 @@ static void readHDF5DataMatrix(const H5::H5File& file, const std::string& groupP
     }
 }
 
-static void readFaces(){
-//TODO: Not done
-    /*const std::string inputFile = std::string("../../../Data/faces.txt");
-    std::ifstream inFile(inputFile);
-    std::string line;
-    while (std::getline(inFile, line)) {
-        std::istringstream iss(line);
-        int firstInt;
-        int secondInt, thirdInt, fourthInt;
-        if (iss >> firstInt >> secondInt >> thirdInt >> fourthInt) {
-            properties.triangles.push_back(secondInt);
-            properties.triangles.push_back(thirdInt);
-            properties.triangles.push_back(fourthInt);
-        } else {
-            std::cerr << "Error: Incorrect input file" << std::endl;
-        }
-    }
-    properties.numberOfTriangles = properties.triangles.size() / 3;
-    std::cout << "Faces: " << properties.numberOfTriangles << std::endl;*/
-}
+// static void readFaces(){
+// //TODO: Not done
+//     const std::string inputFile = std::string(dataFolderPath + "faces.txt");
+//     std::ifstream inFile(inputFile);
+//     std::string line;
+//     while (std::getline(inFile, line)) {
+//         std::istringstream iss(line);
+//         int firstInt;
+//         int secondInt, thirdInt, fourthInt;
+//         if (iss >> firstInt >> secondInt >> thirdInt >> fourthInt) {
+//             properties.triangles.push_back(secondInt);
+//             properties.triangles.push_back(thirdInt);
+//             properties.triangles.push_back(fourthInt);
+//         } else {
+//             std::cerr << "Error: Incorrect input file" << std::endl;
+//         }
+//     }
+//     properties.numberOfTriangles = properties.triangles.size() / 3;
+//     std::cout << "Faces: " << properties.numberOfTriangles << std::endl;*/
+// }
 
 static std::vector<Eigen::Vector3f> readLandmarksBFM(const std::string& path){
     const std::string inputFile = std::string(path);
@@ -348,7 +352,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     std::cout << "Shape Variance: " << properties.shapePcaVariance.size() << " values" << std::endl;
     std::cout << "PCA Basis " << properties.shapePcaBasis(0, 0) << std::endl;
     //Faces
-    const std::string inputFile = std::string("../../../Data/faces.txt");
+    const std::string inputFile = std::string(dataFolderPath + "faces.txt");
     std::ifstream inFile(inputFile);
     std::string line;
     while (std::getline(inFile, line)) {
