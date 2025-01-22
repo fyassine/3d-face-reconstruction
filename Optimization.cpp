@@ -14,6 +14,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 
     // Debug BFM vertices
     auto bfmVertices = getVertices(properties);
+    auto bfmColors = getColorValuesF(properties);
     std::cout << "Number of BFM vertices: " << bfmVertices.size() << std::endl;
     std::cout << "First vertex position: ("
               << bfmVertices[0].x() << ", "
@@ -101,6 +102,14 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
+
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<ColorOptimization, 3, 199>(
+                        new ColorOptimization(bfmColors[i], bfmColors[i])
+                ),
+                nullptr,
+                colorParamsD.data()
+        );
         validResiduals++;
     }
 
@@ -154,6 +163,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 
     properties.shapeParams = shapeParamsD.cast<float>();
     properties.expressionParams = expressionParamsD.cast<float>();
+    properties.colorParams = colorParamsD.cast<float>();
 }
 
 void Optimization::optimizeSparseTerms() {
@@ -166,7 +176,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     //options.linear_solver_type = ceres::DENSE_QR;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 50; //maybe make it 100
+    options.max_num_iterations = 5; //maybe make it 100
     options.num_threads = 12;
 }
 

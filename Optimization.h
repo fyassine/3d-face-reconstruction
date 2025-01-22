@@ -114,7 +114,7 @@ private:
 
 struct ColorOptimization {
 public:
-    ColorOptimization(const Eigen::Vector3d& albedo, const Eigen::Vector3d& illumination)
+    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& illumination)
         : m_albedo(albedo), m_illumination(illumination) {}
 
     template <typename T>
@@ -147,8 +147,8 @@ public:
     }
 
 private:
-    const Eigen::Vector3d m_albedo;
-    const Eigen::Vector3d m_illumination;
+    const Eigen::Vector3f m_albedo;
+    const Eigen::Vector3f m_illumination;
 };
 
 class Optimization {

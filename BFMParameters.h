@@ -121,6 +121,21 @@ static std::vector<Eigen::Vector3i> getColorValues(BfmProperties properties){
     return colorValues;
 }
 
+static std::vector<Eigen::Vector3f> getColorValuesF(BfmProperties properties){
+    Eigen::VectorXf colorVar = Eigen::Map<Eigen::VectorXf>(properties.colorPcaVariance.data(), properties.colorPcaVariance.size());
+    Eigen::VectorXf modifiedColor = properties.colorPcaBasis * (colorVar.cwiseSqrt().cwiseProduct(properties.colorParams));
+
+    std::vector<Eigen::Vector3f> colorValues;
+    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
+        Eigen::Vector3f newColorValue;
+        newColorValue.x() = ((properties.colorMean[i] + modifiedColor[i]));
+        newColorValue.y() = ((properties.colorMean[i + 1] + modifiedColor[i + 1]));
+        newColorValue.z() = ((properties.colorMean[i + 2] + modifiedColor[i + 1]));
+        colorValues.emplace_back(newColorValue);
+    }
+    return colorValues;
+}
+
 static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, const std::string& datasetPath, std::vector<float>& target) {
     try {
         H5::Group group = file.openGroup(groupPath);
