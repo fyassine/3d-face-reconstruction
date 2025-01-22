@@ -19,14 +19,14 @@ using namespace std;
 // TODO define marker for data folder
 
 int runPipeline() {
-    BfmProperties bfmProperties;
+    //BfmProperties bfmProperties;
     //initializeBFM("model2019_face12.h5", bfmProperties);
     // TODO: Use our own data -> get landmarks with dlib -> get respective depth values -> convert to 3d
     // TODO decouple Procrutes from bfm initialization
     // getVertices() returns the transformed bfm vertices
-    Optimization::optimizeSparseTerms();
+    //Optimization::optimizeSparseTerms();
     // TODO implement sparse optimization (use formulas from the lecture)
-    Optimization::optimizeDenseTerms();
+    //Optimization::optimizeDenseTerms();
     // TODO include code from regularization inside optimizeDenseTerms
     // TODO save end result
     return -1;
@@ -153,13 +153,13 @@ void test2(){
 }
 
 int main() {
-    InputImage inputImage = readVideoData("../../../Data/20250115_171024.bag");
+    InputImage inputImage = readVideoData("../../../Data/20250116_183206.bag");
     const std::string imagePath = std::string("../../../Result/color_frame_corrected.png");
     //const std::string imagePath = std::string("../../../Data/testmyface.png");
     const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
     const std::string outputPath = std::string("../../../Result/output_corrected.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
-    //DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
+    DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
     auto landmarks2D = GetLandmarkVector(imagePath, shapePredictorPath);
     inputImage.landmarks = landmarks2D;
     //printInputImage(inputImage);
@@ -172,35 +172,9 @@ int main() {
     const std::string h5TestFile = std::string("../../../Data/model2019_face12.h5");
 
     BfmProperties properties;
-    Eigen::Vector3f initialTest;
-    initialTest.x() = 0.1;
-    initialTest.y() = 0.1;
-    initialTest.z() = 0.1;
-    properties.initialOffset = initialTest;
     properties = getProperties(h5TestFile, inputImage);
 
-    //setupGLFW(800, 800);
-    std::vector<float> parsedVertices;
-    auto originalVertices = getVertices(properties);
-    for (int i = 0; i < originalVertices.size(); ++i) {
-        parsedVertices.push_back(originalVertices[i].x() / 250); // TODO: We have to change the division. We might be able to do this by setting up a projection matrix and camera view matrix and enabling the depth test
-        parsedVertices.push_back(originalVertices[i].y() / 250);
-        parsedVertices.push_back(originalVertices[i].z() / 250);
-        if(i == 0){
-            std::cout << originalVertices[i].x() << ", " << originalVertices[i].y() << ", " << originalVertices[i].z() << ";" << std::endl;
-        }
-    }
 
-    std::vector<int> parsedColor;
-    auto originalColorValues = getColorValues(properties);
-    for (int i = 0; i < originalColorValues.size(); ++i) {
-        parsedColor.push_back(originalColorValues[i].x());
-        parsedColor.push_back(originalColorValues[i].y());
-        parsedColor.push_back(originalColorValues[i].z());
-        if(i == 0){
-            std::cout << originalColorValues[i].x() / 255.0f << ", " << originalColorValues[i].y() / 255.0f<< ", " << originalColorValues[i].z() / 255.0f << ";" << std::endl;
-        }
-    }
 
     std::vector<Eigen::Vector3f> targetPoints;
     //GetTargetLandmarks
@@ -220,8 +194,34 @@ int main() {
         color255.emplace_back(Eigen::Vector3i(inputImage.color[i].x() * 255, inputImage.color[i].y() * 255, inputImage.color[i].z() * 255));
     }
 
+    Optimization optimizer;
+    optimizer.optimize(properties, inputImage);
+
+    std::vector<float> parsedVertices;
+    auto originalVertices = getVertices(properties);
+    for (int i = 0; i < originalVertices.size(); ++i) {
+        parsedVertices.push_back(originalVertices[i].x()); // TODO: We have to change the division. We might be able to do this by setting up a projection matrix and camera view matrix and enabling the depth test
+        parsedVertices.push_back(originalVertices[i].y());
+        parsedVertices.push_back(originalVertices[i].z());
+        if(i == 0){
+            std::cout << "TestVertex: " << originalVertices[i].x() << ", " << originalVertices[i].y() << ", " << originalVertices[i].z() << ";" << std::endl;
+        }
+    }
+
+    std::vector<int> parsedColor;
+    auto originalColorValues = getColorValues(properties);
+    for (int i = 0; i < originalColorValues.size(); ++i) {
+        parsedColor.push_back(originalColorValues[i].x());
+        parsedColor.push_back(originalColorValues[i].y());
+        parsedColor.push_back(originalColorValues[i].z());
+        if(i == 0){
+            std::cout << originalColorValues[i].x() / 255.0f << ", " << originalColorValues[i].y() / 255.0f<< ", " << originalColorValues[i].z() / 255.0f << ";" << std::endl;
+        }
+    }
+
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
-    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png");
-
+    convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");
+    convertParametersToPly(properties, "../../../Result/BfmModel.ply");
+    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png", inputImage, properties.transformation);
 }

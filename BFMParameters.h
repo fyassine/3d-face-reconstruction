@@ -2,6 +2,7 @@
 #define FACE_RECONSTRUCTION_BFMPARAMETERS_H
 
 #include <iostream>
+#include "fstream"
 #include <H5Cpp.h>
 #include "Eigen.h"
 #include "ProcrustesAligner.h"
@@ -24,20 +25,20 @@ struct BfmProperties {
 
     //Parameters:
     std::vector<float> colorMean;
-    std::vector<float> colorPcaBasis;
+    Eigen::MatrixXf colorPcaBasis;
     std::vector<float> colorPcaVariance;
 
     std::vector<float> shapeMean;
-    std::vector<float> shapePcaBasis;
+    Eigen::MatrixXf shapePcaBasis;
     std::vector<float> shapePcaVariance;
 
     std::vector<float> expressionMean;
-    std::vector<float> expressionPcaBasis;
+    Eigen::MatrixXf expressionPcaBasis;
     std::vector<float> expressionPcaVariance;
 
-    std::vector<float> colorWeight;
-    std::vector<float> shapeWeight;
-    std::vector<float> expressionWeight;
+    Eigen::VectorXf colorParams;
+    Eigen::VectorXf shapeParams;
+    Eigen::VectorXf expressionParams;
 };
 
 static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties& properties) {
@@ -49,20 +50,22 @@ static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties& prope
 
 static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     std::vector<Eigen::Vector3f> vertices;
+
+    std::cout << "Start" << std::endl;
+    Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
+    Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (shapeVar.cwiseSqrt().cwiseProduct(properties.shapeParams));
+    Eigen::VectorXf expressionVar = Eigen::Map<Eigen::VectorXf>(properties.expressionPcaVariance.data(), properties.expressionPcaVariance.size());
+    Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionParams));
+    std::cout << "End" << std::endl;
+
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + properties.initialOffset.x();
-        if(i==0){
-            std::cout << "With InitialOffset:" << newVertex.x() << std::endl;
-            std::cout << "Without InitialOffset:" << properties.shapeMean[i] + properties.expressionMean[i] << std::endl;
-            std::cout << "InitialOffset:" << properties.initialOffset.x() << std::endl;
-        }
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + properties.initialOffset.y();
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + properties.initialOffset.z();
+
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
         Eigen::Vector4f transformationVector;
-        if(i == 0){
-            std::cout << "Old Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << " VS. ";
-        }
+
         transformationVector.x() = newVertex.x();
         transformationVector.y() = newVertex.y();
         transformationVector.z() = newVertex.z();
@@ -79,13 +82,55 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     return vertices;
 }
 
+static std::vector<Eigen::Vector3f> getNormals(BfmProperties properties){
+    auto bfmVertices = getVertices(properties);
+    std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
+
+    for (size_t i = 0; i < properties.triangles.size(); i+=3) {
+        auto triangle0 = properties.triangles[i];
+        auto triangle1 = properties.triangles[i+1];
+        auto triangle2 = properties.triangles[i+2];
+        Vector3f faceNormal = (bfmVertices[triangle1] - bfmVertices[triangle0]).cross(bfmVertices[triangle2] - bfmVertices[triangle0]);
+        normals[triangle0] += faceNormal;
+        normals[triangle1] += faceNormal;
+        normals[triangle2] += faceNormal;
+    }
+    // Normalize normals
+    int zeroNormals = 0;
+    for (size_t i = 0; i < bfmVertices.size(); i++) {
+        if (normals[i].norm() < 1e-10) {
+            zeroNormals++;
+        }
+        normals[i].normalize();
+    }
+    return normals;
+}
+
 static std::vector<Eigen::Vector3i> getColorValues(BfmProperties properties){
+    Eigen::VectorXf colorVar = Eigen::Map<Eigen::VectorXf>(properties.colorPcaVariance.data(), properties.colorPcaVariance.size());
+    Eigen::VectorXf modifiedColor = properties.colorPcaBasis * (colorVar.cwiseSqrt().cwiseProduct(properties.colorParams));
+
     std::vector<Eigen::Vector3i> colorValues;
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3i newColorValue;
-        newColorValue.x() = (int) (properties.colorMean[i] * 255);
-        newColorValue.y() = (int) (properties.colorMean[i + 1] * 255);
-        newColorValue.z() = (int) (properties.colorMean[i + 2] * 255);
+        newColorValue.x() = (int) ((properties.colorMean[i] + modifiedColor[i]) * 255);
+        newColorValue.y() = (int) ((properties.colorMean[i + 1] + modifiedColor[i + 1]) * 255);
+        newColorValue.z() = (int) ((properties.colorMean[i + 2] + modifiedColor[i + 1]) * 255);
+        colorValues.emplace_back(newColorValue);
+    }
+    return colorValues;
+}
+
+static std::vector<Eigen::Vector3f> getColorValuesF(BfmProperties properties){
+    Eigen::VectorXf colorVar = Eigen::Map<Eigen::VectorXf>(properties.colorPcaVariance.data(), properties.colorPcaVariance.size());
+    Eigen::VectorXf modifiedColor = properties.colorPcaBasis * (colorVar.cwiseSqrt().cwiseProduct(properties.colorParams));
+
+    std::vector<Eigen::Vector3f> colorValues;
+    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
+        Eigen::Vector3f newColorValue;
+        newColorValue.x() = ((properties.colorMean[i] + modifiedColor[i]));
+        newColorValue.y() = ((properties.colorMean[i + 1] + modifiedColor[i + 1]));
+        newColorValue.z() = ((properties.colorMean[i + 2] + modifiedColor[i + 1]));
         colorValues.emplace_back(newColorValue);
     }
     return colorValues;
@@ -104,6 +149,39 @@ static void readHDF5Data(const H5::H5File& file, const std::string& groupPath, c
         dataset.read(target.data(), H5::PredType::NATIVE_FLOAT);
     } catch (H5::Exception& e) {
         std::cerr << "Error reading BFM parameters: " << e.getDetailMsg() << std::endl;
+    }
+}
+
+static void readHDF5DataMatrix(const H5::H5File& file, const std::string& groupPath, const std::string& datasetPath, Eigen::MatrixXf& target) {
+    try {
+        // Open the specified group and dataset
+        H5::Group group = file.openGroup(groupPath);
+        H5::DataSet dataset = group.openDataSet(datasetPath);
+
+        // Get the dataspace of the dataset and determine its dimensions
+        H5::DataSpace dataspace = dataset.getSpace();
+        int rank = dataspace.getSimpleExtentNdims();
+        if (rank != 2) {
+            throw std::runtime_error("Dataset is not 2-dimensional.");
+        }
+
+        hsize_t dims[2];
+        dataspace.getSimpleExtentDims(dims, nullptr);
+
+        // Resize the target matrix based on the dataset dimensions
+        target.resize(static_cast<int>(dims[0]), static_cast<int>(dims[1]));
+
+        // Read the data into a temporary vector and map it to the matrix
+        std::vector<float> buffer(static_cast<size_t>(dims[0] * dims[1]));
+        dataset.read(buffer.data(), H5::PredType::NATIVE_FLOAT);
+
+        // Map the vector into the Eigen matrix
+        target = Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(
+                buffer.data(), static_cast<int>(dims[0]), static_cast<int>(dims[1]));
+    } catch (H5::Exception& e) {
+        std::cerr << "Error reading HDF5 dataset: " << e.getDetailMsg() << std::endl;
+    } catch (std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
@@ -204,6 +282,30 @@ static Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& point, float depth, 
     return Eigen::Vector3f(worldCoords.x(), worldCoords.y(), worldCoords.z());
 }
 
+static Eigen::Vector2f convert3Dto2D(const Eigen::Vector3f& point, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics) {
+    Eigen::Matrix4f depthExtrinsicsInv = extrinsics.inverse();
+    Eigen::Vector4f worldCoord(point.x(), point.y(), point.z(), 1.0f);
+    Eigen::Vector4f cameraCoord = depthExtrinsicsInv * worldCoord;
+
+    float fX = depthIntrinsics(0, 0); // focal length in x direction
+    float fY = depthIntrinsics(1, 1); // focal length in y direction
+    float cX = depthIntrinsics(0, 2); // optical center in x direction
+    float cY = depthIntrinsics(1, 2); // optical center in y direction
+
+    float x = cameraCoord.x() / cameraCoord.z();
+    float y = cameraCoord.y() / cameraCoord.z();
+
+    float u = fX * x + cX;
+    float v = fY * y + cY;
+
+    return Eigen::Vector2f(u, v);
+}
+
+static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vector<float> depthValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
+    auto pixelCoordinates = convert3Dto2D(point, depthIntrinsics, extrinsics);
+    return depthValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
+}
+
 //@param path -> path to .h5 file
 //initializeMethod durch constructor ersetzen?!
 static void initializeBFM(const std::string& path, BfmProperties& properties, const InputImage& inputImage){
@@ -216,23 +318,35 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
 
     //Read Shape
     readHDF5Data(file, "/shape/model", "mean", properties.shapeMean);
-    //readData(file, "/shape/model", "pcaBasis", properties.shapePcaBasis); //TODO: PCABasis for Modifications?!
+    readHDF5DataMatrix(file, "/shape/model", "pcaBasis", properties.shapePcaBasis); //TODO: PCABasis for Modifications?!
     readHDF5Data(file, "/shape/model", "pcaVariance", properties.shapePcaVariance);
     //Read Expression
     readHDF5Data(file, "/color/model", "mean", properties.colorMean);
-    //readData(file, "/color/model", "pcaBasis", properties.colorPcaBasis);
+    readHDF5DataMatrix(file, "/color/model", "pcaBasis", properties.colorPcaBasis);
     readHDF5Data(file, "/color/model", "pcaVariance", properties.colorPcaVariance);
     //Read Color
     readHDF5Data(file, "/expression/model", "mean", properties.expressionMean);
-    //readData(file, "/expression/model", "pcaBasis", properties.expressionPcaBasis);
+    readHDF5DataMatrix(file, "/expression/model", "pcaBasis", properties.expressionPcaBasis);
     readHDF5Data(file, "/expression/model", "pcaVariance", properties.expressionPcaVariance);
 
+    properties.shapeParams = Eigen::VectorXf(199);
+    properties.expressionParams = Eigen::VectorXf(100);
+    properties.colorParams = Eigen::VectorXf(199);
+
+    for (int i = 0; i < 199; ++i) {
+        properties.shapeParams[i] = 0.02f;
+        properties.colorParams[i] = 0.02f;
+    }
+
+    for (int i = 0; i < 100; ++i) {
+        properties.expressionParams[i] = 0.02f;
+    }
 
     properties.numberOfVertices = properties.shapeMean.size() / 3;
     std::cout << "Vertices: " << properties.numberOfVertices << std::endl;
     std::cout << "Color Mean: " << properties.colorMean.size() << " values" << std::endl;
     std::cout << "Shape Variance: " << properties.shapePcaVariance.size() << " values" << std::endl;
-
+    std::cout << "PCA Basis " << properties.shapePcaBasis(0, 0) << std::endl;
     //Faces
     const std::string inputFile = std::string("../../../Data/faces.txt");
     std::ifstream inFile(inputFile);
@@ -327,11 +441,6 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
         landmarks[i] /= 1000;
     }
     properties.landmarks = landmarks;
-
-
-    properties.initialOffset.x() = 0;
-    properties.initialOffset.y() = 0;
-    properties.initialOffset.z() = 0;
     ProcrustesAligner aligner;
 
     std::vector<Eigen::Vector3f> targetPoints;

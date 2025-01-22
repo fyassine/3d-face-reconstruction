@@ -31,7 +31,7 @@ public:
         Matrix4f estimatedPose = Matrix4f::Identity();
                 
         estimatedPose.block(0, 0, 3, 3) = scale * rotation;
-        estimatedPose.block(0, 3, 3, 1) = rotation * translation - rotation * targetMean + targetMean;
+        estimatedPose.block(0, 3, 3, 1) = targetMean - scale * rotation * sourceMean;
         
         std::cout << "estimatedPose:" << std::endl;
         std::cout << estimatedPose << std::endl;
