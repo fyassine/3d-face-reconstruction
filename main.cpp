@@ -193,8 +193,8 @@ int main() {
         color255.emplace_back(Eigen::Vector3i(inputImage.color[i].x() * 255, inputImage.color[i].y() * 255, inputImage.color[i].z() * 255));
     }
 
-    // Optimization optimizer;
-    // optimizer.optimize(properties, inputImage);
+    Optimization optimizer;
+    optimizer.optimize(properties, inputImage);
 
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);

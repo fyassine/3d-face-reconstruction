@@ -11,7 +11,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     std::cout << "\n=== Starting Dense Terms Optimization ===\n";
 
     ceres::Problem problem;
-
+    ceres::Problem problemColor;
     // Debug BFM vertices
     auto bfmVertices = getVertices(properties);
     auto bfmColors = getColorValuesF(properties);
@@ -134,7 +134,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 expressionParamsD.data()
         );
 
-        problem.AddResidualBlock(
+        problemColor.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 3, 199>(
                         new ColorOptimization(bfmColors[i], illumination[i])
                 ),
@@ -160,14 +160,31 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         expression_std_dev[i] = std::sqrt(properties.expressionPcaVariance[i]);
     }
 
-    problem.AddResidualBlock(
+    /*problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<RegularizationTerm, 1, 199, 199, 100>(
                     new RegularizationTerm(identity_std_dev, albedo_std_dev, expression_std_dev)),
             nullptr,
             shapeParamsD.data(),
             colorParamsD.data(),
             expressionParamsD.data()
+    );*/
+
+    problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 1, 199, 100>(
+                    new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
+            nullptr,
+            shapeParamsD.data(),
+            expressionParamsD.data()
     );
+
+    problemColor.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
+                    new ColorRegularizationTerm(albedo_std_dev)),
+            nullptr,
+            colorParamsD.data()
+    );
+
+
     std::cout << "Valid residual blocks added: " << validResiduals << std::endl;
     std::cout << "Invalid depth values encountered: " << invalidDepthValues << std::endl;
 
@@ -176,9 +193,11 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Solver::Options options;
     configureSolver(options);
     ceres::Solver::Summary summary;
+    ceres::Solver::Summary summaryColor;
 
     std::cout << "\n=== Starting Optimization ===\n";
     ceres::Solve(options, &problem, &summary);
+    ceres::Solve(options, &problemColor, &summaryColor);
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", " ", "[", "]");
     std::cout << "\n=== Optimization Results ===\n";
@@ -220,6 +239,8 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     optimizeDenseTerms(bfm, inputImage);
     //regularize(bfm);
 }
+
+
 
 /*void Optimization::optimizeDenseTerms(BfmProperties& bfm, InputImage& inputImage) {
 

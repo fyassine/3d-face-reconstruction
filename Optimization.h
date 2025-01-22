@@ -158,6 +158,7 @@ private:
     static void configureSolver(ceres::Solver::Options& options);
     static void optimizeSparseTerms();
     static void optimizeDenseTerms(BfmProperties&, InputImage&);
+    static void optimizeColor();
     static void regularize(BfmProperties&);
 };
 
@@ -223,6 +224,61 @@ struct RegularizationTerm {
     static constexpr int num_identity_params = 199;
     static constexpr int num_albedo_params = 199;
     static constexpr int num_expression_params = 100;
+};
+
+struct GeometryRegularizationTerm {
+    template <typename T>
+    bool operator()(const T* const identity_params,
+                    const T* const expression_params,
+                    T* residual) const {
+        T reg_energy = T(0);
+
+        // Identity parameters regularization
+        for (int i = 0; i < num_identity_params; ++i) {
+            reg_energy += pow(identity_params[i] / T(identity_std_dev[i]), 2);
+        }
+        // Expression parameters regularization
+        for (int i = 0; i < num_expression_params; ++i) {
+            reg_energy += pow(expression_params[i] / T(expression_std_dev[i]), 2);
+        }
+
+        residual[0] = reg_energy;
+        return true;
+    }
+
+    // Constructor to pass standard deviations if they're not constant
+    GeometryRegularizationTerm(const std::vector<double>& id_std,
+                               const std::vector<double>& exp_std)
+            : identity_std_dev(id_std)
+            , expression_std_dev(exp_std) {}
+
+    const std::vector<double> identity_std_dev;
+    const std::vector<double> expression_std_dev;
+
+    static constexpr int num_identity_params = 199;
+    static constexpr int num_expression_params = 100;
+};
+
+struct ColorRegularizationTerm {
+    template <typename T>
+    bool operator()(const T* const albedo_params, T* residual) const {
+        T reg_energy = T(0);
+
+        // Albedo parameters regularization
+        for (int i = 0; i < num_albedo_params; ++i) {
+            reg_energy += pow(albedo_params[i] / T(albedo_std_dev[i]), 2);
+        }
+
+        residual[0] = reg_energy;
+        return true;
+    }
+
+    // Constructor to pass standard deviations if they're not constant
+    ColorRegularizationTerm(const std::vector<double>& alb_std)
+            : albedo_std_dev(alb_std) {}
+
+    const std::vector<double> albedo_std_dev;
+    static constexpr int num_albedo_params = 199;
 };
 
 
