@@ -148,19 +148,35 @@ public:
                     T(color[i] * T(m_colorPcaBasis(color_idx + 2, i)))  //maybe rows +1 wrong? Instead rows +0
             );
         }
-        Eigen::Matrix<T, 3, 1> modifiedColor = m_albedo.cast<T>() + color_offset;
+        
+        // Apply illumination scaling directly
+        Eigen::Matrix<T, 3, 1> albedo = m_albedo.cast<T>() + color_offset;
 
+        // Illumination is already computed and passed as an argument
+        Eigen::Matrix<T, 3, 1> illumination = m_illumination.cast<T>(); // Converted to T for optimization
+
+        // Apply illumination to color (this step assumes illumination modifies the albedo in RGB channels)
+        Eigen::Matrix<T, 3, 1> modifiedColor = albedo.cwiseProduct(illumination);
+
+        // Compute residuals (compare modified color to image color)
         T resulting_color = Eigen::Matrix<T, 3, 1>(modifiedColor.x() - T(m_image_color.x()),
                                                    modifiedColor.y() - T(m_image_color.y()),
                                                    modifiedColor.z() - T(m_image_color.z())).norm();
-        // Compute per-channel residuals
-        //residuals[0] = adjusted_albedo.x() - color_offset.x();
-        //residuals[1] = adjusted_albedo.y() - color_offset.y();
-        //residuals[2] = adjusted_albedo.z() - color_offset.z();
-        /*residuals[0] = modifiedColor.x() - T(m_image_color.x());
-        residuals[1] = modifiedColor.y() - T(m_image_color.y());
-        residuals[2] = modifiedColor.z() - T(m_image_color.z());*/
-        residuals[0] = resulting_color;
+        
+//        // Uncomment everything below together (if needed)
+//        Eigen::Matrix<T, 3, 1> modifiedColor = m_albedo.cast<T>() + color_offset;
+//
+//        T resulting_color = Eigen::Matrix<T, 3, 1>(modifiedColor.x() - T(m_image_color.x()),
+//                                                   modifiedColor.y() - T(m_image_color.y()),
+//                                                   modifiedColor.z() - T(m_image_color.z())).norm();
+//        // Compute per-channel residuals
+//        //residuals[0] = adjusted_albedo.x() - color_offset.x();
+//        //residuals[1] = adjusted_albedo.y() - color_offset.y();
+//        //residuals[2] = adjusted_albedo.z() - color_offset.z();
+//        /*residuals[0] = modifiedColor.x() - T(m_image_color.x());
+//        residuals[1] = modifiedColor.y() - T(m_image_color.y());
+//        residuals[2] = modifiedColor.z() - T(m_image_color.z());*/
+//        residuals[0] = resulting_color;
         return true;
     }
 
