@@ -198,7 +198,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Solver::Summary summaryColor;
 
     std::cout << "\n=== Starting Optimization ===\n";
-    ceres::Solve(options, &problem, &summary);
+    //ceres::Solve(options, &problem, &summary);
     ceres::Solve(options, &problemColor, &summaryColor);
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", " ", "[", "]");
@@ -212,12 +212,26 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     std::cout << "\nShape and expression params after optimization:" << std::endl;
     std::cout << "Shape Params: " << shapeParamsD.format(CleanFmt) << std::endl;
     std::cout << "Expression Params: " << expressionParamsD.format(CleanFmt) << std::endl;
+    std::cout << "Color Params: " << colorParamsD.format(CleanFmt) << std::endl;
 
     //TODO: Print color to see change
 
+    std::cout << "\nChange in Color: " << std::endl;
+    auto colorResult = getColorValuesF(properties);
+    for (int i = 0; i < 20; ++i) {
+        auto currentColor = colorResult[i];
+        std::cout << "(" << currentColor.x() << ", " << currentColor.y() << ", " << currentColor.z() << ")" << std::endl;
+    }
     properties.shapeParams = shapeParamsD.cast<float>();
     properties.expressionParams = expressionParamsD.cast<float>();
     properties.colorParams = colorParamsD.cast<float>();
+
+    std::cout << "Color after optimization" << std::endl;
+    auto colorResultAfterOpt = getColorValuesF(properties);
+    for (int i = 0; i < 20; ++i) {
+        auto currentColor = colorResultAfterOpt[i];
+        std::cout << "(" << currentColor.x() << ", " << currentColor.y() << ", " << currentColor.z() << ")" << std::endl;
+    }
 }
 
 void Optimization::optimizeSparseTerms() {
@@ -230,7 +244,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     //options.linear_solver_type = ceres::DENSE_QR;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 50; //maybe make it 100
+    options.max_num_iterations = 10; //maybe make it 100
     options.num_threads = 12;
 }
 
