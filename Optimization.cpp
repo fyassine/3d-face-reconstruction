@@ -232,6 +232,33 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         auto currentColor = colorResultAfterOpt[i];
         std::cout << "(" << currentColor.x() << ", " << currentColor.y() << ", " << currentColor.z() << ")" << std::endl;
     }
+    float smallestValue = 0;
+    float biggestValue = -1000.0f;
+    for (int i = 0; i < colorResultAfterOpt.size(); ++i) {
+        auto currentColor = colorResultAfterOpt[i];
+        if(currentColor.x() < smallestValue){
+            smallestValue = currentColor.x();
+        }
+        if(currentColor.y() < smallestValue){
+            smallestValue = currentColor.y();
+        }
+        if(currentColor.z() < smallestValue){
+            smallestValue = currentColor.z();
+        }
+
+        if(currentColor.x() > biggestValue){
+            biggestValue = currentColor.x();
+        }
+        if(currentColor.y() > biggestValue){
+            biggestValue = currentColor.y();
+        }
+        if(currentColor.z() > biggestValue){
+            biggestValue = currentColor.z();
+        }
+    }
+
+    std::cout << "Smallest Value: " << smallestValue << std::endl;
+    std::cout << "Biggest Value: " << biggestValue << std::endl;
 }
 
 void Optimization::optimizeSparseTerms() {
