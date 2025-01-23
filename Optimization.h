@@ -176,7 +176,7 @@ public:
 //        /*residuals[0] = modifiedColor.x() - T(m_image_color.x());
 //        residuals[1] = modifiedColor.y() - T(m_image_color.y());
 //        residuals[2] = modifiedColor.z() - T(m_image_color.z());*/
-//        residuals[0] = resulting_color;
+        residuals[0] = resulting_color;
         return true;
     }
 
