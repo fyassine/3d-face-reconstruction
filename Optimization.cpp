@@ -120,6 +120,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         // Debug first few vertices
         if (i < 5) {
             std::cout << "Vertex " << i << " depth: " << depthInputImage << std::endl;
+            std::cout << "Vertex " << i << " color: " << colorInputImage << std::endl;
             std::cout << "Vertex " << i << " normal: ("
                       << normals[i].x() << ", "
                       << normals[i].y() << ", "
@@ -212,6 +213,8 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     std::cout << "Shape Params: " << shapeParamsD.format(CleanFmt) << std::endl;
     std::cout << "Expression Params: " << expressionParamsD.format(CleanFmt) << std::endl;
 
+    //TODO: Print color to see change
+
     properties.shapeParams = shapeParamsD.cast<float>();
     properties.expressionParams = expressionParamsD.cast<float>();
     properties.colorParams = colorParamsD.cast<float>();
@@ -227,7 +230,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     //options.linear_solver_type = ceres::DENSE_QR;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 5; //maybe make it 100
+    options.max_num_iterations = 50; //maybe make it 100
     options.num_threads = 12;
 }
 

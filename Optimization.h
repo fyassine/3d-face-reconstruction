@@ -68,9 +68,10 @@ public:
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             shape_offset += Eigen::Matrix<T, 3, 1>(
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),        //vllt. column und row vertauschen?!
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))     //maybe rows +1 wrong? Instead rows +0, wenn 0 dann ganzes model standard,
+                                                                                 //aber wenn != 0, dann wären das ja einfach random die nachbar werte
             );
         }
 
@@ -78,8 +79,8 @@ public:
             int vertex_idx = m_vertex_id * 3;
             expression_offset += Eigen::Matrix<T, 3, 1>(
                     T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx, i)))
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))) //maybe rows +1 wrong? Instead rows +0
             );
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
@@ -114,17 +115,17 @@ private:
 
 struct ColorOptimization {
 public:
-    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const Eigen::Vector3f& illumination, const MatrixXf& colorPcaBasis, int color_id)
+    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const Eigen::Vector3f& illumination, const Eigen::MatrixXf& colorPcaBasis, int color_id)
         : m_albedo(albedo), m_image_color(image_color), m_illumination(illumination), m_colorPcaBasis(colorPcaBasis), m_color_id(color_id) {}
 
     template <typename T>
     bool operator()(const T* const color, T* residuals) const {
+
         // Normalize illumination
         /*T illumination_normalized[3];
         T illum_sum = m_illumination.cast<T>().sum();
 
 
-        
         if (illum_sum == T(0)) {
             return false;
         }
@@ -143,8 +144,8 @@ public:
             int color_idx = m_color_id * 3;
             color_offset += Eigen::Matrix<T, 3, 1>(
                     T(color[i] * T(m_colorPcaBasis(color_idx, i))),
-                    T(color[i] * T(m_colorPcaBasis(color_idx, i))),
-                    T(color[i] * T(m_colorPcaBasis(color_idx, i)))
+                    T(color[i] * T(m_colorPcaBasis(color_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
+                    T(color[i] * T(m_colorPcaBasis(color_idx + 2, i)))  //maybe rows +1 wrong? Instead rows +0
             );
         }
         Eigen::Matrix<T, 3, 1> modifiedColor = m_albedo.cast<T>() + color_offset;
@@ -164,7 +165,7 @@ private:
     const Eigen::Vector3f m_albedo;
     const Eigen::Vector3f m_image_color;
     const Eigen::Vector3f m_illumination;
-    const Eigen::MatrixXf m_colorPcaBasis;
+    const Eigen::MatrixXf& m_colorPcaBasis;
     const int m_color_id;
     static const int num_color_params = 199;
 };
