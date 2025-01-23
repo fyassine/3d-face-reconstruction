@@ -10,6 +10,7 @@ double GetDepthForVertex(Eigen::Vector3d vertex){
 void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inputImage) {
     std::cout << "\n=== Starting Dense Terms Optimization ===\n";
 
+    ceres::Problem problemSparse;
     ceres::Problem problem;
     ceres::Problem problemColor;
     // Debug BFM vertices
@@ -63,7 +64,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     int height = 720;
 
     // Start Illumination
-    std::ifstream inputFile(dataFolderPath + "face_39736.rps");
+    std::ifstream inputFile(dataFolderPath + "face_39652.rps");
     json jsonData;
     inputFile >> jsonData;
 
@@ -106,6 +107,23 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     std::cout << "\n=== Adding Residual Blocks ===\n";
     int validResiduals = 0;
     int invalidDepthValues = 0;
+
+    auto landmarks_input_image = inputImage.landmarks;
+    std::vector<Eigen::Vector2d> landmarks_bfm;
+    for (const auto & landmark : properties.landmarks) {
+        Eigen::Vector2f current_landmark = convert3Dto2D(landmark, inputImage.intrinsics, inputImage.extrinsics);
+        landmarks_bfm.emplace_back(current_landmark);
+    }
+
+    for (int i = 0; i < landmarks_input_image.size(); ++i) {
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<SparseOptimization, 1, 1>(
+                        new SparseOptimization(landmarks_input_image[i])
+                ),
+                nullptr,
+                landmarks_bfm[i].data()
+        );
+    }
 
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
@@ -195,10 +213,12 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Solver::Options options;
     configureSolver(options);
     ceres::Solver::Summary summary;
+    ceres::Solver::Summary summarySparse;
     ceres::Solver::Summary summaryColor;
 
     std::cout << "\n=== Starting Optimization ===\n";
-    //ceres::Solve(options, &problem, &summary);
+    ceres::Solve(options, &problemSparse, &summarySparse);
+    ceres::Solve(options, &problem, &summary);
     ceres::Solve(options, &problemColor, &summaryColor);
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", " ", "[", "]");
@@ -271,7 +291,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     //options.linear_solver_type = ceres::DENSE_QR;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 50; //maybe make it 100
+    options.max_num_iterations = 10; //maybe make it 100
     options.num_threads = 12;
 }
 
