@@ -2,7 +2,6 @@
 #define FACE_RECONSTRUCTION_RENDERING_H
 
 #include <dlib/opencv.h>
-//#include "opencv2/imgcodecs.hpp"
 #include "BFMParameters.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -72,7 +71,6 @@ static void saveFramebufferToFile(const char* filename, int width, int height) {
     FreeImage_Unload(image);
 }
 
-
 static void renderQuad(GLuint texture) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -101,18 +99,21 @@ static void renderTriangle(int verticesSize,
 static GLFWwindow* setupRendering(int width, int height){
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
+        return nullptr;
     }
-    GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL Texture", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(width, height, "Output", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();
+        return nullptr;
     }
     glfwMakeContextCurrent(window);
-    glewExperimental = GL_TRUE; // Ensure experimental extensions are enabled
+    //glewExperimental = GL_TRUE; // Ensure experimental extensions are enabled
     if (glewInit() != GLEW_OK) {
         std::cerr << "Failed to initialize GLEW" << std::endl;
+        return nullptr;
     }
-    glewInit();
+    //glewInit();
     return window;
 }
 
@@ -200,7 +201,7 @@ static unsigned int setupShaders(){
     return shaderProgram;
 }
 
-static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
+/*static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
     float fx = intrinsics(0, 0);
     float fy = intrinsics(1, 1);
     float cx = intrinsics(0, 2);
@@ -213,61 +214,50 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
 
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
 
-    projection(0, 0) = ((2 * near_plane) / (r - l));   //TODO: Move - to model?!
-    projection(1, 1) = - ((2 * near_plane) / (t - b)); //TODO: Move - to model?!
+    projection(0, 0) = ((2 * near_plane) / (r - l));
+    projection(1, 1) = - ((2 * near_plane) / (t - b));
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = - (far_plane + near_plane) / (far_plane - near_plane);
 
     projection(3, 2) = (-2 * far_plane * near_plane) / (far_plane - near_plane);
     projection(2, 3) = 1.01f;
-    //projection(1, 3) = -5.0f;
     projection(3, 3) = 0;
     return projection;
-}
+}*/
 
-static Eigen::Matrix4f orthographicProjectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
+static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
     float fx = intrinsics(0, 0);
     float fy = intrinsics(1, 1);
     float cx = intrinsics(0, 2);
     float cy = intrinsics(1, 2);
 
-    // Calculate orthographic boundaries
-    float l = -cx * near_plane / fx;                  // Left boundary
-    float r = (width - cx) * near_plane / fx;         // Right boundary
-    float b = -cy * near_plane / fy;                  // Bottom boundary
-    float t = (height - cy) * near_plane / fy;        // Top boundary
+    // Adjust projection matrix calculation
+    float aspect = static_cast<float>(width) / height;
+    float top = near_plane * std::tan(std::atan(cy / fy));
+    float bottom = -top;
+    float right = top * aspect;
+    float left = -right;
 
-    // Create orthographic projection matrix
+    /*Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+    projection(0, 0) = (2 * near_plane) / (right - left);
+    projection(1, 1) = -(2 * near_plane) / (top - bottom);
+    projection(2, 0) = (right + left) / (right - left);
+    projection(2, 1) = (top + bottom) / (top - bottom);
+    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
+    projection(2, 3) = 1.01f;
+    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+    projection(3, 3) = 0.0f;*/
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+    projection(0, 0) = (2 * near_plane) / (right - left);
+    projection(1, 1) = -(2 * near_plane) / (top - bottom);
+    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
+    projection(2, 3) = 1.01f;  // Critical part
+    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+    projection(3, 3) = 0.0f;
 
-    // Scale factors for orthographic projection
-    projection(0, 0) = (2.0f / (r - l));  // Scale for X-axis
-    projection(1, 1) = - (2.0f / (t - b));  // Scale for Y-axis
-    projection(2, 2) = - 2.0f / (far_plane - near_plane);  // Scale for Z-axis
-
-    // Offsets for translation (center the object in the view)
-    projection(0, 3) = - (r + l) / (r - l) + 800;  // Translate along X, 400 noch hardcoded
-    projection(1, 3) = - (t + b) / (t - b);  // Translate along Y
-    projection(2, 3) = - (far_plane + near_plane) / (far_plane - near_plane);  // Translate along Z
-
-    projection(3, 3) = 1.0f;  // Homogeneous coordinate
 
     return projection;
-}
-
-static Eigen::Matrix4f inverseExtrinsics(const Eigen::Matrix4f& extrinsics) {
-    /*Eigen::Vector3f translation = extrinsics.block<3, 1>(0, 3);
-
-    // Move camera slightly back along z-axis
-    translation.z() -= 950.0f;  // Adjust this value as needed
-
-    // Create a new extrinsic matrix with updated translation
-    Eigen::Matrix4f newExtrinsics = extrinsics;
-    newExtrinsics.block<3, 1>(0, 3) = translation;
-
-    // Return the inverse to get the view matrix*/
-    return extrinsics.inverse();
 }
 
 static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
@@ -288,7 +278,6 @@ static void renderLoop(GLuint texture,
     glDepthFunc(GL_LESS);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-        //glUseProgram(setupBackgroundShaders());
         glUseProgram(0);
 
         glMatrixMode(GL_PROJECTION);
@@ -300,18 +289,16 @@ static void renderLoop(GLuint texture,
 
         renderQuad(texture);
 
-        //setProjectionMatrix(inputImage, 0.1f, 100.0f);
-        //setModelViewMatrix(inputImage);
         GLuint shaderProgram = setupShaders();
         glUseProgram(shaderProgram);
 
         Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
-        Eigen::Matrix4f view = inverseExtrinsics(inputImage.extrinsics); //inverse?!
+        Eigen::Matrix4f view = inputImage.extrinsics.inverse(); //inverse?!
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
         //GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
-        view(3, 0) = 0.0f;
+        /*view(3, 0) = 0.0f;
         double angle = -1.2f;
         angle *= (3.1415926535 / 180.0);
         view(0, 0) = (float) cos(angle);
@@ -326,25 +313,12 @@ static void renderLoop(GLuint texture,
         zrot(0, 1) = (float) sin(zAngle);
         zrot(1, 0) = (float) -sin(zAngle);
 
-        view *= zrot;
+        view *= zrot;*/
 
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_TRUE, eigenToOpenGL(view));
-        /*auto modelMatrix = modelTransform;
-        modelMatrix(0, 0) = -modelMatrix(0, 0);
-        modelMatrix(1, 1) = -modelMatrix(1, 1);
-        modelMatrix(2, 2) = -modelMatrix(2, 2);
-        std::cout << "Z-Axis: " << modelMatrix(3, 2) << std::endl;
-        Eigen::Vector4f testVector = Eigen::Vector4f(0, 0, 0, 1.0f);
-        std::cout << projection * modelMatrix * view * testVector << std::endl;
-        modelMatrix(2, 3) += 6;
-        std::cout << projection * modelMatrix * view  * testVector << std::endl;
-        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, eigenToOpenGL(modelMatrix));*/
-
         renderTriangle(vertices.size() / 3, indices, VAO);
-
-        saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720); // TODO: Use real width and height!!! and real output Path
-
+        saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -365,7 +339,6 @@ static void renderFaceOnTopOfImage(int width, int height,
     std::vector<float> vertexData = setupVertexData(vertices, colors);
     GLuint texture = loadTexture(backgroundImagePath);
     auto VAO = setupBuffers(indices, vertexData);
-    //setupShaders();
     renderLoop(texture, window, vertices, indices, VAO, inputImage, modelTransform);
     cleanUp(texture, window);
 }
