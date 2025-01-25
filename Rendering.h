@@ -226,7 +226,7 @@ static unsigned int setupShaders(){
     return projection;
 }*/
 
-static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
+/*static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
     float fx = intrinsics(0, 0);
     float fy = intrinsics(1, 1);
     float cx = intrinsics(0, 2);
@@ -238,24 +238,37 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     float bottom = -top;
     float right = top * aspect;
     float left = -right;
-
-    /*Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
-    projection(0, 0) = (2 * near_plane) / (right - left);
-    projection(1, 1) = -(2 * near_plane) / (top - bottom);
-    projection(2, 0) = (right + left) / (right - left);
-    projection(2, 1) = (top + bottom) / (top - bottom);
-    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 1.01f;
-    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
-    projection(3, 3) = 0.0f;*/
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
     projection(0, 0) = (2 * near_plane) / (right - left);
-    projection(1, 1) = -(2 * near_plane) / (top - bottom);
+    projection(1, 1) = -((2 * near_plane) / (top - bottom));
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 1.01f;  // Critical part
+    projection(2, 3) = 2.0f;  // Critical part
     projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
     projection(3, 3) = 0.0f;
 
+
+    return projection;
+}*/
+static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
+    float fx = intrinsics(0, 0);
+    float fy = intrinsics(1, 1);
+    float cx = intrinsics(0, 2);
+    float cy = intrinsics(1, 2);
+
+    float l = -cx * near_plane / fx;
+    float r = (width - cx) * near_plane / fx;
+    float b = -cy * near_plane / fy;
+    float t = (height - cy) * near_plane / fy;
+
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+    projection(0, 0) = 2 * near_plane / (r - l);
+    projection(1, 1) = -2 * near_plane / (t - b);
+    projection(2, 0) = (r + l) / (r - l);
+    projection(2, 1) = (t + b) / (t - b);
+    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
+    projection(2, 3) = -1.0f;
+    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+    projection(3, 3) = 0.0f;
 
     return projection;
 }
@@ -268,6 +281,17 @@ static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
     }
     return glMat;
 }
+
+/*static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
+    GLfloat* glMat = new GLfloat[16];
+    // Transpose the matrix when copying
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 4; ++col) {
+            glMat[row * 4 + col] = mat(col, row);
+        }
+    }
+    return glMat;
+}*/
 
 static void renderLoop(GLuint texture,
                 GLFWwindow* window,
@@ -292,8 +316,8 @@ static void renderLoop(GLuint texture,
         GLuint shaderProgram = setupShaders();
         glUseProgram(shaderProgram);
 
-        Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
-        Eigen::Matrix4f view = inputImage.extrinsics.inverse(); //inverse?!
+        Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.1f, 100.0f, 1280, 720);
+        Eigen::Matrix4f view = inputImage.extrinsics;//.inverse(); //inverse?!
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
@@ -316,7 +340,7 @@ static void renderLoop(GLuint texture,
         view *= zrot;*/
 
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
-        glUniformMatrix4fv(viewLoc, 1, GL_TRUE, eigenToOpenGL(view));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, eigenToOpenGL(view));
         renderTriangle(vertices.size() / 3, indices, VAO);
         saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720);
         glfwSwapBuffers(window);
