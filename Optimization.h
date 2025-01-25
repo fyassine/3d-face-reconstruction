@@ -189,7 +189,7 @@ private:
     static const int num_color_params = 199;
 };
 
-struct SparseOptimization{
+/*struct SparseOptimization{
 public:
     SparseOptimization(const Eigen::Vector2f& landmark_position_input, const Eigen::Vector2f& landmark_bfm)
             : m_landmark_positions_input(landmark_position_input) {}
@@ -254,7 +254,7 @@ private:
 
     const Eigen::MatrixXf& m_shapePcaBasis;
     const Eigen::MatrixXf& m_expressionBasis;
-};
+};*/
 
 class Optimization {
 public:

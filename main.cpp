@@ -194,7 +194,7 @@ int main() {
     }
 
     Optimization optimizer;
-    optimizer.optimize(properties, inputImage);
+    //optimizer.optimize(properties, inputImage);
 
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);

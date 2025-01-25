@@ -108,14 +108,14 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     int validResiduals = 0;
     int invalidDepthValues = 0;
 
-    auto landmarks_input_image = inputImage.landmarks;
+    /*auto landmarks_input_image = inputImage.landmarks;
     std::vector<Eigen::Vector2d> landmarks_bfm;
     for (const auto & landmark : properties.landmarks) {
         Eigen::Vector2f current_landmark = convert3Dto2D(landmark, inputImage.intrinsics, inputImage.extrinsics);
         landmarks_bfm.emplace_back(current_landmark);
-    }
+    }*/
 
-    for (int i = 0; i < landmarks_input_image.size(); ++i) {
+    /*for (int i = 0; i < landmarks_input_image.size(); ++i) {
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<SparseOptimization, 1, 1>(
                         new SparseOptimization(landmarks_input_image[i])
@@ -123,7 +123,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 nullptr,
                 landmarks_bfm[i].data()
         );
-    }
+    }*/
 
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
