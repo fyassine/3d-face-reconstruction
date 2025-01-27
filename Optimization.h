@@ -52,9 +52,15 @@ public:
                          const Eigen::Vector3f& normal,
                          const Eigen::MatrixXf& shapePcaBasis,
                          const Eigen::MatrixXf& expressionPcaBasis,
+                         const std::vector<float>& shapeMean,
+                         const std::vector<float>& expressionMean,
+                         const std::vector<float>& shapeVariance,
+                         const std::vector<float>& expressionVariance,
                          int vertex_id) :
             m_vertex(vertex), m_depth(depth), m_normal(normal),
-            m_shapePcaBasis(shapePcaBasis), m_expressionBasis{expressionPcaBasis}, m_vertex_id(vertex_id) {}
+            m_shapePcaBasis(shapePcaBasis), m_expressionBasis{expressionPcaBasis}, m_shapeMean{shapeMean},
+            m_expressionMean{expressionMean}, m_shapeVariance{shapeVariance},
+            m_expressionVariance{expressionVariance}, m_vertex_id(vertex_id) {}
 
     template<typename T>
     bool operator()(const T* const shape,
@@ -64,10 +70,20 @@ public:
         Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
 
+        shape_offset.x() = T(m_shapeMean[m_vertex_id * 3]);
+        shape_offset.y() = T(m_shapeMean[m_vertex_id * 3 + 1]);
+        shape_offset.z() = T(m_shapeMean[m_vertex_id * 3 + 2]);
+
+        expression_offset.x() = T(m_expressionMean[m_vertex_id * 3]);
+        expression_offset.y() = T(m_expressionMean[m_vertex_id * 3 + 1]);
+        expression_offset.z() = T(m_expressionMean[m_vertex_id * 3 + 2]);
+
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             shape_offset += Eigen::Matrix<T, 3, 1>(
+                    //T value = T(sqrt(bfm.shape_pca_var[i])) * shape_weights[i];
+                    //face_model(0, 0) += T(shape_pca_basis_full(vertex_id * 3, i)) * value;
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),        //vllt. column und row vertauschen?!
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))     //maybe rows +1 wrong? Instead rows +0, wenn 0 dann ganzes model standard,
@@ -104,6 +120,12 @@ private:
     const Eigen::Vector3f m_vertex;
     const float m_depth;
     const Eigen::Vector3f m_normal;
+
+    const std::vector<float>& m_shapeMean;
+    const std::vector<float>& m_expressionMean;
+
+    const std::vector<float>& m_shapeVariance;
+    const std::vector<float>& m_expressionVariance;
 
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;

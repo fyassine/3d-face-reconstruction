@@ -194,12 +194,12 @@ int main() {
     }
 
     Optimization optimizer;
-    //optimizer.optimize(properties, inputImage);
+    optimizer.optimize(properties, inputImage);
 
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);
     for (int i = 0; i < originalVertices.size(); ++i) {
-        parsedVertices.push_back(originalVertices[i].x()); // TODO: We have to change the division. We might be able to do this by setting up a projection matrix and camera view matrix and enabling the depth test
+        parsedVertices.push_back(originalVertices[i].x());
         parsedVertices.push_back(originalVertices[i].y());
         parsedVertices.push_back(originalVertices[i].z());
         if(i == 0){

@@ -147,20 +147,21 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
-                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties.shapePcaBasis, properties.expressionPcaBasis, i)
+                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties.shapePcaBasis, properties.expressionPcaBasis,
+                                                 properties.shapeMean, properties.expressionMean, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
 
-        problemColor.AddResidualBlock(
+        /*problemColor.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
                 ),
                 nullptr,
                 colorParamsD.data()
-        );
+        );*/
         validResiduals++;
     }
 
@@ -197,12 +198,12 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             expressionParamsD.data()
     );
 
-    problemColor.AddResidualBlock(
+    /*problemColor.AddResidualBlock(
             new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
                     new ColorRegularizationTerm(albedo_std_dev)),
             nullptr,
             colorParamsD.data()
-    );
+    );*/
 
 
     std::cout << "Valid residual blocks added: " << validResiduals << std::endl;

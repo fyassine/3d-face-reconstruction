@@ -266,7 +266,7 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = -1.0f;
+    projection(2, 3) = 1.4f; //TODO: This should be -1
     projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
     projection(3, 3) = 0.0f;
 
