@@ -84,9 +84,9 @@ public:
             shape_offset += Eigen::Matrix<T, 3, 1>(
                     //T value = T(sqrt(bfm.shape_pca_var[i])) * shape_weights[i];
                     //face_model(0, 0) += T(shape_pca_basis_full(vertex_id * 3, i)) * value;
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),        //vllt. column und row vertauschen?!
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))     //maybe rows +1 wrong? Instead rows +0, wenn 0 dann ganzes model standard,
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx * 3, i))),        //vllt. column und row vertauschen?!
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx * 3 + 1, i))), //maybe rows +1 wrong? Instead rows +0
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx * 3 + 2, i)))     //maybe rows +1 wrong? Instead rows +0, wenn 0 dann ganzes model standard,
                                                                                  //aber wenn != 0, dann wären das ja einfach random die nachbar werte
             );
         }
@@ -94,9 +94,9 @@ public:
         for (int i = 0; i < num_expression_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             expression_offset += Eigen::Matrix<T, 3, 1>(
-                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))) //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx * 3, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx * 3 + 1, i))), //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx * 3 + 2, i))) //maybe rows +1 wrong? Instead rows +0
             );
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
