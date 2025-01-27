@@ -70,31 +70,30 @@ public:
         Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
 
-        shape_offset.x() = T(m_shapeMean[m_vertex_id * 3]);
+        /*shape_offset.x() = T(m_shapeMean[m_vertex_id * 3]);
         shape_offset.y() = T(m_shapeMean[m_vertex_id * 3 + 1]);
         shape_offset.z() = T(m_shapeMean[m_vertex_id * 3 + 2]);
 
         expression_offset.x() = T(m_expressionMean[m_vertex_id * 3]);
         expression_offset.y() = T(m_expressionMean[m_vertex_id * 3 + 1]);
-        expression_offset.z() = T(m_expressionMean[m_vertex_id * 3 + 2]);
+        expression_offset.z() = T(m_expressionMean[m_vertex_id * 3 + 2]);*/
 
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             shape_offset += Eigen::Matrix<T, 3, 1>(
-                    T(T(sqrt(m_shapeVariance[i])) * shape[i] * T(m_shapePcaBasis(vertex_idx * 3, i))),        //vllt. column und row vertauschen?!
-                    T(T(sqrt(m_shapeVariance[i])) * shape[i] * T(m_shapePcaBasis(vertex_idx * 3 + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(T(sqrt(m_shapeVariance[i])) * shape[i] * T(m_shapePcaBasis(vertex_idx * 3 + 2, i)))     //maybe rows +1 wrong? Instead rows +0, wenn 0 dann ganzes model standard,
-                                                                                 //aber wenn != 0, dann wären das ja einfach random die nachbar werte
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
             );
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             expression_offset += Eigen::Matrix<T, 3, 1>(
-                    T(T(sqrt(m_expressionVariance[i])) * expression[i] * T(m_expressionBasis(vertex_idx * 3, i))),
-                    T(T(sqrt(m_expressionVariance[i])) * expression[i] * T(m_expressionBasis(vertex_idx * 3 + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(T(sqrt(m_expressionVariance[i])) * expression[i] * T(m_expressionBasis(vertex_idx * 3 + 2, i))) //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))) //maybe rows +1 wrong? Instead rows +0
             );
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
@@ -209,10 +208,10 @@ private:
     static const int num_color_params = 199;
 };
 
-/*struct SparseOptimization{
+struct SparseOptimization{
 public:
-    SparseOptimization(const Eigen::Vector2f& landmark_position_input, const Eigen::Vector2f& landmark_bfm)
-            : m_landmark_positions_input(landmark_position_input) {}
+    SparseOptimization(const Eigen::Vector3f& landmark_position_input, const Eigen::Vector3f& landmark_bfm, const int landmark_bfm_index, const Eigen::MatrixXf& shapePcaBasis, const Eigen::MatrixXf& expressionPcaBasis)
+            : m_landmark_positions_input(landmark_position_input), m_expressionBasis(expressionPcaBasis), m_shapePcaBasis(shapePcaBasis), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index) {}
 
     template <typename T>
     bool operator()(const T* const shape,
@@ -224,57 +223,43 @@ public:
 
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
-            int vertex_idx = m_vertex_id * 3;
+            int vertex_idx = m_landmark_bfm_index;
             shape_offset += Eigen::Matrix<T, 3, 1>(
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),        //vllt. column und row vertauschen?!
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))     //maybe rows +1 wrong? Instead rows +0, wenn 0 dann ganzes model standard,
-                    //aber wenn != 0, dann wären das ja einfach random die nachbar werte
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
             );
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
-            int vertex_idx = m_vertex_id * 3;
+            int vertex_idx = m_landmark_bfm_index;
             expression_offset += Eigen::Matrix<T, 3, 1>(
                     T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))) //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))
             );
         }
-        Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
+        Eigen::Matrix<T, 3, 1> transformedVertex = m_landmark_bfm.cast<T>() + shape_offset + expression_offset;
 
-        //transformedVertex = m_vertex.cast<T>(); //TODO: Remove the line and think of a solution for the pcaBasis
+        residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
+        residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
+        //residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
 
-        T point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
-                                                  transformedVertex.y(),
-                                                  transformedVertex.z() - T(m_depth)).norm();
-        T point_to_plane = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
-                                                  transformedVertex.y(),
-                                                  transformedVertex.z() - T(m_depth)).dot(m_normal.cast<T>());
-
-        residuals[0] = point_to_point;
-        residuals[1] = point_to_plane;
-
-        return true;
-
-
-        T result = Eigen::Matrix<T, 2, 1>(landmark_position_bfm[0] - T(m_landmark_positions_input.x()),
-                                          landmark_position_bfm[1] - T(m_landmark_positions_input.y())
-                                          ).norm();
-
-        residuals[0] = result;
         return true;
     }
 
 private:
-    const Eigen::Vector2f m_landmark_positions_input;
+    const Eigen::Vector3f& m_landmark_positions_input;
+    const Eigen::Vector3f& m_landmark_bfm;
 
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
 
     const Eigen::MatrixXf& m_shapePcaBasis;
     const Eigen::MatrixXf& m_expressionBasis;
-};*/
+
+    const int m_landmark_bfm_index;
+};
 
 class Optimization {
 public:

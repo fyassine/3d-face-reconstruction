@@ -115,17 +115,22 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         landmarks_bfm.emplace_back(current_landmark);
     }*/
 
-    /*for (int i = 0; i < landmarks_input_image.size(); ++i) {
-        problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<SparseOptimization, 1, 1>(
-                        new SparseOptimization(landmarks_input_image[i])
+    auto landmarks_input_image = inputImage.landmarks;
+    auto landmarks_depth_values = inputImage.depthValuesLandmarks;
+    for (int i = 0; i < landmarks_input_image.size(); ++i) {
+        auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
+        problemSparse.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<SparseOptimization, 2, 199, 100>(
+                        new SparseOptimization(current_landmark, properties.landmarks[i], properties.landmark_indices[i], properties.shapePcaBasis, properties.expressionPcaBasis)
                 ),
                 nullptr,
-                landmarks_bfm[i].data()
+                shapeParamsD.data(),
+                expressionParamsD.data()
         );
-    }*/
+    }
 
-    for (size_t i = 0; i < bfmVertices.size(); ++i) {
+    //TODO uncomment
+    /*for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
         Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
@@ -148,22 +153,22 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties.shapePcaBasis, properties.expressionPcaBasis,
-                                                 properties.shapeMean, properties.expressionMean, i)
+                                                 properties.shapeMean, properties.expressionMean, properties.shapePcaVariance, properties.expressionPcaVariance, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
 
-        /*problemColor.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
-                        new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
-                ),
-                nullptr,
-                colorParamsD.data()
-        );*/
+        //problemColor.AddResidualBlock(
+        //        new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
+        //                new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
+        //        ),
+        //        nullptr,
+        //        colorParamsD.data()
+        //);
         validResiduals++;
-    }
+    }*/
 
     // Initialize standard deviation vectors from PCA variance
     std::vector<double> identity_std_dev(199);
@@ -181,22 +186,22 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         expression_std_dev[i] = std::sqrt(properties.expressionPcaVariance[i]);
     }
 
-    /*problem.AddResidualBlock(
-            new ceres::AutoDiffCostFunction<RegularizationTerm, 1, 199, 199, 100>(
-                    new RegularizationTerm(identity_std_dev, albedo_std_dev, expression_std_dev)),
-            nullptr,
-            shapeParamsD.data(),
-            colorParamsD.data(),
-            expressionParamsD.data()
-    );*/
+    //problem.AddResidualBlock(
+    //        new ceres::AutoDiffCostFunction<RegularizationTerm, 1, 199, 199, 100>(
+    //                new RegularizationTerm(identity_std_dev, albedo_std_dev, expression_std_dev)),
+    //        nullptr,
+    //        shapeParamsD.data(),
+    //        colorParamsD.data(),
+    //        expressionParamsD.data()
+    //);*/
 
-    problem.AddResidualBlock(
+    /*problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 1, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
             shapeParamsD.data(),
             expressionParamsD.data()
-    );
+    );*/
 
     /*problemColor.AddResidualBlock(
             new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
@@ -219,8 +224,8 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 
     std::cout << "\n=== Starting Optimization ===\n";
     ceres::Solve(options, &problemSparse, &summarySparse);
-    ceres::Solve(options, &problem, &summary);
-    ceres::Solve(options, &problemColor, &summaryColor);
+    //ceres::Solve(options, &problem, &summary);
+    //ceres::Solve(options, &problemColor, &summaryColor);
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", " ", "[", "]");
     std::cout << "\n=== Optimization Results ===\n";
