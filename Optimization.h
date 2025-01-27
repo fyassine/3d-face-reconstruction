@@ -243,7 +243,7 @@ public:
 
         residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
         residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
-        //residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
+        residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
 
         return true;
     }
@@ -341,18 +341,20 @@ struct GeometryRegularizationTerm {
     bool operator()(const T* const identity_params,
                     const T* const expression_params,
                     T* residual) const {
-        T reg_energy = T(0);
+        T reg_energy_geometry = T(0);
+        T reg_energy_expression = T(0);
 
         // Identity parameters regularization
         for (int i = 0; i < num_identity_params; ++i) {
-            reg_energy += pow(identity_params[i] / T(identity_std_dev[i]), 2);
+            reg_energy_geometry += pow(identity_params[i] / T(identity_std_dev[i]), 2);
         }
         // Expression parameters regularization
         for (int i = 0; i < num_expression_params; ++i) {
-            reg_energy += pow(expression_params[i] / T(expression_std_dev[i]), 2);
+            reg_energy_expression += pow(expression_params[i] / T(expression_std_dev[i]), 2);
         }
 
-        residual[0] = reg_energy;
+        residual[0] = reg_energy_geometry;
+        residual[1] = reg_energy_expression;
         return true;
     }
 

@@ -119,8 +119,11 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
-        problemSparse.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<SparseOptimization, 2, 199, 100>(
+        if(i <= 4){
+            std::cout << "Landmark 3D: " << bfmVertices.size() << std::endl; // << "V: " << properties.landmarks[i] << std::endl;
+        }
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
                         new SparseOptimization(current_landmark, properties.landmarks[i], properties.landmark_indices[i], properties.shapePcaBasis, properties.expressionPcaBasis)
                 ),
                 nullptr,
@@ -130,7 +133,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     }
 
     //TODO uncomment
-    /*for (size_t i = 0; i < bfmVertices.size(); ++i) {
+    for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
         Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
@@ -160,15 +163,15 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 expressionParamsD.data()
         );
 
-        //problemColor.AddResidualBlock(
-        //        new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
-        //                new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
-        //        ),
-        //        nullptr,
-        //        colorParamsD.data()
-        //);
+        problemColor.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
+                        new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
+                ),
+                nullptr,
+                colorParamsD.data()
+        );
         validResiduals++;
-    }*/
+    }
 
     // Initialize standard deviation vectors from PCA variance
     std::vector<double> identity_std_dev(199);
@@ -195,20 +198,20 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     //        expressionParamsD.data()
     //);*/
 
-    /*problem.AddResidualBlock(
-            new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 1, 199, 100>(
+    problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
             shapeParamsD.data(),
             expressionParamsD.data()
-    );*/
+    );
 
-    /*problemColor.AddResidualBlock(
+    problemColor.AddResidualBlock(
             new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
                     new ColorRegularizationTerm(albedo_std_dev)),
             nullptr,
             colorParamsD.data()
-    );*/
+    );
 
 
     std::cout << "Valid residual blocks added: " << validResiduals << std::endl;
@@ -223,9 +226,9 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     ceres::Solver::Summary summaryColor;
 
     std::cout << "\n=== Starting Optimization ===\n";
-    ceres::Solve(options, &problemSparse, &summarySparse);
-    //ceres::Solve(options, &problem, &summary);
-    //ceres::Solve(options, &problemColor, &summaryColor);
+    //ceres::Solve(options, &problemSparse, &summarySparse);
+    ceres::Solve(options, &problem, &summary);
+    ceres::Solve(options, &problemColor, &summaryColor);
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", " ", "[", "]");
     std::cout << "\n=== Optimization Results ===\n";
