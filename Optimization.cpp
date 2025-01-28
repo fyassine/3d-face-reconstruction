@@ -98,24 +98,42 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         );
     }*/
 
-    std::cout << "Hey" << std::endl;
+    std::cout << "Adding Residual Blocks: " << bfmVertices.size() << std::endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    for (size_t i = 0; i < bfmVertices.size(); ++i) {
+    std::chrono::steady_clock::time_point beginAdd = std::chrono::steady_clock::now();
+
+    for (size_t i = 0; i < bfmVertices.size(); i+=10) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
-        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        //Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+
+        if(i == 0){
+            std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
+            std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(endAdd - beginAdd).count() << "[µs]" << std::endl;
+            std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
+        }
 
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
-                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties.shapePcaBasis, properties.expressionPcaBasis,
-                                                 properties.shapeMean, properties.expressionMean, properties.shapePcaVariance, properties.expressionPcaVariance, i)
+                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
 
+        if(i == 0){
+            std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
+            std::cout << "Time difference Add Res Block = " << std::chrono::duration_cast<std::chrono::microseconds>(endAdd - beginAdd).count() << "[µs]" << std::endl;
+            std::cout << "Time difference Add Res Block = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
+        }
+    }
+
+    //TODO: Color
+    /*for (size_t i = 0; i < bfmVertices.size(); i+=10) {
+        Eigen::Vector3f vertexBfm = bfmVertices[i];
+        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
@@ -123,7 +141,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 nullptr,
                 colorParamsD.data()
         );
-    }
+    }*/
 
     std::cout << "Stop" << std::endl;
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
@@ -206,13 +224,15 @@ void Optimization::optimizeSparseTerms() {
 }
 
 void Optimization::configureSolver(ceres::Solver::Options &options) {
-    options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+    options.dense_linear_algebra_library_type = ceres::CUDA;
+
+/*    options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.use_nonmonotonic_steps = false;
     //options.linear_solver_type = ceres::DENSE_QR;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
     options.max_num_iterations = 10; //maybe make it 100
-    options.num_threads = 12;
+    options.num_threads = 12;*/
 }
 
 

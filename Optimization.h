@@ -50,17 +50,9 @@ public:
     GeometryOptimization(const Eigen::Vector3f& vertex,
                          const float& depth,
                          const Eigen::Vector3f& normal,
-                         const Eigen::MatrixXf& shapePcaBasis,
-                         const Eigen::MatrixXf& expressionPcaBasis,
-                         const std::vector<float>& shapeMean,
-                         const std::vector<float>& expressionMean,
-                         const std::vector<float>& shapeVariance,
-                         const std::vector<float>& expressionVariance,
+                         const BfmProperties& bfmProperties,
                          int vertex_id) :
-            m_vertex(vertex), m_depth(depth), m_normal(normal),
-            m_shapePcaBasis(shapePcaBasis), m_expressionBasis{expressionPcaBasis}, m_shapeMean{shapeMean},
-            m_expressionMean{expressionMean}, m_shapeVariance{shapeVariance},
-            m_expressionVariance{expressionVariance}, m_vertex_id(vertex_id) {}
+            m_vertex(vertex), m_depth(depth), m_normal(normal), m_bfm_properties(bfmProperties), m_vertex_id(vertex_id) {}
 
     template<typename T>
     bool operator()(const T* const shape,
@@ -69,6 +61,11 @@ public:
 
         Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
+
+        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
+        auto& m_shapeVariance = m_bfm_properties.shapePcaVariance;
+        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
+        auto& m_expressionVariance = m_bfm_properties.expressionPcaVariance;
 
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
@@ -107,17 +104,11 @@ private:
     const float m_depth;
     const Eigen::Vector3f m_normal;
 
-    const std::vector<float>& m_shapeMean;
-    const std::vector<float>& m_expressionMean;
-
-    const std::vector<float>& m_shapeVariance;
-    const std::vector<float>& m_expressionVariance;
+    const BfmProperties& m_bfm_properties;
 
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
 
-    const Eigen::MatrixXf& m_shapePcaBasis;
-    const Eigen::MatrixXf& m_expressionBasis;
     const int m_vertex_id;
 };
 
