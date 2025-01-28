@@ -122,17 +122,33 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
+        
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 3, 199, 100>(
+                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
+                ),
+                nullptr,
+                shapeParamsD.data(),
+                expressionParamsD.data()
+        );
+        
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 3, 199, 100>(
+                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
+                ),
+                nullptr,
+                shapeParamsD.data(),
+                expressionParamsD.data()
+        );
 
         if(i == 0){
             std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
             std::cout << "Time difference Add Res Block = " << std::chrono::duration_cast<std::chrono::microseconds>(endAdd - beginAdd).count() << "[µs]" << std::endl;
             std::cout << "Time difference Add Res Block = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
         }
-    }
+//    }
 
     //TODO: Color
-    for (size_t i = 0; i < bfmVertices.size(); i+=25) {
-        Eigen::Vector3f vertexBfm = bfmVertices[i];
         Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(

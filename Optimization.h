@@ -84,16 +84,73 @@ public:
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
 
-        T point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
-                                                  transformedVertex.y(),
-                                                  transformedVertex.z() - T(m_depth)).norm();
-        T point_to_plane = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
-                                                  transformedVertex.y(),
-                                                  transformedVertex.z() - T(m_depth)).dot(m_normal.cast<T>());
+        residuals[0] = T(transformedVertex.x());
+        residuals[1] = T(transformedVertex.y());
+        residuals[2] = T(transformedVertex.z()) - T(m_depth);
 
-        residuals[0] = point_to_point;
-        residuals[1] = point_to_plane;
+        return true;
+    }
 
+private:
+    const Eigen::Vector3f m_vertex;
+    const float m_depth;
+    const Eigen::Vector3f m_normal;
+
+    const BfmProperties& m_bfm_properties;
+
+    static const int num_shape_params = 199;
+    static const int num_expression_params = 100;
+
+    const int m_vertex_id;
+};
+
+struct GeometryOptimizationPointToPlane {
+public:
+    GeometryOptimizationPointToPlane(const Eigen::Vector3f& vertex,
+                         const float& depth,
+                         const Eigen::Vector3f& normal,
+                         const BfmProperties& bfmProperties,
+                         int vertex_id) :
+            m_vertex(vertex), m_depth(depth), m_normal(normal), m_bfm_properties(bfmProperties), m_vertex_id(vertex_id) {}
+
+    template<typename T>
+    bool operator()(const T* const shape,
+                    const T* const expression,
+                    T* residuals) const {
+        
+        Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        
+        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
+        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
+        
+        for (int i = 0; i < num_shape_params; ++i) {
+            int vertex_idx = m_vertex_id * 3;
+            shape_offset += Eigen::Matrix<T, 3, 1>(
+                                                   T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                                                   T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                                                   T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
+                                                   );
+        }
+        
+        for (int i = 0; i < num_expression_params; ++i) {
+            int vertex_idx = m_vertex_id * 3;
+            expression_offset += Eigen::Matrix<T, 3, 1>(
+                                                        T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                                                        T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
+                                                        T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))
+                                                        );
+        }
+        Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
+        
+        Eigen::Matrix<T, 3, 1> transformedVertexDotNormal = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
+                                                                                   transformedVertex.y(),
+                                                                                   transformedVertex.z() - T(m_depth)).dot(m_normal.cast<T>());
+        
+        residuals[0] = T(transformedVertexDotNormal.x());
+        residuals[1] = T(transformedVertexDotNormal.y());
+        residuals[2] = T(transformedVertexDotNormal.z()) - T(m_depth);
+        
         return true;
     }
 
