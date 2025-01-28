@@ -63,25 +63,23 @@ public:
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
 
         auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
-        auto& m_shapeVariance = m_bfm_properties.shapePcaVariance;
         auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
-        auto& m_expressionVariance = m_bfm_properties.expressionPcaVariance;
 
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             shape_offset += Eigen::Matrix<T, 3, 1>(
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),// * T(std::sqrt(m_shapeVariance[i]))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),//  * T(std::sqrt(m_shapeVariance[i]))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))// * T(std::sqrt(m_shapeVariance[i])))
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
             );
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             expression_offset += Eigen::Matrix<T, 3, 1>(
-                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),// * T(std::sqrt(m_expressionVariance[i]))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),// * T(std::sqrt(m_expressionVariance[i]))), //maybe rows +1 wrong? Instead rows +0
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))// * T(std::sqrt(m_expressionVariance[i]))) //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))
             );
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
@@ -114,8 +112,8 @@ private:
 
 struct ColorOptimization {
 public:
-    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const Eigen::Vector3f& illumination, const Eigen::MatrixXf& colorPcaBasis, int color_id)
-        : m_albedo(albedo), m_image_color(image_color), m_illumination(illumination), m_colorPcaBasis(colorPcaBasis), m_color_id(color_id) {}
+    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const Eigen::Vector3f& illumination, const BfmProperties& bfmProperties, int color_id)
+        : m_albedo(albedo), m_image_color(image_color), m_illumination(illumination), m_bfm_properties(bfmProperties), m_color_id(color_id) {}
 
     template <typename T>
     bool operator()(const T* const color, T* residuals) const {
@@ -136,6 +134,7 @@ public:
         // Compute adjusted albedo with normalized illumination
         Eigen::Matrix<T, 3, 1> adjusted_albedo = m_albedo.cast<T>().cwiseProduct(
         Eigen::Matrix<T, 3, 1>(illumination_normalized[0], illumination_normalized[1], illumination_normalized[2]));*/
+        auto& m_colorPcaBasis = m_bfm_properties.colorPcaBasis;
 
         // Compute color offset
         Eigen::Matrix<T, 3, 1> color_offset = Eigen::Matrix<T, 3, 1>::Zero();
@@ -183,7 +182,7 @@ private:
     const Eigen::Vector3f m_albedo;
     const Eigen::Vector3f m_image_color;
     const Eigen::Vector3f m_illumination;
-    const Eigen::MatrixXf& m_colorPcaBasis;
+    const BfmProperties& m_bfm_properties;
     const int m_color_id;
     static const int num_color_params = 199;
 };
