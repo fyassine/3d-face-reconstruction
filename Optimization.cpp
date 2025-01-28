@@ -115,7 +115,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         landmarks_bfm.emplace_back(current_landmark);
     }*/
 
-    auto landmarks_input_image = inputImage.landmarks;
+    /*auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
@@ -130,7 +130,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
-    }
+    }*/
 
     //TODO uncomment
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
@@ -213,7 +213,6 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             colorParamsD.data()
     );
 
-
     std::cout << "Valid residual blocks added: " << validResiduals << std::endl;
     std::cout << "Invalid depth values encountered: " << invalidDepthValues << std::endl;
 
@@ -261,6 +260,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         auto currentColor = colorResultAfterOpt[i];
         std::cout << "(" << currentColor.x() << ", " << currentColor.y() << ", " << currentColor.z() << ")" << std::endl;
     }
+
     float smallestValue = 0;
     float biggestValue = -1000.0f;
     for (int i = 0; i < colorResultAfterOpt.size(); ++i) {
