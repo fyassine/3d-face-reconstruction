@@ -70,18 +70,18 @@ public:
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             shape_offset += Eigen::Matrix<T, 3, 1>(
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i)) * T(std::sqrt(m_shapeVariance[i]))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))  * T(std::sqrt(m_shapeVariance[i]))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)) * T(std::sqrt(m_shapeVariance[i])))
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),// * T(std::sqrt(m_shapeVariance[i]))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),//  * T(std::sqrt(m_shapeVariance[i]))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))// * T(std::sqrt(m_shapeVariance[i])))
             );
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             expression_offset += Eigen::Matrix<T, 3, 1>(
-                    T(expression[i] * T(m_expressionBasis(vertex_idx, i)) * T(std::sqrt(m_expressionVariance[i]))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i)) * T(std::sqrt(m_expressionVariance[i]))), //maybe rows +1 wrong? Instead rows +0
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)) * T(std::sqrt(m_expressionVariance[i]))) //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),// * T(std::sqrt(m_expressionVariance[i]))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),// * T(std::sqrt(m_expressionVariance[i]))), //maybe rows +1 wrong? Instead rows +0
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))// * T(std::sqrt(m_expressionVariance[i]))) //maybe rows +1 wrong? Instead rows +0
             );
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
