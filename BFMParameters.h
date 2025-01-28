@@ -8,6 +8,10 @@
 #include "ProcrustesAligner.h"
 #include "ImageExtraction.h"
 
+
+const std::string dataFolderPath = DATA_FOLDER_PATH;
+const std::string resultFolderPath = RESULT_FOLDER_PATH;
+
 //WIP
 struct BfmProperties {
 
@@ -19,6 +23,7 @@ struct BfmProperties {
     Eigen::Vector3f initialOffset;
     std::vector<int> triangles;
     std::vector<Eigen::Vector3f> landmarks;
+    std::vector<int> landmark_indices;
     //TODO: landmarks?!
 
     Matrix4f transformation;
@@ -185,26 +190,26 @@ static void readHDF5DataMatrix(const H5::H5File& file, const std::string& groupP
     }
 }
 
-static void readFaces(){
-//TODO: Not done
-    /*const std::string inputFile = std::string("../../../Data/faces.txt");
-    std::ifstream inFile(inputFile);
-    std::string line;
-    while (std::getline(inFile, line)) {
-        std::istringstream iss(line);
-        int firstInt;
-        int secondInt, thirdInt, fourthInt;
-        if (iss >> firstInt >> secondInt >> thirdInt >> fourthInt) {
-            properties.triangles.push_back(secondInt);
-            properties.triangles.push_back(thirdInt);
-            properties.triangles.push_back(fourthInt);
-        } else {
-            std::cerr << "Error: Incorrect input file" << std::endl;
-        }
-    }
-    properties.numberOfTriangles = properties.triangles.size() / 3;
-    std::cout << "Faces: " << properties.numberOfTriangles << std::endl;*/
-}
+// static void readFaces(){
+// //TODO: Not done
+//     const std::string inputFile = std::string(dataFolderPath + "faces.txt");
+//     std::ifstream inFile(inputFile);
+//     std::string line;
+//     while (std::getline(inFile, line)) {
+//         std::istringstream iss(line);
+//         int firstInt;
+//         int secondInt, thirdInt, fourthInt;
+//         if (iss >> firstInt >> secondInt >> thirdInt >> fourthInt) {
+//             properties.triangles.push_back(secondInt);
+//             properties.triangles.push_back(thirdInt);
+//             properties.triangles.push_back(fourthInt);
+//         } else {
+//             std::cerr << "Error: Incorrect input file" << std::endl;
+//         }
+//     }
+//     properties.numberOfTriangles = properties.triangles.size() / 3;
+//     std::cout << "Faces: " << properties.numberOfTriangles << std::endl;*/
+// }
 
 static std::vector<Eigen::Vector3f> readLandmarksBFM(const std::string& path){
     const std::string inputFile = std::string(path);
@@ -306,6 +311,11 @@ static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vect
     return depthValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
 }
 
+static Eigen::Vector3f getColorValueFromInputImage(const Eigen::Vector3f& point, std::vector<Eigen::Vector3f> colorValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
+    auto pixelCoordinates = convert3Dto2D(point, depthIntrinsics, extrinsics);
+    return colorValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
+}
+
 //@param path -> path to .h5 file
 //initializeMethod durch constructor ersetzen?!
 static void initializeBFM(const std::string& path, BfmProperties& properties, const InputImage& inputImage){
@@ -348,7 +358,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     std::cout << "Shape Variance: " << properties.shapePcaVariance.size() << " values" << std::endl;
     std::cout << "PCA Basis " << properties.shapePcaBasis(0, 0) << std::endl;
     //Faces
-    const std::string inputFile = std::string("../../../Data/faces.txt");
+    const std::string inputFile = std::string(dataFolderPath + "faces.txt");
     std::ifstream inFile(inputFile);
     std::string line;
     while (std::getline(inFile, line)) {
@@ -367,7 +377,15 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     std::cout << "Faces: " << properties.numberOfTriangles << std::endl;
 
     std::vector<Eigen::Vector3f> landmarks;
-
+    std::vector<int> landmarkVertices = {
+            22143, 22813, 22840, 23250, 44124, 45884, 47085, 47668, 48188, 48708,
+            49299, 50498, 52457, 32022, 32386, 32359, 32979, 38886, 39636, 40030,
+            40238, 40433, 41172, 41368, 41578, 42011, 42646, 8291, 8305, 8314,
+            8320, 6783, 7687, 8331, 8977, 9879, 1832, 3760, 5050, 6087, 4546, 3516,
+            10731, 11758, 12919, 14859, 13191, 12157, 5523, 6155, 7442, 8345, 9506,
+            10799, 11199, 10179, 9277, 8374, 7471, 6566, 5909, 7322, 8354, 9386,
+            10941, 9141, 8367, 7194
+    };
     landmarks.push_back({-73919.3f, 30876.3f, 19849.9f});
     landmarks.push_back({-70737.7f, 5242.63f, 23751.0f});
     landmarks.push_back({-67043.4f, -16524.0f, 30461.0f});
@@ -441,6 +459,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
         landmarks[i] /= 1000;
     }
     properties.landmarks = landmarks;
+    properties.landmark_indices = landmarkVertices;
     ProcrustesAligner aligner;
 
     std::vector<Eigen::Vector3f> targetPoints;

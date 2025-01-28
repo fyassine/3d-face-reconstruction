@@ -16,7 +16,6 @@
 using namespace Eigen;
 using namespace std;
 
-// TODO define marker for data folder
 
 int runPipeline() {
     //BfmProperties bfmProperties;
@@ -153,11 +152,11 @@ void test2(){
 }
 
 int main() {
-    InputImage inputImage = readVideoData("../../../Data/20250116_183206.bag");
-    const std::string imagePath = std::string("../../../Result/color_frame_corrected.png");
-    //const std::string imagePath = std::string("../../../Data/testmyface.png");
-    const std::string shapePredictorPath = std::string("../../../Data/shape_predictor_68_face_landmarks.dat");
-    const std::string outputPath = std::string("../../../Result/output_corrected.png");
+    InputImage inputImage = readVideoData(dataFolderPath + "20250116_183206.bag");
+    const std::string imagePath = std::string(resultFolderPath + "color_frame_corrected.png");
+    //const std::string imagePath = std::string(dataFolderPath + "testmyface.png");
+    const std::string shapePredictorPath = std::string(dataFolderPath + "shape_predictor_68_face_landmarks.dat");
+    const std::string outputPath = std::string(resultFolderPath + "output_corrected.png");
     //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
     DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
     auto landmarks2D = GetLandmarkVector(imagePath, shapePredictorPath);
@@ -167,9 +166,9 @@ int main() {
     calculateDepthValuesLandmarks(inputImage);
 
     std::cout << "TEST" << std::endl;
-    const std::string outputPlyPath = std::string("../../../Result/outputModel.ply");
-    const std::string outputLandmarkPlyPath = std::string("../../../Result/landmarks.ply");
-    const std::string h5TestFile = std::string("../../../Data/model2019_face12.h5");
+    const std::string outputPlyPath = std::string(resultFolderPath + "outputModel.ply");
+    const std::string outputLandmarkPlyPath = std::string(resultFolderPath + "landmarks.ply");
+    const std::string h5TestFile = std::string(dataFolderPath + "model2019_face12.h5");
 
     BfmProperties properties;
     properties = getProperties(h5TestFile, inputImage);
@@ -200,7 +199,7 @@ int main() {
     std::vector<float> parsedVertices;
     auto originalVertices = getVertices(properties);
     for (int i = 0; i < originalVertices.size(); ++i) {
-        parsedVertices.push_back(originalVertices[i].x()); // TODO: We have to change the division. We might be able to do this by setting up a projection matrix and camera view matrix and enabling the depth test
+        parsedVertices.push_back(originalVertices[i].x());
         parsedVertices.push_back(originalVertices[i].y());
         parsedVertices.push_back(originalVertices[i].z());
         if(i == 0){
@@ -219,9 +218,9 @@ int main() {
         }
     }
 
-    getPointCloud(pointCloudVertices, inputImage.depthValues, color255, "../../../Result/pls.ply", inputImage.intrinsics, inputImage.extrinsics);
-    convertVerticesTest(targetPoints, "../../../Result/warumklapptdasnicht.ply");
-    convertLandmarksToPly(properties, "../../../Result/BfmTranslationTest.ply");
-    convertParametersToPly(properties, "../../../Result/BfmModel.ply");
-    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, "../../../Result/color_frame_corrected.png", inputImage, properties.transformation);
+    getPointCloud(pointCloudVertices, inputImage.depthValues, color255, resultFolderPath +"pls.ply", inputImage.intrinsics, inputImage.extrinsics);
+    convertVerticesTest(targetPoints, resultFolderPath + "warumklapptdasnicht.ply");
+    convertLandmarksToPly(properties, resultFolderPath + "BfmTranslationTest.ply");
+    convertParametersToPly(properties, resultFolderPath + "BfmModel.ply");
+    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, (resultFolderPath + "color_frame_corrected.png").c_str(), inputImage, properties.transformation);
 }
