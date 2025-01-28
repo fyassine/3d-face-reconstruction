@@ -113,15 +113,6 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(endAdd - beginAdd).count() << "[µs]" << std::endl;
             std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
         }
-
-        problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
-                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
-                ),
-                nullptr,
-                shapeParamsD.data(),
-                expressionParamsD.data()
-        );
         
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 3, 199, 100>(
@@ -133,8 +124,8 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         );
         
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 3, 199, 100>(
-                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
+                new ceres::AutoDiffCostFunction<GeometryOptimizationPointToPlane, 1, 199, 100>(
+                        new GeometryOptimizationPointToPlane(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),

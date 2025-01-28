@@ -143,13 +143,11 @@ public:
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
         
-        Eigen::Matrix<T, 3, 1> transformedVertexDotNormal = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
+        T transformedVertexDotNormal = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
                                                                                    transformedVertex.y(),
                                                                                    transformedVertex.z() - T(m_depth)).dot(m_normal.cast<T>());
         
-        residuals[0] = T(transformedVertexDotNormal.x());
-        residuals[1] = T(transformedVertexDotNormal.y());
-        residuals[2] = T(transformedVertexDotNormal.z()) - T(m_depth);
+        residuals[0] = transformedVertexDotNormal;
         
         return true;
     }
