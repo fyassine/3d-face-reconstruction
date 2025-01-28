@@ -83,10 +83,15 @@ public:
             );
         }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
+        
+        Eigen::Matrix<T, 3, 1> point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
+                                                  transformedVertex.y(),
+                                                  transformedVertex.z() - T(m_depth)).normalized();
 
-        residuals[0] = T(transformedVertex.x());
-        residuals[1] = T(transformedVertex.y());
-        residuals[2] = T(transformedVertex.z()) - T(m_depth);
+
+        residuals[0] = T(point_to_point.x());
+        residuals[1] = T(point_to_point.y());
+        residuals[2] = T(point_to_point.z());
 
         return true;
     }
