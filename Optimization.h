@@ -189,8 +189,8 @@ private:
 
 struct SparseOptimization{
 public:
-    SparseOptimization(const Eigen::Vector3f& landmark_position_input, const Eigen::Vector3f& landmark_bfm, const int landmark_bfm_index, const Eigen::MatrixXf& shapePcaBasis, const Eigen::MatrixXf& expressionPcaBasis)
-            : m_landmark_positions_input(landmark_position_input), m_expressionBasis(expressionPcaBasis), m_shapePcaBasis(shapePcaBasis), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index) {}
+    SparseOptimization(const Eigen::Vector3f& landmark_position_input, const Eigen::Vector3f& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties)
+            : m_landmark_positions_input(landmark_position_input), m_bfm_properties(bfmProperties), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index) {}
 
     template <typename T>
     bool operator()(const T* const shape,
@@ -199,6 +199,9 @@ public:
 
         Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
+
+        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
+        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
 
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
@@ -234,8 +237,7 @@ private:
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
 
-    const Eigen::MatrixXf& m_shapePcaBasis;
-    const Eigen::MatrixXf& m_expressionBasis;
+    const BfmProperties& m_bfm_properties;
 
     const int m_landmark_bfm_index;
 };
