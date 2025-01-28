@@ -1,6 +1,7 @@
 #include "Optimization.h"
 #include <vector>
 #include <iostream>
+#include <chrono>
 
 double GetDepthForVertex(Eigen::Vector3d vertex){
     return 0;
@@ -8,57 +9,32 @@ double GetDepthForVertex(Eigen::Vector3d vertex){
 
 //Not sure about params and return type yet
 void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inputImage) {
-    std::cout << "\n=== Starting Dense Terms Optimization ===\n";
 
     ceres::Problem problemSparse;
     ceres::Problem problem;
     ceres::Problem problemColor;
-    // Debug BFM vertices
+
     auto bfmVertices = getVertices(properties);
     auto bfmColors = getColorValuesF(properties);
-    std::cout << "Number of BFM vertices: " << bfmVertices.size() << std::endl;
-    std::cout << "First vertex position: ("
-              << bfmVertices[0].x() << ", "
-              << bfmVertices[0].y() << ", "
-              << bfmVertices[0].z() << ")\n";
 
-    // Debug normals calculation
-    std::cout << "\n=== Computing Normals ===\n";
     std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
-    int validNormalCount = 0;
 
     for (size_t i = 0; i < properties.triangles.size(); i+=3) {
         auto triangle0 = properties.triangles[i];
         auto triangle1 = properties.triangles[i+1];
         auto triangle2 = properties.triangles[i+2];
 
-        // Debug triangle indices
-        if (i == 0) {
-            std::cout << "First triangle indices: " << triangle0 << ", " << triangle1 << ", " << triangle2 << std::endl;
-        }
-
         Vector3f faceNormal = (bfmVertices[triangle1] - bfmVertices[triangle0]).cross(bfmVertices[triangle2] - bfmVertices[triangle0]);
-
-        if (faceNormal.norm() > 0) {
-            validNormalCount++;
-        }
 
         normals[triangle0] += faceNormal;
         normals[triangle1] += faceNormal;
         normals[triangle2] += faceNormal;
     }
 
-    std::cout << "Valid face normals computed: " << validNormalCount << std::endl;
-
     // Normalize normals
-    int zeroNormals = 0;
     for (size_t i = 0; i < bfmVertices.size(); i++) {
-        if (normals[i].norm() < 1e-10) {
-            zeroNormals++;
-        }
         normals[i].normalize();
     }
-    std::cout << "Number of zero-length normals: " << zeroNormals << std::endl;
 
     int width = 1280;
     int height = 720;
@@ -93,20 +69,10 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                                                             gammaMatrix);
     }
     // End illumination
-        
-    // Debug parameters
-    std::cout << "\n=== Parameters Setup ===\n";
+
     Eigen::VectorXd shapeParamsD = properties.shapeParams.cast<double>();
     Eigen::VectorXd expressionParamsD = properties.expressionParams.cast<double>();
     Eigen::VectorXd colorParamsD = properties.colorParams.cast<double>();
-
-    std::cout << "Shape params size: " << shapeParamsD.size() << std::endl;
-    std::cout << "Expression params size: " << expressionParamsD.size() << std::endl;
-
-    // Add residual blocks
-    std::cout << "\n=== Adding Residual Blocks ===\n";
-    int validResiduals = 0;
-    int invalidDepthValues = 0;
 
     /*auto landmarks_input_image = inputImage.landmarks;
     std::vector<Eigen::Vector2d> landmarks_bfm;
@@ -132,26 +98,13 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         );
     }*/
 
-    //TODO uncomment
+    std::cout << "Hey" << std::endl;
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
     for (size_t i = 0; i < bfmVertices.size(); ++i) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
         Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
-
-        if (std::isnan(depthInputImage) || std::isinf(depthInputImage)) {
-            invalidDepthValues++;
-            continue;
-        }
-
-        // Debug first few vertices
-        if (i < 5) {
-            std::cout << "Vertex " << i << " depth: " << depthInputImage << std::endl;
-            std::cout << "Vertex " << i << " color: " << colorInputImage << std::endl;
-            std::cout << "Vertex " << i << " normal: ("
-                      << normals[i].x() << ", "
-                      << normals[i].y() << ", "
-                      << normals[i].z() << ")\n";
-        }
 
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
@@ -163,15 +116,19 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 expressionParamsD.data()
         );
 
-        problemColor.AddResidualBlock(
+        problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties.colorPcaBasis, i)
                 ),
                 nullptr,
                 colorParamsD.data()
         );
-        validResiduals++;
     }
+
+    std::cout << "Stop" << std::endl;
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    std::cout << "Time difference (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) /1000000.0  <<std::endl;
 
     // Initialize standard deviation vectors from PCA variance
     std::vector<double> identity_std_dev(199);
@@ -213,9 +170,6 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             colorParamsD.data()
     );
 
-    std::cout << "Valid residual blocks added: " << validResiduals << std::endl;
-    std::cout << "Invalid depth values encountered: " << invalidDepthValues << std::endl;
-
     // Setup and run solver
     std::cout << "\n=== Configuring Solver ===\n";
     ceres::Solver::Options options;
@@ -242,52 +196,9 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     std::cout << "Expression Params: " << expressionParamsD.format(CleanFmt) << std::endl;
     std::cout << "Color Params: " << colorParamsD.format(CleanFmt) << std::endl;
 
-    //TODO: Print color to see change
-
-    std::cout << "\nChange in Color: " << std::endl;
-    auto colorResult = getColorValuesF(properties);
-    for (int i = 0; i < 20; ++i) {
-        auto currentColor = colorResult[i];
-        std::cout << "(" << currentColor.x() << ", " << currentColor.y() << ", " << currentColor.z() << ")" << std::endl;
-    }
     properties.shapeParams = shapeParamsD.cast<float>();
     properties.expressionParams = expressionParamsD.cast<float>();
     properties.colorParams = colorParamsD.cast<float>();
-
-    std::cout << "Color after optimization" << std::endl;
-    auto colorResultAfterOpt = getColorValuesF(properties);
-    for (int i = 0; i < 20; ++i) {
-        auto currentColor = colorResultAfterOpt[i];
-        std::cout << "(" << currentColor.x() << ", " << currentColor.y() << ", " << currentColor.z() << ")" << std::endl;
-    }
-
-    float smallestValue = 0;
-    float biggestValue = -1000.0f;
-    for (int i = 0; i < colorResultAfterOpt.size(); ++i) {
-        auto currentColor = colorResultAfterOpt[i];
-        if(currentColor.x() < smallestValue){
-            smallestValue = currentColor.x();
-        }
-        if(currentColor.y() < smallestValue){
-            smallestValue = currentColor.y();
-        }
-        if(currentColor.z() < smallestValue){
-            smallestValue = currentColor.z();
-        }
-
-        if(currentColor.x() > biggestValue){
-            biggestValue = currentColor.x();
-        }
-        if(currentColor.y() > biggestValue){
-            biggestValue = currentColor.y();
-        }
-        if(currentColor.z() > biggestValue){
-            biggestValue = currentColor.z();
-        }
-    }
-
-    std::cout << "Smallest Value: " << smallestValue << std::endl;
-    std::cout << "Biggest Value: " << biggestValue << std::endl;
 }
 
 void Optimization::optimizeSparseTerms() {
