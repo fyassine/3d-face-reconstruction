@@ -115,7 +115,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         }
         
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 3, 199, 100>(
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
                 nullptr,
@@ -237,7 +237,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     //options.linear_solver_type = ceres::DENSE_QR;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 10; //maybe make it 100
+    options.max_num_iterations = 10;
     options.num_threads = 12;
 }
 
