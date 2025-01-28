@@ -70,15 +70,6 @@ public:
         Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
 
-        /*shape_offset.x() = T(m_shapeMean[m_vertex_id * 3]);
-        shape_offset.y() = T(m_shapeMean[m_vertex_id * 3 + 1]);
-        shape_offset.z() = T(m_shapeMean[m_vertex_id * 3 + 2]);
-
-        expression_offset.x() = T(m_expressionMean[m_vertex_id * 3]);
-        expression_offset.y() = T(m_expressionMean[m_vertex_id * 3 + 1]);
-        expression_offset.z() = T(m_expressionMean[m_vertex_id * 3 + 2]);*/
-
-        // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_vertex_id * 3;
             shape_offset += Eigen::Matrix<T, 3, 1>(
