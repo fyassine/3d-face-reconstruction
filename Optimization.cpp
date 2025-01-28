@@ -103,7 +103,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 
     std::chrono::steady_clock::time_point beginAdd = std::chrono::steady_clock::now();
 
-    for (size_t i = 0; i < bfmVertices.size(); i+=10) {
+    for (size_t i = 0; i < bfmVertices.size(); i+=100) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
         //Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
@@ -199,7 +199,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     std::cout << "\n=== Starting Optimization ===\n";
     //ceres::Solve(options, &problemSparse, &summarySparse);
     ceres::Solve(options, &problem, &summary);
-    ceres::Solve(options, &problemColor, &summaryColor);
+    //ceres::Solve(options, &problemColor, &summaryColor);
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", " ", "[", "]");
     std::cout << "\n=== Optimization Results ===\n";
