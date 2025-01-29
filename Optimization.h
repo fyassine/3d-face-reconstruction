@@ -248,6 +248,61 @@ private:
 
 struct SparseOptimization{
 public:
+    SparseOptimization(const Eigen::Vector3f& landmark_position_input, const Eigen::Vector3f& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties)
+            : m_landmark_positions_input(landmark_position_input), m_bfm_properties(bfmProperties), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index) {}
+
+    template <typename T>
+    bool operator()(const T* const shape,
+                    const T* const expression,
+                    T* residuals) const {
+
+        Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
+
+        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
+        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
+
+        // Each parameter influences a single vertex coordinate
+        for (int i = 0; i < num_shape_params; ++i) {
+            int vertex_idx = m_landmark_bfm_index;
+            shape_offset += Eigen::Matrix<T, 3, 1>(
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
+            );
+        }
+
+        for (int i = 0; i < num_expression_params; ++i) {
+            int vertex_idx = m_landmark_bfm_index;
+            expression_offset += Eigen::Matrix<T, 3, 1>(
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))
+            );
+        }
+        Eigen::Matrix<T, 3, 1> transformedVertex = m_landmark_bfm.cast<T>() + shape_offset + expression_offset;
+
+        residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
+        residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
+        residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
+
+        return true;
+    }
+
+private:
+    const Eigen::Vector3f& m_landmark_positions_input;
+    const Eigen::Vector3f& m_landmark_bfm;
+
+    static const int num_shape_params = 199;
+    static const int num_expression_params = 100;
+
+    const BfmProperties& m_bfm_properties;
+
+    const int m_landmark_bfm_index;
+};
+
+/*struct SparseOptimization{
+public:
     SparseOptimization(Eigen::Vector2f& imageLandmark, Eigen::Vector3f& bfmLandmark, int vertexIndex, BfmProperties& properties, InputImage& inputImage)
             : m_image_landmark(imageLandmark), m_bfm_landmark(bfmLandmark), m_vertex_index(vertexIndex), m_bfm_properties(properties), m_input_image(inputImage) {}
 
@@ -287,7 +342,7 @@ private:
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
     const int m_vertex_index;
-};
+};*/
 
 class Optimization {
 public:

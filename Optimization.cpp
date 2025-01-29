@@ -81,7 +81,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         landmarks_bfm.emplace_back(current_landmark);
     }*/
 
-    /*auto landmarks_input_image = inputImage.landmarks;
+    auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
@@ -93,9 +93,9 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
-    }*/
+    }
 
-    auto landmarks_input_image = inputImage.landmarks;
+    /*auto landmarks_input_image = inputImage.landmarks;
     std::vector<Eigen::Vector2f> landmarks_depth_values;
     for (int i = 0; i < properties.landmark_indices.size(); ++i) {
 
@@ -110,7 +110,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
-    }
+    }*/
 
     std::cout << "Adding Residual Blocks: " << bfmVertices.size() << std::endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -242,7 +242,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     //options.linear_solver_type = ceres::DENSE_QR;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 10;
+    options.max_num_iterations = 1000;
     options.num_threads = 12;
 }
 
