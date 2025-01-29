@@ -128,7 +128,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
         }
         
-        /*problem.AddResidualBlock(
+        problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
@@ -144,7 +144,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
-        );*/
+        );
 
         if(i == 0){
             std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
@@ -203,13 +203,16 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     // Setup and run solver
     std::cout << "\n=== Configuring Solver ===\n";
     ceres::Solver::Options options;
+    ceres::Solver::Options optionsSparse;
     configureSolver(options);
+    configureSolver(optionsSparse);
+    optionsSparse.max_num_iterations = 1000;
     ceres::Solver::Summary summary;
     ceres::Solver::Summary summarySparse;
     ceres::Solver::Summary summaryColor;
 
     std::cout << "\n=== Starting Optimization ===\n";
-    //ceres::Solve(options, &problemSparse, &summarySparse);
+    //ceres::Solve(optionsSparse, &problemSparse, &summarySparse);
     ceres::Solve(options, &problem, &summary);
     //ceres::Solve(options, &problemColor, &summaryColor);
 
@@ -239,8 +242,8 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.dense_linear_algebra_library_type = ceres::CUDA;
     options.use_nonmonotonic_steps = false;
-    //options.linear_solver_type = ceres::DENSE_QR;
-    options.linear_solver_type = ceres::DENSE_SCHUR;
+    options.linear_solver_type = ceres::DENSE_QR;
+    //options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
     options.max_num_iterations = 1000;
     options.num_threads = 12;
