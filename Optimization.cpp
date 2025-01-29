@@ -154,14 +154,14 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 //    }
 
     //TODO: Color
-        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        /*Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties, i)
                 ),
                 nullptr,
                 colorParamsD.data()
-        );
+        );*/
     }
 
     std::cout << "Stop" << std::endl;
@@ -193,12 +193,12 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             expressionParamsD.data()
     );
 
-    problem.AddResidualBlock(
+    /*problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
                     new ColorRegularizationTerm(albedo_std_dev)),
             nullptr,
             colorParamsD.data()
-    );
+    );*/
 
     // Setup and run solver
     std::cout << "\n=== Configuring Solver ===\n";
