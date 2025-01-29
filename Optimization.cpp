@@ -128,7 +128,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
         }
         
-        /*problem.AddResidualBlock(
+        problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
@@ -144,7 +144,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
-        );*/
+        );
 
         if(i == 0){
             std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
@@ -154,14 +154,14 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 //    }
 
     //TODO: Color
-        /*Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties, i)
                 ),
                 nullptr,
                 colorParamsD.data()
-        );*/
+        );
     }
 
     std::cout << "Stop" << std::endl;
@@ -185,7 +185,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         expression_std_dev[i] = std::sqrt(properties.expressionPcaVariance[i]);
     }
 
-    /*problem.AddResidualBlock(
+    problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
@@ -198,7 +198,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                     new ColorRegularizationTerm(albedo_std_dev)),
             nullptr,
             colorParamsD.data()
-    );*/
+    );
 
     // Setup and run solver
     std::cout << "\n=== Configuring Solver ===\n";

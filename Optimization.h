@@ -271,9 +271,11 @@ public:
                                                         T(expression[i] * T(expression_pca_basis(m_vertex_index * 3 + 2, i))));
         }
         Eigen::Matrix<T, 3, 1> transformed_vertex = m_bfm_landmark.cast<T>() + shape_offset + expression_offset;
-        Eigen::Matrix<T, 2, 1> vertex_in_2D = convert3Dto2D<T>(transformed_vertex, m_input_image.intrinsics, m_input_image.extrinsics);
-        residuals[0] = transformed_vertex.x() - T(m_image_landmark.x());
-        residuals[1] = transformed_vertex.y() - T(m_image_landmark.y());
+        auto intrinsics = m_input_image.intrinsics.cast<T>();;
+        auto extrinsics = m_input_image.extrinsics.cast<T>();
+        Eigen::Matrix<T, 2, 1> vertex_in_2D = convert3Dto2DTemplate<T>(transformed_vertex, intrinsics, extrinsics);
+        residuals[0] = vertex_in_2D.x() - T(m_image_landmark.x());
+        residuals[1] = vertex_in_2D.y() - T(m_image_landmark.y());
         return true;
     }
 

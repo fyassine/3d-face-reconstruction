@@ -92,6 +92,7 @@ static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
         float minDistance = 10000000.0f;
         auto transformedLandmark = properties.transformation * Eigen::Vector4f(landmarks[i].x(), landmarks[i].y(), landmarks[i].z(), 1.0f); //sind landmarks schon transformed? oder muss da noch transformation angewendet werden??!!
         auto currentLandmark = Eigen::Vector3f(transformedLandmark.x(), transformedLandmark.y(), transformedLandmark.z());
+        //currentLandmark.y() += 0.005f;
         std::cout << currentLandmark << std::endl;
         for (int j = 0; j < vertices.size(); ++j) {
             auto currentVertex = vertices[j];
@@ -326,13 +327,13 @@ static Eigen::Vector2f convert3Dto2D(const Eigen::Vector3f& point, const Eigen::
 }
 
 template <typename T>
-static Eigen::Matrix<T, 2, 1> convert3Dto2D(
+static Eigen::Matrix<T, 2, 1> convert3Dto2DTemplate(
         const Eigen::Matrix<T, 3, 1>& point,
         const Eigen::Matrix<T, 3, 3>& depthIntrinsics,
         const Eigen::Matrix<T, 4, 4>& extrinsics) {
 
     Eigen::Matrix<T, 4, 4> depthExtrinsicsInv = extrinsics.inverse();
-    Eigen::Matrix<T, 4, 1> worldCoord(point.x(), point.y(), point.z(), static_cast<T>(1));
+    Eigen::Matrix<T, 4, 1> worldCoord(point.x(), point.y(), point.z(), T(1));
     Eigen::Matrix<T, 4, 1> cameraCoord = depthExtrinsicsInv * worldCoord;
 
     T fX = depthIntrinsics(0, 0); // focal length in x direction
@@ -470,9 +471,9 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     landmarks.push_back({29458.6f, 29444.7f, 93770.8f});
     landmarks.push_back({-25539.6f, -33627.8f, 98388.9f});
     landmarks.push_back({-15805.3f, -27611.8f, 110100.0f});
-    landmarks.push_back({-6628.37f, -23768.2f, 115463.0f});
-    landmarks.push_back({-192.025f, -24960.5f, 116208.0f});
-    landmarks.push_back({7616.04f, -23944.8f, 115018.0f});
+    landmarks.push_back({-6628.37f, -23768.2f, 115463.0f}); //inner
+    landmarks.push_back({-192.025f, -24960.5f, 116208.0f}); //inner
+    landmarks.push_back({7616.04f, -23944.8f, 115018.0f}); //inner
     landmarks.push_back({17230.8f, -27470.0f, 108906.0f});
     landmarks.push_back({25143.8f, -33333.3f, 98094.7f});
     landmarks.push_back({18575.5f, -36133.4f, 104735.0f});
@@ -485,9 +486,12 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     landmarks.push_back({-279.868f, -30878.0f, 111425.0f});
     landmarks.push_back({8088.77f, -30539.5f, 109996.0f});
     landmarks.push_back({23331.7f, -32803.8f, 98654.9f});
-    landmarks.push_back({8140.39f, -31052.9f, 109408.0f});
-    landmarks.push_back({-257.674f, -31426.9f, 110736.0f});
-    landmarks.push_back({-9651.11f, -30987.6f, 108781.0f});
+    landmarks.push_back({8140.39f, -31052.9f, 109408.0f}); //inner
+    landmarks.push_back({-257.674f, -31426.9f, 110736.0f}); //inner
+    landmarks.push_back({-9651.11f, -30987.6f, 108781.0f}); //inner
+    //landmarks.push_back({8140.39f, -32052.9f, 109408.0f}); //inner
+    //landmarks.push_back({-257.674f, -32426.9f, 110736.0f}); //inner
+    //landmarks.push_back({-9651.11f, -31987.6f, 108781.0f}); //inner
 
     for (int i = 0; i < landmarks.size(); ++i) {
         landmarks[i] /= 1000;
