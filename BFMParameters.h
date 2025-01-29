@@ -99,14 +99,11 @@ static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
         auto currentLandmark = Eigen::Vector3f(transformedLandmark.x(), transformedLandmark.y(), transformedLandmark.z());
         std::cout << currentLandmark << std::endl;
         for (int j = 0; j < vertices.size(); ++j) {
-            auto currentVertex = vertices[i];
-            std::cout << "Current " << currentVertex << std::endl;
+            auto currentVertex = vertices[j];
             float currentDistance = sqrtf(powf(currentLandmark.x() - currentVertex.x(), 2) + powf(currentLandmark.y() - currentVertex.y(), 2) + powf(currentLandmark.z() - currentVertex.z(), 2));
             if(currentDistance < minDistance){
                 minDistance = currentDistance;
                 currentIndex = j;
-            }else{
-                //std::cout << currentDistance << std::endl;
             }
         }
         indices.push_back(currentIndex);
