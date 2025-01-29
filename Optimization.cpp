@@ -81,22 +81,19 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         landmarks_bfm.emplace_back(current_landmark);
     }*/
 
-    /*auto landmarks_input_image = inputImage.landmarks;
+    auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
-        if(i <= 4){
-            std::cout << "Landmark 3D: " << bfmVertices.size() << std::endl; // << "V: " << properties.landmarks[i] << std::endl;
-        }
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
-                        new SparseOptimization(current_landmark, properties.landmarks[i], properties.landmark_indices[i], properties.shapePcaBasis, properties.expressionPcaBasis)
+                        new SparseOptimization(current_landmark, properties.landmarks[i], properties.landmark_indices[i], properties)
                 ),
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
-    }*/
+    }
 
     std::cout << "Adding Residual Blocks: " << bfmVertices.size() << std::endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
