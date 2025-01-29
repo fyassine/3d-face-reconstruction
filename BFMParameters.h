@@ -23,6 +23,7 @@ struct BfmProperties {
     Eigen::Vector3f initialOffset;
     std::vector<int> triangles;
     std::vector<Eigen::Vector3f> landmarks;
+    std::vector<int> landmark_indices;
     //TODO: landmarks?!
 
     Matrix4f transformation;
@@ -310,6 +311,30 @@ static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vect
     return depthValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
 }
 
+static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
+    std::vector<int> indices;
+    auto vertices = getVertices(properties);
+    std::cout << "VERTICES SIZE: " << vertices.size() << std::endl;
+    auto landmarks = properties.landmarks;
+    for (int i = 0; i < landmarks.size(); ++i) {
+        int currentIndex = 0;
+        float minDistance = 10000000.0f;
+        auto transformedLandmark = properties.transformation * Eigen::Vector4f(landmarks[i].x(), landmarks[i].y(), landmarks[i].z(), 1.0f); //sind landmarks schon transformed? oder muss da noch transformation angewendet werden??!!
+        auto currentLandmark = Eigen::Vector3f(transformedLandmark.x(), transformedLandmark.y(), transformedLandmark.z());
+        std::cout << currentLandmark << std::endl;
+        for (int j = 0; j < vertices.size(); ++j) {
+            auto currentVertex = vertices[j];
+            float currentDistance = sqrtf(powf(currentLandmark.x() - currentVertex.x(), 2) + powf(currentLandmark.y() - currentVertex.y(), 2) + powf(currentLandmark.z() - currentVertex.z(), 2));
+            if(currentDistance < minDistance){
+                minDistance = currentDistance;
+                currentIndex = j;
+            }
+        }
+        indices.push_back(currentIndex);
+    }
+    return indices;
+}
+
 //@param path -> path to .h5 file
 //initializeMethod durch constructor ersetzen?!
 static void initializeBFM(const std::string& path, BfmProperties& properties, const InputImage& inputImage){
@@ -462,6 +487,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     //+ translation: Halbe width und halbe height abziehen:
 
     properties.transformation = estimatedPose;// * rotationMatrix;
+    properties.landmark_indices = getLandmarkIndices(properties);
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H

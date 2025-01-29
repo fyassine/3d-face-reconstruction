@@ -220,6 +220,15 @@ int main() {
 
     getPointCloud(pointCloudVertices, inputImage.depthValues, color255, resultFolderPath +"pls.ply", inputImage.intrinsics, inputImage.extrinsics);
     convertVerticesTest(targetPoints, resultFolderPath + "warumklapptdasnicht.ply");
+
+    std::vector<Eigen::Vector3f> landmarksConverted;
+    for (auto i =0; i<properties.landmark_indices.size(); i++)
+    {
+        landmarksConverted.emplace_back(getVertices(properties)[properties.landmark_indices[i]]);
+    }
+    convertVerticesTest(landmarksConverted, resultFolderPath + "landmark_indices.ply");
+
+
     convertLandmarksToPly(properties, resultFolderPath + "BfmTranslationTest.ply");
     convertParametersToPly(properties, resultFolderPath + "BfmModel.ply");
     renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, (resultFolderPath + "color_frame_corrected.png").c_str(), inputImage, properties.transformation);
