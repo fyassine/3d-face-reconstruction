@@ -20,8 +20,7 @@ public:
         std::cout << "rotation:" << std::endl;
         std::cout << rotation << std::endl;
         
-        std::cout << "translation:" << std::endl;
-        std::cout << translation << std::endl;
+
         
         std::cout << "scale:" << scale << std::endl;
         
@@ -32,7 +31,10 @@ public:
                 
         estimatedPose.block(0, 0, 3, 3) = scale * rotation;
         estimatedPose.block(0, 3, 3, 1) = targetMean - scale * rotation * sourceMean;
-        
+
+        std::cout << "translation:" << std::endl;
+        std::cout << targetMean - scale * rotation * sourceMean << std::endl;
+
         std::cout << "estimatedPose:" << std::endl;
         std::cout << estimatedPose << std::endl;
 
