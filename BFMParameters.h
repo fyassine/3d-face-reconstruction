@@ -87,6 +87,21 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     return vertices;
 }
 
+static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
+    std::vector<int> indices;
+    auto vertices = getVertices(properties);
+    auto landmarks = properties.landmarks;
+    for (int i = 0; i < landmarks.size(); ++i) {
+        float minDistance = 10000000.0f;
+        auto currentLandmark = landmarks[i];
+        for (int j = 0; j < vertices.size(); ++j) {
+            auto currentVertex = vertices[i];
+            float currentDistance =
+        }
+        indices.push_back(minDistance);
+    }
+}
+
 static std::vector<Eigen::Vector3f> getNormals(BfmProperties properties){
     auto bfmVertices = getVertices(properties);
     std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
@@ -377,15 +392,6 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     std::cout << "Faces: " << properties.numberOfTriangles << std::endl;
 
     std::vector<Eigen::Vector3f> landmarks;
-    std::vector<int> landmarkVertices = {
-            22143, 22813, 22840, 23250, 44124, 45884, 47085, 47668, 48188, 48708,
-            49299, 50498, 52457, 32022, 32386, 32359, 32979, 38886, 39636, 40030,
-            40238, 40433, 41172, 41368, 41578, 42011, 42646, 8291, 8305, 8314,
-            8320, 6783, 7687, 8331, 8977, 9879, 1832, 3760, 5050, 6087, 4546, 3516,
-            10731, 11758, 12919, 14859, 13191, 12157, 5523, 6155, 7442, 8345, 9506,
-            10799, 11199, 10179, 9277, 8374, 7471, 6566, 5909, 7322, 8354, 9386,
-            10941, 9141, 8367, 7194
-    };
     landmarks.push_back({-73919.3f, 30876.3f, 19849.9f});
     landmarks.push_back({-70737.7f, 5242.63f, 23751.0f});
     landmarks.push_back({-67043.4f, -16524.0f, 30461.0f});
@@ -459,7 +465,6 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
         landmarks[i] /= 1000;
     }
     properties.landmarks = landmarks;
-    properties.landmark_indices = landmarkVertices;
     ProcrustesAligner aligner;
 
     std::vector<Eigen::Vector3f> targetPoints;
