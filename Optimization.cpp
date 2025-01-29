@@ -104,7 +104,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         auto current_landmark = convert3Dto2D(bfmVertices[properties.landmark_indices[i]], inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<SparseOptimization, 2, 199, 100>(
-                        new SparseOptimization(landmarks_input_image[i], current_landmark, properties.landmark_indices[i], properties)
+                        new SparseOptimization(landmarks_input_image[i], bfmVertices[properties.landmark_indices[i]], properties.landmark_indices[i], properties, inputImage)
                 ),
                 nullptr,
                 shapeParamsD.data(),

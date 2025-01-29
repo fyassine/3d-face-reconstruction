@@ -248,8 +248,8 @@ private:
 
 struct SparseOptimization{
 public:
-    SparseOptimization(Eigen::Vector2f& imageLandmark, Eigen::Vector2f& bfmLandmark, int vertexIndex, BfmProperties& properties)
-            : m_image_landmark(imageLandmark), m_bfm_landmark(bfmLandmark), m_vertex_index(vertexIndex), m_bfm_properties(properties) {}
+    SparseOptimization(Eigen::Vector2f& imageLandmark, Eigen::Vector3f& bfmLandmark, int vertexIndex, BfmProperties& properties, InputImage& inputImage)
+            : m_image_landmark(imageLandmark), m_bfm_landmark(bfmLandmark), m_vertex_index(vertexIndex), m_bfm_properties(properties), m_input_image(inputImage) {}
 
     template <typename T>
     bool operator()(const T* const shape,
@@ -258,17 +258,20 @@ public:
 
         auto& shape_pca_basis = m_bfm_properties.shapePcaBasis;
         auto& expression_pca_basis = m_bfm_properties.expressionPcaBasis;
-        Eigen::Matrix<T, 2, 1> shape_offset = Eigen::Matrix<T, 2, 1>::Zero();
-        Eigen::Matrix<T, 2, 1> expression_offset = Eigen::Matrix<T, 2, 1>::Zero();
+        Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
         for (int i = 0; i < num_shape_params; ++i) {
-            shape_offset += Eigen::Matrix<T, 2, 1>(T(shape[i] * T(shape_pca_basis(m_vertex_index * 3, i))),
-                                                   T(shape[i] * T(shape_pca_basis(m_vertex_index * 3 + 1, i))));
+            shape_offset += Eigen::Matrix<T, 3, 1>(T(shape[i] * T(shape_pca_basis(m_vertex_index * 3, i))),
+                                                   T(shape[i] * T(shape_pca_basis(m_vertex_index * 3 + 1, i))),
+                                                   T(shape[i] * T(shape_pca_basis(m_vertex_index * 3 + 2, i))));
         }
         for (int i = 0; i < num_expression_params; ++i) {
-            expression_offset += Eigen::Matrix<T, 2, 1>(T(expression[i] * T(expression_pca_basis(m_vertex_index * 3, i))),
-                                                        T(expression[i] * T(expression_pca_basis(m_vertex_index * 3 + 1, i))));
+            expression_offset += Eigen::Matrix<T, 3, 1>(T(expression[i] * T(expression_pca_basis(m_vertex_index * 3, i))),
+                                                        T(expression[i] * T(expression_pca_basis(m_vertex_index * 3 + 1, i))),
+                                                        T(expression[i] * T(expression_pca_basis(m_vertex_index * 3 + 2, i))));
         }
-        Eigen::Matrix<T, 2, 1> transformed_vertex = m_bfm_landmark.cast<T>() + shape_offset + expression_offset;
+        Eigen::Matrix<T, 3, 1> transformed_vertex = m_bfm_landmark.cast<T>() + shape_offset + expression_offset;
+        Eigen::Matrix<T, 2, 1> vertex_in_2D = convert3Dto2D<T>(transformed_vertex, m_input_image.intrinsics, m_input_image.extrinsics);
         residuals[0] = transformed_vertex.x() - T(m_image_landmark.x());
         residuals[1] = transformed_vertex.y() - T(m_image_landmark.y());
         return true;
@@ -276,8 +279,9 @@ public:
 
 private:
     const Eigen::Vector2f& m_image_landmark;
-    const Eigen::Vector2f& m_bfm_landmark;
+    const Eigen::Vector3f& m_bfm_landmark;
     const BfmProperties& m_bfm_properties;
+    const InputImage& m_input_image;
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
     const int m_vertex_index;

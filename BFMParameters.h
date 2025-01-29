@@ -325,6 +325,30 @@ static Eigen::Vector2f convert3Dto2D(const Eigen::Vector3f& point, const Eigen::
     return Eigen::Vector2f(u, v);
 }
 
+template <typename T>
+static Eigen::Matrix<T, 2, 1> convert3Dto2D(
+        const Eigen::Matrix<T, 3, 1>& point,
+        const Eigen::Matrix<T, 3, 3>& depthIntrinsics,
+        const Eigen::Matrix<T, 4, 4>& extrinsics) {
+
+    Eigen::Matrix<T, 4, 4> depthExtrinsicsInv = extrinsics.inverse();
+    Eigen::Matrix<T, 4, 1> worldCoord(point.x(), point.y(), point.z(), static_cast<T>(1));
+    Eigen::Matrix<T, 4, 1> cameraCoord = depthExtrinsicsInv * worldCoord;
+
+    T fX = depthIntrinsics(0, 0); // focal length in x direction
+    T fY = depthIntrinsics(1, 1); // focal length in y direction
+    T cX = depthIntrinsics(0, 2); // optical center in x direction
+    T cY = depthIntrinsics(1, 2); // optical center in y direction
+
+    T x = cameraCoord.x() / cameraCoord.z();
+    T y = cameraCoord.y() / cameraCoord.z();
+
+    T u = fX * x + cX;
+    T v = fY * y + cY;
+
+    return Eigen::Matrix<T, 2, 1>(u, v);
+}
+
 static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vector<float> depthValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
     auto pixelCoordinates = convert3Dto2D(point, depthIntrinsics, extrinsics);
     return depthValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
