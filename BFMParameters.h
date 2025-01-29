@@ -486,9 +486,9 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     landmarks.push_back({-279.868f, -30878.0f, 111425.0f});
     landmarks.push_back({8088.77f, -30539.5f, 109996.0f});
     landmarks.push_back({23331.7f, -32803.8f, 98654.9f});
-    landmarks.push_back({8140.39f, -31052.9f, 109408.0f}); //inner
-    landmarks.push_back({-257.674f, -31426.9f, 110736.0f}); //inner
-    landmarks.push_back({-9651.11f, -30987.6f, 108781.0f}); //inner
+    landmarks.push_back({8140.39f, -35052.9f, 109408.0f}); //inner
+    landmarks.push_back({-257.674f, -35426.9f, 110736.0f}); //inner
+    landmarks.push_back({-9651.11f, -34987.6f, 108781.0f}); //inner
     //landmarks.push_back({8140.39f, -32052.9f, 109408.0f}); //inner
     //landmarks.push_back({-257.674f, -32426.9f, 110736.0f}); //inner
     //landmarks.push_back({-9651.11f, -31987.6f, 108781.0f}); //inner

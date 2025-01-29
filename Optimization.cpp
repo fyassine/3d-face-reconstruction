@@ -128,7 +128,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
         }
         
-        problem.AddResidualBlock(
+        /*problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
@@ -144,7 +144,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
-        );
+        );*/
 
         if(i == 0){
             std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
