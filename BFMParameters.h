@@ -56,12 +56,10 @@ static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties& prope
 static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     std::vector<Eigen::Vector3f> vertices;
 
-    std::cout << "Start" << std::endl;
     Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
     Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (shapeVar.cwiseSqrt().cwiseProduct(properties.shapeParams));
     Eigen::VectorXf expressionVar = Eigen::Map<Eigen::VectorXf>(properties.expressionPcaVariance.data(), properties.expressionPcaVariance.size());
     Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionParams));
-    std::cout << "End" << std::endl;
 
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
@@ -79,9 +77,6 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
         newVertex.x() = transformationVector.x();
         newVertex.y() = transformationVector.y();
         newVertex.z() = transformationVector.z();
-        if(i == 0){
-            std::cout << "New Vertex: " << newVertex.x() << ", " << newVertex.y() << ", " << newVertex.z() << ";" << std::endl;
-        }
         vertices.emplace_back(newVertex);
     }
     return vertices;

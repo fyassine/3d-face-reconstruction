@@ -81,13 +81,30 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         landmarks_bfm.emplace_back(current_landmark);
     }*/
 
-    auto landmarks_input_image = inputImage.landmarks;
+    /*auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
-                        new SparseOptimization(current_landmark, properties.landmarks[i], properties.landmark_indices[i], properties)
+                        new SparseOptimization(current_landmark, bfmVertices[properties.landmark_indices[i]], properties.landmark_indices[i], properties)
+                ),
+                nullptr,
+                shapeParamsD.data(),
+                expressionParamsD.data()
+        );
+    }*/
+
+    auto landmarks_input_image = inputImage.landmarks;
+    std::vector<Eigen::Vector2f> landmarks_depth_values;
+    for (int i = 0; i < properties.landmark_indices.size(); ++i) {
+
+    }
+    for (int i = 0; i < landmarks_input_image.size(); ++i) {
+        auto current_landmark = convert3Dto2D(bfmVertices[properties.landmark_indices[i]], inputImage.intrinsics, inputImage.extrinsics);
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<SparseOptimization, 2, 199, 100>(
+                        new SparseOptimization(landmarks_input_image[i], current_landmark, properties.landmark_indices[i], properties)
                 ),
                 nullptr,
                 shapeParamsD.data(),
@@ -111,7 +128,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
             std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (endAdd - beginAdd).count() << "[ns]" << std::endl;
         }
         
-        problem.AddResidualBlock(
+        /*problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
@@ -127,7 +144,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
-        );
+        );*/
 
         if(i == 0){
             std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
@@ -137,14 +154,14 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 //    }
 
     //TODO: Color
-        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        /*Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, illumination[i], properties, i)
                 ),
                 nullptr,
                 colorParamsD.data()
-        );
+        );*/
     }
 
     std::cout << "Stop" << std::endl;
@@ -168,16 +185,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         expression_std_dev[i] = std::sqrt(properties.expressionPcaVariance[i]);
     }
 
-    //problem.AddResidualBlock(
-    //        new ceres::AutoDiffCostFunction<RegularizationTerm, 1, 199, 199, 100>(
-    //                new RegularizationTerm(identity_std_dev, albedo_std_dev, expression_std_dev)),
-    //        nullptr,
-    //        shapeParamsD.data(),
-    //        colorParamsD.data(),
-    //        expressionParamsD.data()
-    //);*/
-
-    problem.AddResidualBlock(
+    /*problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
@@ -190,7 +198,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                     new ColorRegularizationTerm(albedo_std_dev)),
             nullptr,
             colorParamsD.data()
-    );
+    );*/
 
     // Setup and run solver
     std::cout << "\n=== Configuring Solver ===\n";
@@ -203,7 +211,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     std::cout << "\n=== Starting Optimization ===\n";
     //ceres::Solve(options, &problemSparse, &summarySparse);
     ceres::Solve(options, &problem, &summary);
-    ceres::Solve(options, &problemColor, &summaryColor);
+    //ceres::Solve(options, &problemColor, &summaryColor);
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", " ", "[", "]");
     std::cout << "\n=== Optimization Results ===\n";
