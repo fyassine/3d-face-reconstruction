@@ -90,16 +90,28 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
 static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
     std::vector<int> indices;
     auto vertices = getVertices(properties);
+    std::cout << "VERTICES SIZE: " << vertices.size() << std::endl;
     auto landmarks = properties.landmarks;
     for (int i = 0; i < landmarks.size(); ++i) {
+        int currentIndex = 0;
         float minDistance = 10000000.0f;
-        auto currentLandmark = landmarks[i];
+        auto transformedLandmark = properties.transformation * Eigen::Vector4f(landmarks[i].x(), landmarks[i].y(), landmarks[i].z(), 1.0f); //sind landmarks schon transformed? oder muss da noch transformation angewendet werden??!!
+        auto currentLandmark = Eigen::Vector3f(transformedLandmark.x(), transformedLandmark.y(), transformedLandmark.z());
+        std::cout << currentLandmark << std::endl;
         for (int j = 0; j < vertices.size(); ++j) {
             auto currentVertex = vertices[i];
-            float currentDistance =
+            std::cout << "Current " << currentVertex << std::endl;
+            float currentDistance = sqrtf(powf(currentLandmark.x() - currentVertex.x(), 2) + powf(currentLandmark.y() - currentVertex.y(), 2) + powf(currentLandmark.z() - currentVertex.z(), 2));
+            if(currentDistance < minDistance){
+                minDistance = currentDistance;
+                currentIndex = j;
+            }else{
+                //std::cout << currentDistance << std::endl;
+            }
         }
-        indices.push_back(minDistance);
+        indices.push_back(currentIndex);
     }
+    return indices;
 }
 
 static std::vector<Eigen::Vector3f> getNormals(BfmProperties properties){
@@ -482,6 +494,11 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     //+ translation: Halbe width und halbe height abziehen:
 
     properties.transformation = estimatedPose;// * rotationMatrix;
+    properties.landmark_indices = getLandmarkIndices(properties);
+    std::cout << "Landmark Indices: " << properties.landmark_indices.size() << std::endl;
+    for (int i = 0; i < properties.landmark_indices.size(); ++i) {
+        std::cout << "Landmark : " << i << ": " << properties.landmark_indices[i] << std::endl;
+    }
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
