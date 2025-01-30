@@ -57,9 +57,9 @@ static std::vector<Eigen::Vector3f> getVerticesWithoutProcrustes(BfmProperties p
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
 
         vertices.emplace_back(newVertex);
     }
@@ -377,12 +377,12 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     properties.colorParams = Eigen::VectorXf(199);
 
     for (int i = 0; i < 199; ++i) {
-        properties.shapeParams[i] = 0.02f;
-        properties.colorParams[i] = 0.02f;
+        properties.shapeParams[i] = 0.0f;//0.02f;
+        properties.colorParams[i] = 0.0f;//0.02f;
     }
 
     for (int i = 0; i < 100; ++i) {
-        properties.expressionParams[i] = 0.02f;
+        properties.expressionParams[i] = 0.0f;//0.02f;
     }
 
     properties.numberOfVertices = properties.shapeMean.size() / 3;
