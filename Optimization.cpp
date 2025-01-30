@@ -129,7 +129,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         }
         
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 1, 199, 100>(
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
                 nullptr,
@@ -137,14 +137,14 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
                 expressionParamsD.data()
         );
         
-        problem.AddResidualBlock(
+        /*problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimizationPointToPlane, 1, 199, 100>(
                         new GeometryOptimizationPointToPlane(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
-        );
+        );*/
 
         if(i == 0){
             std::chrono::steady_clock::time_point endAdd = std::chrono::steady_clock::now();
@@ -241,12 +241,13 @@ void Optimization::optimizeSparseTerms() {
 void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.dense_linear_algebra_library_type = ceres::CUDA;
+    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     //options.linear_solver_type = ceres::DENSE_SCHUR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 1000;
-    options.num_threads = 12;
+    options.max_num_iterations = 20;
+    options.num_threads = 24;
 }
 
 

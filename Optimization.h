@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <utility>
 
 // TODO: Put illumination in seperate header file
 
@@ -45,12 +46,12 @@ struct Illumination {
 
 struct GeometryOptimization {
 public:
-    GeometryOptimization(const Eigen::Vector3f& vertex,
+    GeometryOptimization(Eigen::Vector3f vertex,
                          const float& depth,
-                         const Eigen::Vector3f& normal,
+                         Eigen::Vector3f normal,
                          const BfmProperties& bfmProperties,
                          int vertex_id) :
-            m_vertex(vertex), m_depth(depth), m_normal(normal), m_bfm_properties(bfmProperties), m_vertex_id(vertex_id) {}
+            m_vertex(std::move(vertex)), m_depth(depth), m_normal(std::move(normal)), m_bfm_properties(bfmProperties), m_vertex_id(vertex_id) {}
 
     template<typename T>
     bool operator()(const T* const shape,
@@ -60,35 +61,27 @@ public:
         Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
         Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
 
-        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
-        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
+        int vertex_idx = m_vertex_id * 3;
 
-        for (int i = 0; i < num_shape_params; ++i) {
-            int vertex_idx = m_vertex_id * 3;
-            shape_offset += Eigen::Matrix<T, 3, 1>(
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
-            );
-        }
+        shape_offset = m_bfm_properties.shapePcaBasis.block<3, num_shape_params>(vertex_idx, 0)
+                               .template cast<T>()
+                       * Eigen::Map<const Eigen::Matrix<T, num_shape_params, 1>>(shape);
+        expression_offset = m_bfm_properties.expressionPcaBasis.block<3, num_expression_params>(vertex_idx, 0)
+                                    .template cast<T>()
+                            * Eigen::Map<const Eigen::Matrix<T, num_expression_params, 1>>(expression);
 
-        for (int i = 0; i < num_expression_params; ++i) {
-            int vertex_idx = m_vertex_id * 3;
-            expression_offset += Eigen::Matrix<T, 3, 1>(
-                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))
-            );
-        }
         Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
 
         auto point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
                                                   transformedVertex.y(),
                                                   transformedVertex.z() - T(m_depth));
 
-        residuals[0] = point_to_point.norm();
+        T point_to_plane = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
+                                                              transformedVertex.y(),
+                                                              transformedVertex.z() - T(m_depth)).dot(m_normal.cast<T>());
 
-        //TODO: This or norm?!
+        residuals[0] = point_to_point.squaredNorm();
+        residuals[1] = point_to_plane;
 
         return true;
     }
