@@ -97,7 +97,7 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
 
 static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
     std::vector<int> indices;
-    auto vertices = getVertices(properties);
+    auto vertices = getVerticesWithoutProcrustes(properties);
     auto landmarks = properties.landmarks;
     for (int i = 0; i < landmarks.size(); ++i) {
         int currentIndex = 0;
