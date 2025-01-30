@@ -17,13 +17,6 @@ public:
         Vector3f mockTranslation(0, 0, 0);
         float scale = computeScale(sourcePoints, targetPoints);
         
-        std::cout << "rotation:" << std::endl;
-        std::cout << rotation << std::endl;
-        
-
-        
-        std::cout << "scale:" << scale << std::endl;
-        
         // Compute the transformation matrix by using the computed rotation and translation.
         // You can access parts of the matrix with .block(start_row, start_col, num_rows, num_cols) = elements
         
@@ -31,12 +24,6 @@ public:
                 
         estimatedPose.block(0, 0, 3, 3) = scale * rotation;
         estimatedPose.block(0, 3, 3, 1) = targetMean - scale * rotation * sourceMean;
-
-        std::cout << "translation:" << std::endl;
-        std::cout << targetMean - scale * rotation * sourceMean << std::endl;
-
-        std::cout << "estimatedPose:" << std::endl;
-        std::cout << estimatedPose << std::endl;
 
         return estimatedPose;
     }
@@ -46,7 +33,7 @@ private:
         // Compute the mean of input points.
         const unsigned nPoints = points.size();
         Vector3f mean = Vector3f::Zero();
-        for (int i = 0; i < nPoints; ++i) {
+        for (int i = 0; i < (int) nPoints; ++i) {
             mean += points[i];
         }
         mean /= nPoints;
@@ -60,7 +47,7 @@ private:
         MatrixXf sourceMatrix(nPoints, 3);
         MatrixXf targetMatrix(nPoints, 3);
 
-        for (int i = 0; i < nPoints; ++i) {
+        for (int i = 0; i < (int) nPoints; ++i) {
             sourceMatrix.block(i, 0, 1, 3) = (sourcePoints[i] - sourceMean).transpose();
             targetMatrix.block(i, 0, 1, 3) = (targetPoints[i] - targetMean).transpose();
         }
