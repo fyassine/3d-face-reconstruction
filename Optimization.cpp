@@ -144,7 +144,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
 
     // Start Illumination
 
-    for (int i = 0; i < bfmVertices.size(); i+=25) {
+    for (int i = 0; i < bfmVertices.size(); i+=100) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
 
