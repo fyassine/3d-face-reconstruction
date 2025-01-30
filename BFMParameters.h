@@ -57,9 +57,9 @@ static std::vector<Eigen::Vector3f> getVerticesWithoutProcrustes(BfmProperties p
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
+        newVertex.x() = properties.shapeMean[i];// + properties.expressionMean[i];
+        newVertex.y() = properties.shapeMean[i + 1];// + properties.expressionMean[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2];// + properties.expressionMean[i + 2];
 
         vertices.emplace_back(newVertex);
     }
@@ -77,9 +77,14 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+        //newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
+        //newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        //newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+
+        newVertex.x() = properties.shapeMean[i] + modifiedShape[i] + modifiedExpression[i];
+        newVertex.y() = properties.shapeMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+
         Eigen::Vector4f transformationVector;
 
         transformationVector.x() = newVertex.x();
@@ -469,12 +474,12 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     landmarks.push_back({-279.868f, -30878.0f, 111425.0f});
     landmarks.push_back({8088.77f, -30539.5f, 109996.0f});
     landmarks.push_back({23331.7f, -32803.8f, 98654.9f});
-    landmarks.push_back({8140.39f, -35052.9f, 109408.0f}); //inner
-    landmarks.push_back({-257.674f, -35426.9f, 110736.0f}); //inner
-    landmarks.push_back({-9651.11f, -34987.6f, 108781.0f}); //inner
-    //landmarks.push_back({8140.39f, -32052.9f, 109408.0f}); //inner
-    //landmarks.push_back({-257.674f, -32426.9f, 110736.0f}); //inner
-    //landmarks.push_back({-9651.11f, -31987.6f, 108781.0f}); //inner
+    //landmarks.push_back({8140.39f, -35052.9f, 109408.0f}); //inner
+    //landmarks.push_back({-257.674f, -35426.9f, 110736.0f}); //inner
+    //landmarks.push_back({-9651.11f, -34987.6f, 108781.0f}); //inner
+    landmarks.push_back({8140.39f, -32052.9f, 109408.0f}); //inner
+    landmarks.push_back({-257.674f, -32426.9f, 110736.0f}); //inner
+    landmarks.push_back({-9651.11f, -31987.6f, 108781.0f}); //inner
 
     for (int i = 0; i < landmarks.size(); ++i) {
         landmarks[i] /= 1000;

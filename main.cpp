@@ -38,7 +38,7 @@ int main() {
     BfmProperties properties;
     properties = getProperties(h5TestFile, inputImage);
 
-
+    convertParametersToPlyWithoutProcrustes(properties, resultFolderPath + "InitialBfmModel.ply");
 
     std::vector<Eigen::Vector3f> targetPoints;
     //GetTargetLandmarks
@@ -98,7 +98,9 @@ int main() {
     }
     convertVerticesTest(landmarksFromIndicesAfterOpt, resultFolderPath + "landmarksFromIndicesAfterOptimization.ply");
 
-    convertLandmarksToPly(properties, resultFolderPath + "BfmTranslationTest.ply");
+    std::vector<Eigen::Vector3f> landmarksss = readLandmarksBFM(dataFolderPath + "InitialLandmarkCoordinates.txt");
+    convertVerticesTest(landmarksss, resultFolderPath + "InitialLandmarks.ply");
+
     convertParametersToPly(properties, resultFolderPath + "BfmModel.ply");
     renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, (resultFolderPath + "color_frame_corrected.png").c_str(), inputImage, properties.transformation);
 }

@@ -86,7 +86,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     auto bfmVertices = getVerticesWithoutProcrustes(bfm);
     auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
         sparseProblem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
@@ -109,13 +109,13 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     for (int i = 0; i < 100; ++i) {
         expression_std_dev[i] = std::sqrt(bfm.expressionPcaVariance[i]);
     }
-    /*sparseProblem.AddResidualBlock(
+    sparseProblem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
             shapeParamsD.data(),
             expressionParamsD.data()
-    );*/
+    );
     //optimizeDenseTerms(bfm, inputImage, problem);
     //regularize(bfm, problem);
 
@@ -209,7 +209,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 20000;
+    options.max_num_iterations = 2000;
     options.num_threads = 12;
 }
 
