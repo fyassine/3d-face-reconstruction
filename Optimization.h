@@ -222,57 +222,11 @@ public:
 private:
     const Eigen::Vector3f& m_landmark_positions_input;
     const Eigen::Vector3f& m_landmark_bfm;
-
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
-
     const BfmProperties& m_bfm_properties;
-
     const int m_landmark_bfm_index;
 };
-
-/*struct SparseOptimization{
-public:
-    SparseOptimization(Eigen::Vector2f& imageLandmark, Eigen::Vector3f& bfmLandmark, int vertexIndex, BfmProperties& properties, InputImage& inputImage)
-            : m_image_landmark(imageLandmark), m_bfm_landmark(bfmLandmark), m_vertex_index(vertexIndex), m_bfm_properties(properties), m_input_image(inputImage) {}
-
-    template <typename T>
-    bool operator()(const T* const shape,
-                    const T* const expression,
-                    T* residuals) const {
-
-        auto& shape_pca_basis = m_bfm_properties.shapePcaBasis;
-        auto& expression_pca_basis = m_bfm_properties.expressionPcaBasis;
-        Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
-        Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
-        for (int i = 0; i < num_shape_params; ++i) {
-            shape_offset += Eigen::Matrix<T, 3, 1>(T(shape[i] * T(shape_pca_basis(m_vertex_index * 3, i))),
-                                                   T(shape[i] * T(shape_pca_basis(m_vertex_index * 3 + 1, i))),
-                                                   T(shape[i] * T(shape_pca_basis(m_vertex_index * 3 + 2, i))));
-        }
-        for (int i = 0; i < num_expression_params; ++i) {
-            expression_offset += Eigen::Matrix<T, 3, 1>(T(expression[i] * T(expression_pca_basis(m_vertex_index * 3, i))),
-                                                        T(expression[i] * T(expression_pca_basis(m_vertex_index * 3 + 1, i))),
-                                                        T(expression[i] * T(expression_pca_basis(m_vertex_index * 3 + 2, i))));
-        }
-        Eigen::Matrix<T, 3, 1> transformed_vertex = m_bfm_landmark.cast<T>() + shape_offset + expression_offset;
-        auto intrinsics = m_input_image.intrinsics.cast<T>();;
-        auto extrinsics = m_input_image.extrinsics.cast<T>();
-        Eigen::Matrix<T, 2, 1> vertex_in_2D = convert3Dto2DTemplate<T>(transformed_vertex, intrinsics, extrinsics);
-        residuals[0] = vertex_in_2D.x() - T(m_image_landmark.x());
-        residuals[1] = vertex_in_2D.y() - T(m_image_landmark.y());
-        return true;
-    }
-
-private:
-    const Eigen::Vector2f& m_image_landmark;
-    const Eigen::Vector3f& m_bfm_landmark;
-    const BfmProperties& m_bfm_properties;
-    const InputImage& m_input_image;
-    static const int num_shape_params = 199;
-    static const int num_expression_params = 100;
-    const int m_vertex_index;
-};*/
 
 class Optimization {
 public:
@@ -280,7 +234,7 @@ public:
 private:
     static void configureSolver(ceres::Solver::Options& options);
     static void optimizeSparseTerms();
-    static void optimizeDenseTerms(BfmProperties&, InputImage&);
+    static void optimizeDenseTerms(BfmProperties&, InputImage&, ceres::Problem& problem);
     static void optimizeColor();
     static void regularize(BfmProperties&);
 };

@@ -255,9 +255,17 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
 
 
 void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
+
+    ceres::Problem problem;
+    ceres::Solver::Options options;
+    configureSolver(options);
+    ceres::Solver::Summary summary;
+
     optimizeSparseTerms();
-    optimizeDenseTerms(bfm, inputImage);
+    optimizeDenseTerms(bfm, inputImage, problem);
     //regularize(bfm);
+
+    ceres::Solve(options, &problem, &summary);
 }
 
 
