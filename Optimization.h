@@ -186,8 +186,8 @@ public:
                     const T* const expression,
                     T* residuals) const {
 
-        Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
-        Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
+        Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
 
         auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
         auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
@@ -195,22 +195,25 @@ public:
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_landmark_bfm_index;
-            shape_offset += Eigen::Matrix<T, 3, 1>(
+            shape_offset += Eigen::Matrix<T, 4, 1>(
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)))
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i))),
+                    T(0)
             );
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
             int vertex_idx = m_landmark_bfm_index;
-            expression_offset += Eigen::Matrix<T, 3, 1>(
+            expression_offset += Eigen::Matrix<T, 4, 1>(
                     T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
                     T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i)))
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))),
+                    T(0)
             );
         }
-        Eigen::Matrix<T, 3, 1> transformedVertex = m_landmark_bfm.cast<T>() + shape_offset + expression_offset;
+        Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
+        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + shape_offset + expression_offset;
 
         residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
         residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
