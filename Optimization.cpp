@@ -3,7 +3,6 @@
 #include <iostream>
 #include <chrono>
 
-//Not sure about params and return type yet
 void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inputImage, ceres::Problem& problem) {
 
     auto bfmVertices = getVertices(properties);
@@ -55,10 +54,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     properties.colorParams = colorParamsD.cast<float>();
 }
 
-void Optimization::optimizeSparseTerms(BfmProperties& bfm, InputImage& inputImage, ceres::Problem& problem) {
-    Eigen::VectorXd shapeParamsD = bfm.shapeParams.cast<double>();
-    Eigen::VectorXd expressionParamsD = bfm.expressionParams.cast<double>();
-    Eigen::VectorXd colorParamsD = bfm.colorParams.cast<double>();
+void Optimization::optimizeSparseTerms(BfmProperties& bfm, InputImage& inputImage, ceres::Problem& problem, Eigen::VectorXd& shapeParamsD, Eigen::VectorXd& expressionParamsD) {
     auto bfmVertices = getVertices(bfm);
     auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
@@ -73,42 +69,58 @@ void Optimization::optimizeSparseTerms(BfmProperties& bfm, InputImage& inputImag
                 expressionParamsD.data()
         );
     }
-    bfm.shapeParams = shapeParamsD.cast<float>();
-    bfm.expressionParams = expressionParamsD.cast<float>();
-    bfm.colorParams = colorParamsD.cast<float>();
-}
-
-void Optimization::configureSolver(ceres::Solver::Options &options) {
-    options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-    options.dense_linear_algebra_library_type = ceres::CUDA;
-    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
-    options.use_nonmonotonic_steps = false;
-    options.linear_solver_type = ceres::DENSE_QR;
-    options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 20;
-    options.num_threads = 24;
 }
 
 void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     std::cout << "Start Optimization" << std::endl;
-
     Eigen::VectorXd shapeParamsD = bfm.shapeParams.cast<double>();
     Eigen::VectorXd expressionParamsD = bfm.expressionParams.cast<double>();
     Eigen::VectorXd colorParamsD = bfm.colorParams.cast<double>();
-
     ceres::Problem problem;
     ceres::Solver::Options options;
     configureSolver(options);
     ceres::Solver::Summary summary;
 
-    optimizeSparseTerms(bfm, inputImage, problem);
-    //optimizeDenseTerms(bfm, inputImage, &problem);
-    //regularize(bfm, &problem);
+    auto bfmVertices = getVertices(bfm);
+    auto landmarks_input_image = inputImage.landmarks;
+    auto landmarks_depth_values = inputImage.depthValuesLandmarks;
+    for (int i = 0; i < landmarks_input_image.size(); ++i) {
+        auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
+                        new SparseOptimization(current_landmark, bfmVertices[bfm.landmark_indices[i]], bfm.landmark_indices[i], bfm)
+                ),
+                nullptr,
+                shapeParamsD.data(),
+                expressionParamsD.data()
+        );
+    }
+    std::vector<double> identity_std_dev(199);
+    std::vector<double> albedo_std_dev(199);
+    std::vector<double> expression_std_dev(100);
+    // Fill identity and albedo standard deviations
+    for (int i = 0; i < 199; ++i) {
+        identity_std_dev[i] = std::sqrt(bfm.shapePcaVariance[i]);
+        albedo_std_dev[i] = std::sqrt(bfm.colorPcaVariance[i]);
+    }
+    // Fill expression standard deviations
+    for (int i = 0; i < 100; ++i) {
+        expression_std_dev[i] = std::sqrt(bfm.expressionPcaVariance[i]);
+    }
+    problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
+                    new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
+            nullptr,
+            shapeParamsD.data(),
+            expressionParamsD.data()
+    );
+    //optimizeDenseTerms(bfm, inputImage, problem);
+    //regularize(bfm, problem);
 
+    ceres::Solve(options, &problem, &summary);
     bfm.shapeParams = shapeParamsD.cast<float>();
     bfm.expressionParams = expressionParamsD.cast<float>();
     bfm.colorParams = colorParamsD.cast<float>();
-    ceres::Solve(options, &problem, &summary);
 }
 
 void Optimization::regularize(BfmProperties& bfm, ceres::Problem& problem) {
@@ -138,5 +150,16 @@ void Optimization::regularize(BfmProperties& bfm, ceres::Problem& problem) {
     bfm.shapeParams = shapeParamsD.cast<float>();
     bfm.expressionParams = expressionParamsD.cast<float>();
     bfm.colorParams = colorParamsD.cast<float>();
+}
+
+void Optimization::configureSolver(ceres::Solver::Options &options) {
+    options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+    options.dense_linear_algebra_library_type = ceres::CUDA;
+    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
+    options.use_nonmonotonic_steps = false;
+    options.linear_solver_type = ceres::DENSE_QR;
+    options.minimizer_progress_to_stdout = 1;
+    options.max_num_iterations = 2000;
+    options.num_threads = 24;
 }
 
