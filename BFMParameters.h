@@ -46,13 +46,6 @@ struct BfmProperties {
     Eigen::VectorXf expressionParams;
 };
 
-static void setInitialOffset(Eigen::Vector3f initialOffset, BfmProperties& properties) {
-    properties.initialOffset.x() = initialOffset.x();
-    std::cout << "InitialOffset:" << properties.initialOffset.x() << std::endl;
-    properties.initialOffset.y() = initialOffset.y();
-    properties.initialOffset.z() = initialOffset.z();
-}
-
 static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     std::vector<Eigen::Vector3f> vertices;
 
@@ -85,15 +78,12 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
 static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
     std::vector<int> indices;
     auto vertices = getVertices(properties);
-    std::cout << "VERTICES SIZE: " << vertices.size() << std::endl;
     auto landmarks = properties.landmarks;
     for (int i = 0; i < landmarks.size(); ++i) {
         int currentIndex = 0;
         float minDistance = 10000000.0f;
         auto transformedLandmark = properties.transformation * Eigen::Vector4f(landmarks[i].x(), landmarks[i].y(), landmarks[i].z(), 1.0f); //sind landmarks schon transformed? oder muss da noch transformation angewendet werden??!!
         auto currentLandmark = Eigen::Vector3f(transformedLandmark.x(), transformedLandmark.y(), transformedLandmark.z());
-        //currentLandmark.y() += 0.005f;
-        std::cout << currentLandmark << std::endl;
         for (int j = 0; j < vertices.size(); ++j) {
             auto currentVertex = vertices[j];
             float currentDistance = sqrtf(powf(currentLandmark.x() - currentVertex.x(), 2) + powf(currentLandmark.y() - currentVertex.y(), 2) + powf(currentLandmark.z() - currentVertex.z(), 2));
@@ -209,27 +199,6 @@ static void readHDF5DataMatrix(const H5::H5File& file, const std::string& groupP
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
-
-// static void readFaces(){
-// //TODO: Not done
-//     const std::string inputFile = std::string(dataFolderPath + "faces.txt");
-//     std::ifstream inFile(inputFile);
-//     std::string line;
-//     while (std::getline(inFile, line)) {
-//         std::istringstream iss(line);
-//         int firstInt;
-//         int secondInt, thirdInt, fourthInt;
-//         if (iss >> firstInt >> secondInt >> thirdInt >> fourthInt) {
-//             properties.triangles.push_back(secondInt);
-//             properties.triangles.push_back(thirdInt);
-//             properties.triangles.push_back(fourthInt);
-//         } else {
-//             std::cerr << "Error: Incorrect input file" << std::endl;
-//         }
-//     }
-//     properties.numberOfTriangles = properties.triangles.size() / 3;
-//     std::cout << "Faces: " << properties.numberOfTriangles << std::endl;*/
-// }
 
 static std::vector<Eigen::Vector3f> readLandmarksBFM(const std::string& path){
     const std::string inputFile = std::string(path);
@@ -397,10 +366,6 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     }
 
     properties.numberOfVertices = properties.shapeMean.size() / 3;
-    std::cout << "Vertices: " << properties.numberOfVertices << std::endl;
-    std::cout << "Color Mean: " << properties.colorMean.size() << " values" << std::endl;
-    std::cout << "Shape Variance: " << properties.shapePcaVariance.size() << " values" << std::endl;
-    std::cout << "PCA Basis " << properties.shapePcaBasis(0, 0) << std::endl;
     //Faces
     const std::string inputFile = std::string(dataFolderPath + "faces.txt");
     std::ifstream inFile(inputFile);
@@ -418,8 +383,6 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
         }
     }
     properties.numberOfTriangles = properties.triangles.size() / 3;
-    std::cout << "Faces: " << properties.numberOfTriangles << std::endl;
-
     std::vector<Eigen::Vector3f> landmarks;
     landmarks.push_back({-73919.3f, 30876.3f, 19849.9f});
     landmarks.push_back({-70737.7f, 5242.63f, 23751.0f});
@@ -504,21 +467,12 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
         targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
     }
-    //End GetTargetLandmarks
-    //std::cout << targetPoints.size() << std::endl;
-    //Eigen::Matrix4f rotationMatrix = Eigen::Matrix4f::Identity();
-    //rotationMatrix(0, 0) = -1; // cos(180°) = -1
-    //rotationMatrix(1, 1) = -1; // cos(180°) = -1
 
     Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
     //+ translation: Halbe width und halbe height abziehen:
 
     properties.transformation = estimatedPose;// * rotationMatrix;
     properties.landmark_indices = getLandmarkIndices(properties);
-    std::cout << "Landmark Indices: " << properties.landmark_indices.size() << std::endl;
-    for (int i = 0; i < properties.landmark_indices.size(); ++i) {
-        std::cout << "Landmark : " << i << ": " << properties.landmark_indices[i] << std::endl;
-    }
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H

@@ -232,11 +232,11 @@ class Optimization {
 public:
     static void optimize(BfmProperties&, InputImage&);
 private:
-    static void configureSolver(ceres::Solver::Options& options);
-    static void optimizeSparseTerms();
-    static void optimizeDenseTerms(BfmProperties&, InputImage&, ceres::Problem& problem);
+    static void configureSolver(ceres::Solver::Options&);
+    static void optimizeSparseTerms(BfmProperties&, InputImage&, ceres::Problem&);
+    static void optimizeDenseTerms(BfmProperties&, InputImage&, ceres::Problem&);
     static void optimizeColor();
-    static void regularize(BfmProperties&);
+    static void regularize(BfmProperties&, ceres::Problem&);
 };
 
 struct RegularizationFunction
