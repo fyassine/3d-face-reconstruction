@@ -19,9 +19,6 @@ struct InputImage{
 
 static void printInputImage(const InputImage& inputImage) {
     // Print width and height
-    std::cout << "Width: " << inputImage.width << std::endl;
-    std::cout << "Height: " << inputImage.height << std::endl;
-
     // Print color
     if (inputImage.color.empty()) {
         std::cout << "Color data: Not initialized" << std::endl;
@@ -124,7 +121,6 @@ static float useKernel(const InputImage& inputImage, const Eigen::Vector2f& coor
             }
             currentDepth = depth < currentDepth ? depth : currentDepth;
             if(abs(avg - currentDepth) > stdDev){
-                std::cout << "Adjusted Depth " << currentDepth << "Coord: " << coordinates[i] << std::endl;
                 return currentDepth;
             }
         }
@@ -133,32 +129,27 @@ static float useKernel(const InputImage& inputImage, const Eigen::Vector2f& coor
 }
 
 static void correctDepthOfLandmarks(InputImage& inputImage){
-    //TODO:
     float avg = 0;
     unsigned int n = 17;//inputImage.depthValuesLandmarks.size(); //n = 17?! only jaw
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < (int) n; ++i) {
         avg += inputImage.depthValuesLandmarks[i];
     }
     avg /= (float) n;
 
     float stdDev = 0;
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < (int) n; ++i) {
         stdDev += powf(inputImage.depthValuesLandmarks[i] - avg, 2);
     }
     stdDev /= (float) n;
     stdDev = sqrtf(stdDev);
-    std::cout << "STD-Deviation: " << stdDev << std::endl;
 
     //stdDev has to be bigger!!! Otherwise there would be flagged depth values in a perfect model
     //Shouldn't I use abs(avg) and abs(inputImage.depthValuesLandmarks[i]) as a negative depth value might otherwise lead to a wrong result
-    std::cout << "Depth Distance: " << std::endl;
-    for (int i = 0; i < n; ++i) {
-        std::cout << abs(avg - inputImage.depthValuesLandmarks[i]) << std::endl;
+    for (int i = 0; i < (int) n; ++i) {
         if(abs(avg - inputImage.depthValuesLandmarks[i]) > stdDev){
             inputImage.depthValuesLandmarks[i] = useKernel(inputImage, inputImage.landmarks[i], avg, stdDev);
         }
     }
-    std::cout << "Depth Distance End" << std::endl;
 }
 
 static void calculateDepthValuesLandmarks(InputImage& inputImage){
@@ -323,25 +314,17 @@ static InputImage readVideoData(std::string path){
         rs2::frameset frames;
         unaligned_frames = pipe.wait_for_frames();  // Blocking call to get frames
         frames = align.process(unaligned_frames);
-        std::cout << "Number of frames: " << frames.size() << std::endl;
 
         // Get depth and color frames
         auto depth = frames.get_depth_frame();
         auto color = frames.get_color_frame();
 
         writeColorToPng(color);
-        writeDepthToPng(depth);
+        //writeDepthToPng(depth);
         // Retrieve camera intrinsics for the depth frame
         rs2::video_stream_profile depth_profile = depth.get_profile().as<rs2::video_stream_profile>();
         rs2_intrinsics intrinsics = depth_profile.get_intrinsics();
         auto ex = depth_profile.get_extrinsics_to(color.get_profile().as<rs2::video_stream_profile>());
-        std::cout << "Rotation: " << ex.translation[0] << "; " << ex.rotation[1] << "; " << ex.rotation[2] << std::endl;
-
-        // Print intrinsics
-        std::cout << "Depth Intrinsics:" << std::endl;
-        std::cout << "Width: " << intrinsics.width << " Height: " << intrinsics.height << std::endl;
-        std::cout << "PPX: " << intrinsics.ppx << " PPY: " << intrinsics.ppy << std::endl;
-        std::cout << "FX: " << intrinsics.fx << " FY: " << intrinsics.fy << std::endl;
 
         // Exit after processing one set of frames
         inputImage.width = intrinsics.width;
@@ -352,10 +335,6 @@ static InputImage readVideoData(std::string path){
                 0, intrinsics.fy, intrinsics.ppy,
                 0, 0, 1;
 
-        std::cout << "FX: " << intrinsics.fx << std::endl;
-        std::cout << "FY: " << intrinsics.fy << std::endl;
-        std::cout << "ppx: " << intrinsics.ppx << std::endl;
-        std::cout << "ppy: " << intrinsics.ppy << std::endl;
         // Extract depth values from depth frame
         inputImage.depthValues.resize(inputImage.width * inputImage.height);
         for (int i = 0; i < inputImage.height; i++) {
@@ -388,7 +367,6 @@ static InputImage readVideoData(std::string path){
             extrinsics(i, 3) = depth_to_color.translation[i]; // Fill translation vector
         }
         inputImage.extrinsics = extrinsics;
-        std::cout << "Extrinsics:\n" << extrinsics << std::endl;
 
     } catch (const rs2::error& e) {
         std::cerr << "RealSense error calling " << e.get_failed_function() << "(" << e.get_failed_args() << "):\n    " << e.what() << std::endl;

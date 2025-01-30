@@ -93,7 +93,7 @@ static void DrawLandmarksOnImage(const std::string& imagePath, const std::string
     auto shape = GetLandmarks(imagePath, shapePredictorPath);
     dlib::array2d<dlib::rgb_pixel> image;
     dlib::load_image(image, imagePath);
-    for (int i = 0; i < shape.num_parts(); ++i) {
+    for (int i = 0; i < (int) shape.num_parts(); ++i) {
         int x = shape.part(i).x();
         int y = shape.part(i).y();
         draw_solid_circle(image, dlib::point(x, y), 3, GetLandmarkColor(i));
