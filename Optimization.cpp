@@ -83,7 +83,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     ceres::Solver::Summary summary;
     ceres::Solver::Summary sparseSummary;
 
-    auto bfmVertices = getVertices(bfm);
+    auto bfmVertices = getVerticesWithoutProcrustes(bfm);
     auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
@@ -210,6 +210,6 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
     options.max_num_iterations = 2000;
-    options.num_threads = 24;
+    options.num_threads = 12;
 }
 
