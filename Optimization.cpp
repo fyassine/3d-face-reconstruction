@@ -141,12 +141,12 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
 
     ceres::Solve(options, &sparseProblem, &sparseSummary);
     for (int i = 0; i < offsets.size(); i += 3) {
-        //auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
+        auto current_landmark = convert2Dto3D(landmarks_input_image[i/3], landmarks_depth_values[i/3], inputImage.intrinsics, inputImage.extrinsics);
 
         std::cout << "Offset Vector: " << offsets[i] << ", " << offsets[i + 1] << ", " << offsets[i + 2] << std::endl;
-        //std::cout << "Image Landmark: " << landmarks_input_image[i].x() << ", " << landmarks_input_image[i].y() << ", " << landmarks_input_image[i].z() << std::endl;
-        //std::cout << "BFM Landmark: " << bfmVertices[bfm.landmark_indices[i]].x() << ", " << bfmVertices[bfm.landmark_indices[i]].y() << ", " << bfmVertices[bfm.landmark_indices[i]].z() << std::endl;
-        //std::cout << "BFM Landmark + Offset: " << bfmVertices[bfm.landmark_indices[i]].x() + offsets[i] << ", " << bfmVertices[bfm.landmark_indices[i]].y() + offsets[i + 1] << ", " << bfmVertices[bfm.landmark_indices[i]].z() + offsets[i + 2] << std::endl;
+        std::cout << "Image Landmark: " << current_landmark.x() << ", " << current_landmark.y() << ", " << current_landmark.z() << std::endl;
+        std::cout << "BFM Landmark: " << bfmVertices[bfm.landmark_indices[i/3]].x() << ", " << bfmVertices[bfm.landmark_indices[i/3]].y() << ", " << bfmVertices[bfm.landmark_indices[i/3]].z() << std::endl;
+        std::cout << "BFM Landmark + Offset: " << bfmVertices[bfm.landmark_indices[i/3]].x() + offsets[i] << ", " << bfmVertices[bfm.landmark_indices[i/3]].y() + offsets[i + 1] << ", " << bfmVertices[bfm.landmark_indices[i/3]].z() + offsets[i + 2] << std::endl;
     }
     //print targetlandmarks, offsets
     //TODO Dense: GETVERTICESWITHOUT PROCRUSTES erneut callen -> because new vertices are important

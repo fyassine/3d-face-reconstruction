@@ -228,15 +228,15 @@ public:
 
         //Eigen::Matrix<T, 4, 1> landMark4d = Eigen::Matrix<T, 4, 1>(T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
         //Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4d) + shape_offset + expression_offset;
-        Eigen::Matrix<T, 4, 1> offsetVector = Eigen::Matrix<T, 4, 1>(T(offsets[m_current_index]), T(offsets[m_current_index + 1]), T(offsets[m_current_index + 2]), T(1));
+        Eigen::Matrix<T, 4, 1> offsetVector = Eigen::Matrix<T, 4, 1>(T(offsets[m_current_index * 3]), T(offsets[m_current_index * 3 + 1]), T(offsets[m_current_index * 3 + 2]), T(1));
         Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
         Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + offsetVector;//shape_offset + expression_offset;
 
-        std::cout << "Transformed Vertex(" << m_current_index << "): " << "(" << transformedVertex.rows() << ", " << transformedVertex.cols() << ")" << ", " << std::endl;
-        std::cout << "Transformed Vertex(" << m_current_index << ")" << typeid(transformedVertex[0]).name() << ", " << transformedVertex[1] << ", " << transformedVertex[2] << std::endl;
+        //std::cout << "Transformed Vertex Dims(" << m_current_index << "): " << "(" << transformedVertex.rows() << ", " << transformedVertex.cols() << ")" << std::endl;
+        //std::cout << "Transformed Vertex Coordinates(" << m_current_index << ")" << transformedVertex.x() << ", " << 0 << ", " << 0 << std::endl;
 
         std::cout << "Landmarks Input(" << m_current_index << "): " << m_landmark_positions_input << std::endl;
-        residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x()); //TO 0
+        residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
         residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
         residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
 
