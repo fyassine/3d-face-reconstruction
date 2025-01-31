@@ -7,6 +7,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <utility>
+#include "Rendering.h"
 
 // TODO: Put illumination in seperate header file
 
@@ -178,20 +179,26 @@ private:
 
 struct SparseOptimization{
 public:
-    SparseOptimization(const Eigen::Vector3d& landmark_position_input, const Eigen::Vector3d& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties)
-            : m_landmark_positions_input(landmark_position_input), m_bfm_properties(bfmProperties), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index) {}
+    SparseOptimization(const Eigen::Vector3d& landmark_position_input, const Eigen::Vector3d& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties, const int index)
+            : m_landmark_positions_input(landmark_position_input), m_bfm_properties(bfmProperties), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index), m_current_index(index) {}
 
     template <typename T>
     bool operator()(const T* const shape,
                     const T* const expression,
+                    const T* const offsets,
                     T* residuals) const {
+
+        std::cout << "Landmark index: " << m_current_index << std::endl;
+        std::cout << "Landmark index (BFM)(" << m_current_index<< "): "<< m_landmark_bfm_index << std::endl;
+        std::cout << "Target(" << m_current_index<< "): " << m_landmark_positions_input << std::endl;
+        std::cout << "Source(" << m_current_index<< "): " << m_landmark_bfm << std::endl;
 
         Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
         Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
         shape_offset.w() = T(1.0);
         expression_offset.w() = T(1.0);
 
-        //shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]);
+        //shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
         //shape_offset.y() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 1]);
         //shape_offset.z() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 2]);
 
@@ -219,13 +226,17 @@ public:
             );
         }
 
-        //Eigen::Vector4d landMark4d = Eigen::Vector4d(m_landmark_bfm.x(), m_landmark_bfm.y(), m_landmark_bfm.z(), 1);
-        //Eigen::Vector4d transformedVertex = (m_bfm_properties.transformation.cast<double>() * landMark4d) + shape_offset.cast<double>() + expression_offset.cast<double>();
-
+        //Eigen::Matrix<T, 4, 1> landMark4d = Eigen::Matrix<T, 4, 1>(T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
+        //Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4d) + shape_offset + expression_offset;
+        Eigen::Matrix<T, 4, 1> offsetVector = Eigen::Matrix<T, 4, 1>(T(offsets[m_current_index]), T(offsets[m_current_index + 1]), T(offsets[m_current_index + 2]), T(1));
         Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
-        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + shape_offset + expression_offset;
+        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + offsetVector;//shape_offset + expression_offset;
 
-        residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
+        std::cout << "Transformed Vertex(" << m_current_index << "): " << "(" << transformedVertex.rows() << ", " << transformedVertex.cols() << ")" << ", " << std::endl;
+        std::cout << "Transformed Vertex(" << m_current_index << ")" << typeid(transformedVertex[0]).name() << ", " << transformedVertex[1] << ", " << transformedVertex[2] << std::endl;
+
+        std::cout << "Landmarks Input(" << m_current_index << "): " << m_landmark_positions_input << std::endl;
+        residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x()); //TO 0
         residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
         residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
 
@@ -233,12 +244,13 @@ public:
     }
 
 private:
-    const Eigen::Vector3d& m_landmark_positions_input;
-    const Eigen::Vector3d& m_landmark_bfm;
+    const Eigen::Vector3d m_landmark_positions_input;
+    const Eigen::Vector3d m_landmark_bfm;
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
     const BfmProperties& m_bfm_properties;
     const int m_landmark_bfm_index;
+    const int m_current_index;
 };
 
 class Optimization {

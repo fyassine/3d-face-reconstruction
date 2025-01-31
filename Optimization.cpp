@@ -78,7 +78,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
 void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     std::cout << "Start Optimization" << std::endl;
     Eigen::VectorXd shapeParamsD = bfm.shapeParams.cast<double>();
-    Eigen::VectorXd expressionParamsD = bfm.expressionParams.cast<double>();
+    Eigen::VectorXd expressionParamsD = bfm.expressionParams.cast<double>(); //maybe thats the problem? What about creating params as std::vector?!
     Eigen::VectorXd colorParamsD = bfm.colorParams.cast<double>();
     ceres::Problem sparseProblem;
     ceres::Problem problem;
@@ -88,19 +88,35 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     ceres::Solver::Summary sparseSummary;
 
     auto bfmVertices = getVerticesWithoutProcrustes(bfm);
+    convertVerticesTest(bfmVertices, resultFolderPath + "DaskönntederFehlersein.ply");
     auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
+
+    std::vector<double> offsets;
+    for (int i = 0; i < 204; ++i) {
+        offsets.emplace_back(0);
+    }
+
+    std::cout << landmarks_input_image.size() << std::endl;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
+        std::cout << "Current Input Landmarks(" << i << "): " << std::endl;
+        std::cout << current_landmark.cast<double>() << std::endl;
+        std::cout << "Current BFM Vertices(" << i << "): " << std::endl;
+        std::cout << bfmVertices[bfm.landmark_indices[i]].cast<double>() << std::endl;
+        //TODO: Transform point manually
         sparseProblem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
-                        new SparseOptimization(current_landmark.cast<double>(), bfmVertices[bfm.landmark_indices[i]].cast<double>(), bfm.landmark_indices[i], bfm)
+                new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100, 204>(
+                        new SparseOptimization(current_landmark.cast<double>(), bfmVertices[bfm.landmark_indices[i]].cast<double>(), bfm.landmark_indices[i], bfm, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
-                expressionParamsD.data()
+                expressionParamsD.data(),
+                offsets.data()
         );
     }
+
+    std::cout << "Current Landmarks End" << std::endl;
     std::vector<double> identity_std_dev(199);
     std::vector<double> albedo_std_dev(199);
     std::vector<double> expression_std_dev(100);
@@ -124,6 +140,15 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     //regularize(bfm, problem);
 
     ceres::Solve(options, &sparseProblem, &sparseSummary);
+    for (int i = 0; i < offsets.size(); i += 3) {
+        //auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
+
+        std::cout << "Offset Vector: " << offsets[i] << ", " << offsets[i + 1] << ", " << offsets[i + 2] << std::endl;
+        //std::cout << "Image Landmark: " << landmarks_input_image[i].x() << ", " << landmarks_input_image[i].y() << ", " << landmarks_input_image[i].z() << std::endl;
+        //std::cout << "BFM Landmark: " << bfmVertices[bfm.landmark_indices[i]].x() << ", " << bfmVertices[bfm.landmark_indices[i]].y() << ", " << bfmVertices[bfm.landmark_indices[i]].z() << std::endl;
+        //std::cout << "BFM Landmark + Offset: " << bfmVertices[bfm.landmark_indices[i]].x() + offsets[i] << ", " << bfmVertices[bfm.landmark_indices[i]].y() + offsets[i + 1] << ", " << bfmVertices[bfm.landmark_indices[i]].z() + offsets[i + 2] << std::endl;
+    }
+    //print targetlandmarks, offsets
     //TODO Dense: GETVERTICESWITHOUT PROCRUSTES erneut callen -> because new vertices are important
     //std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
 
@@ -208,12 +233,12 @@ void Optimization::regularize(BfmProperties& bfm, ceres::Problem& problem) {
 
 void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-    options.dense_linear_algebra_library_type = ceres::CUDA;
-    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
+    //options.dense_linear_algebra_library_type = ceres::CUDA;
+    //options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 1;
-    options.num_threads = 12;
+    options.max_num_iterations = 2000;
+    options.num_threads = 1;
 }
 
