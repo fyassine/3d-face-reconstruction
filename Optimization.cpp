@@ -146,7 +146,9 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
         std::cout << "Offset Vector: " << offsets[i] << ", " << offsets[i + 1] << ", " << offsets[i + 2] << std::endl;
         std::cout << "Image Landmark: " << current_landmark.x() << ", " << current_landmark.y() << ", " << current_landmark.z() << std::endl;
         std::cout << "BFM Landmark: " << bfmVertices[bfm.landmark_indices[i/3]].x() << ", " << bfmVertices[bfm.landmark_indices[i/3]].y() << ", " << bfmVertices[bfm.landmark_indices[i/3]].z() << std::endl;
-        std::cout << "BFM Landmark + Offset: " << bfmVertices[bfm.landmark_indices[i/3]].x() + offsets[i] << ", " << bfmVertices[bfm.landmark_indices[i/3]].y() + offsets[i + 1] << ", " << bfmVertices[bfm.landmark_indices[i/3]].z() + offsets[i + 2] << std::endl;
+        auto result = Eigen::Vector4f(bfmVertices[bfm.landmark_indices[i/3]].x(), bfmVertices[bfm.landmark_indices[i/3]].y(), bfmVertices[bfm.landmark_indices[i/3]].z(), 1.0f);
+        auto transformedLandmark = bfm.transformation * result;
+        std::cout << "BFM Landmark + Offset: " << transformedLandmark.x() + offsets[i] << ", " << transformedLandmark.y() + offsets[i + 1] << ", " << transformedLandmark.z() + offsets[i+2] << std::endl;
     }
     //print targetlandmarks, offsets
     //TODO Dense: GETVERTICESWITHOUT PROCRUSTES erneut callen -> because new vertices are important

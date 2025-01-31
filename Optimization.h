@@ -188,10 +188,10 @@ public:
                     const T* const offsets,
                     T* residuals) const {
 
-        std::cout << "Landmark index: " << m_current_index << std::endl;
+        /*std::cout << "Landmark index: " << m_current_index << std::endl;
         std::cout << "Landmark index (BFM)(" << m_current_index<< "): "<< m_landmark_bfm_index << std::endl;
         std::cout << "Target(" << m_current_index<< "): " << m_landmark_positions_input << std::endl;
-        std::cout << "Source(" << m_current_index<< "): " << m_landmark_bfm << std::endl;
+        std::cout << "Source(" << m_current_index<< "): " << m_landmark_bfm << std::endl;*/
 
         Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
         Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
@@ -226,16 +226,16 @@ public:
             );
         }
 
-        //Eigen::Matrix<T, 4, 1> landMark4d = Eigen::Matrix<T, 4, 1>(T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
-        //Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4d) + shape_offset + expression_offset;
-        Eigen::Matrix<T, 4, 1> offsetVector = Eigen::Matrix<T, 4, 1>(T(offsets[m_current_index * 3]), T(offsets[m_current_index * 3 + 1]), T(offsets[m_current_index * 3 + 2]), T(1));
-        Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
-        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + offsetVector;//shape_offset + expression_offset;
+        Eigen::Matrix<T, 4, 1> landMark4d = Eigen::Matrix<T, 4, 1>(T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
+        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4d) + shape_offset + expression_offset;
+        //Eigen::Matrix<T, 4, 1> offsetVector = Eigen::Matrix<T, 4, 1>(T(offsets[m_current_index * 3]), T(offsets[m_current_index * 3 + 1]), T(offsets[m_current_index * 3 + 2]), T(1));
+        //Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
+        //Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + offsetVector;//shape_offset + expression_offset;
 
         //std::cout << "Transformed Vertex Dims(" << m_current_index << "): " << "(" << transformedVertex.rows() << ", " << transformedVertex.cols() << ")" << std::endl;
         //std::cout << "Transformed Vertex Coordinates(" << m_current_index << ")" << transformedVertex.x() << ", " << 0 << ", " << 0 << std::endl;
 
-        std::cout << "Landmarks Input(" << m_current_index << "): " << m_landmark_positions_input << std::endl;
+        //std::cout << "Landmarks Input(" << m_current_index << "): " << m_landmark_positions_input << std::endl;
         residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
         residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
         residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
