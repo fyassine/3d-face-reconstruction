@@ -35,7 +35,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     Eigen::VectorXd expressionParamsD = properties.expressionParams.cast<double>();
     Eigen::VectorXd colorParamsD = properties.colorParams.cast<double>();
 
-    for (int i = 0; i < bfmVertices.size(); i++) {
+    for (int i = 0; i < bfmVertices.size(); i+=100) {
         Eigen::Vector3f vertexBfm = bfmVertices[i];
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
         
@@ -152,9 +152,10 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     }
     //print targetlandmarks, offsets
     //TODO Dense: GETVERTICESWITHOUT PROCRUSTES erneut callen -> because new vertices are important
-    //std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
+    auto bfmVerticesDepth = getVertices(bfm);
+    std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
 
-    /*for (size_t i = 0; i < bfm.triangles.size(); i+=3) {
+    for (size_t i = 0; i < bfm.triangles.size(); i+=3) {
         auto triangle0 = bfm.triangles[i];
         auto triangle1 = bfm.triangles[i+1];
         auto triangle2 = bfm.triangles[i+2];
@@ -168,17 +169,17 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
 
     for (size_t i = 0; i < bfmVertices.size(); i++) {
         normals[i].normalize();
-    }*/
+    }
 
     int width = 1280;
     int height = 720;
+    std::cout << "Start: " << bfmVertices.size() << std::endl;
 
-    // Start Illumination
-
-    /*for (int i = 0; i < bfmVertices.size(); i+=100) {
-        Eigen::Vector3f vertexBfm = bfmVertices[i];
+    for (int i = 0; i < bfmVertices.size(); i+=100) {
+        Eigen::Vector3f vertexBfm = bfmVerticesDepth[i];
+        std::cout << i << ": " << bfmVerticesDepth[i] << std::endl;
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
-
+        std::cout << "Depth: " << ": " << depthInputImage << std::endl;
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], bfm, i)
@@ -188,6 +189,8 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
                 expressionParamsD.data()
         );
     }
+    std::cout << "End" << std::endl;
+
 
     problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
@@ -195,10 +198,10 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
             nullptr,
             shapeParamsD.data(),
             expressionParamsD.data()
-    );*/
+    );
 
     //options.max_num_iterations = 100;
-    //ceres::Solve(options, &problem, &summary);
+    ceres::Solve(options, &problem, &summary);
     bfm.shapeParams = shapeParamsD.cast<float>();
     bfm.expressionParams = expressionParamsD.cast<float>();
     bfm.colorParams = colorParamsD.cast<float>();
@@ -221,13 +224,13 @@ void Optimization::regularize(BfmProperties& bfm, ceres::Problem& problem) {
     for (int i = 0; i < 100; ++i) {
         expression_std_dev[i] = std::sqrt(bfm.expressionPcaVariance[i]);
     }
-    problem.AddResidualBlock(
+    /*problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
             shapeParamsD.data(),
             expressionParamsD.data()
-    );
+    );*/
     bfm.shapeParams = shapeParamsD.cast<float>();
     bfm.expressionParams = expressionParamsD.cast<float>();
     bfm.colorParams = colorParamsD.cast<float>();
@@ -235,12 +238,12 @@ void Optimization::regularize(BfmProperties& bfm, ceres::Problem& problem) {
 
 void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-    //options.dense_linear_algebra_library_type = ceres::CUDA;
-    //options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
+    options.dense_linear_algebra_library_type = ceres::CUDA;
+    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
     options.max_num_iterations = 2000;
-    options.num_threads = 1;
+    options.num_threads = 24;
 }
 

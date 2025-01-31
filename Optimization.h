@@ -59,19 +59,44 @@ public:
                     const T* const expression,
                     T* residuals) const {
 
-        Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
-        Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
+        Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
+        shape_offset.w() = T(1.0);
+        expression_offset.w() = T(1.0);
 
-        int vertex_idx = m_vertex_id * 3;
+        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
+        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
+        //int vertex_idx = m_vertex_id * 3;
 
-        shape_offset = m_bfm_properties.shapePcaBasis.block<3, num_shape_params>(vertex_idx, 0)
+        /*shape_offset = m_bfm_properties.shapePcaBasis.block<4, num_shape_params>(vertex_idx, 0)
                                .template cast<T>()
                        * Eigen::Map<const Eigen::Matrix<T, num_shape_params, 1>>(shape);
-        expression_offset = m_bfm_properties.expressionPcaBasis.block<3, num_expression_params>(vertex_idx, 0)
+        expression_offset = m_bfm_properties.expressionPcaBasis.block<4, num_expression_params>(vertex_idx, 0)
                                     .template cast<T>()
-                            * Eigen::Map<const Eigen::Matrix<T, num_expression_params, 1>>(expression);
+                            * Eigen::Map<const Eigen::Matrix<T, num_expression_params, 1>>(expression);*/
+        for (int i = 0; i < num_shape_params; ++i) {
+            int vertex_idx = m_vertex_id * 3;
+            shape_offset += Eigen::Matrix<T, 4, 1>(
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i))),
+                    T(0)
+            );
+        }
 
-        Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
+        for (int i = 0; i < num_expression_params; ++i) {
+            int vertex_idx = m_vertex_id * 3;
+            expression_offset += Eigen::Matrix<T, 4, 1>(
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))),
+                    T(0)
+            );
+        }
+
+        Eigen::Matrix<T, 4, 1> vertex4d = Eigen::Matrix<T, 4, 1>(T(m_vertex.x()), T(m_vertex.y()), T(m_vertex.z()), T(1));
+        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * vertex4d) + shape_offset + expression_offset;
+
 
         auto point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
                                                   transformedVertex.y(),
