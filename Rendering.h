@@ -373,6 +373,46 @@ static BfmProperties getProperties(const std::string& path, const InputImage& in
     return properties;
 }
 
+static void convertParametersToPlyWithoutProcrustes(const BfmProperties& properties, const std::string& resultPath){
+
+    std::ofstream outFile(resultPath);
+    //Header
+    outFile << "ply" << std::endl;
+    outFile << "format ascii 1.0" << std::endl;
+    outFile << "element vertex " << properties.numberOfVertices << std::endl;
+    outFile << "property float x" << std::endl;
+    outFile << "property float y" << std::endl;
+    outFile << "property float z" << std::endl;
+    outFile << "property uchar red" << std::endl;
+    outFile << "property uchar green" << std::endl;
+    outFile << "property uchar blue" << std::endl;
+    outFile << "property uchar alpha" << std::endl;
+    outFile << "element face " << properties.numberOfTriangles << std::endl;
+    outFile << "property list uchar int vertex_indices" << std::endl;
+    outFile << "end_header" << std::endl;
+    //Vertices
+    auto vertices = getVerticesWithoutProcrustes(properties);
+    auto colorValues = getColorValues(properties);
+    for (int i = 0; i < properties.numberOfVertices; i++) {
+        //Position
+        auto x = vertices[i].x();
+        auto y = vertices[i].y();
+        auto z = vertices[i].z();
+        //Color
+        auto r = colorValues[i].x();
+        auto g = colorValues[i].y();
+        auto b = colorValues[i].z();
+        outFile << x << " " << y << " " << z << " " << r << " "<< g << " "<< b << " 255"<< std::endl;
+    }
+
+    //Faces
+    for (int i = 0; i < properties.numberOfTriangles * 3; i+=3) {
+        outFile << "3 " << properties.triangles[i] << " " << properties.triangles[i + 1] << " " << properties.triangles[i + 2] << std::endl;
+    }
+    outFile.close();
+}
+
+
 static void convertParametersToPly(const BfmProperties& properties, const std::string& resultPath){
 
     std::ofstream outFile(resultPath);
@@ -418,7 +458,7 @@ static void convertLandmarksToPly(const BfmProperties& properties, const std::st
     //Header
     outFile << "ply" << std::endl;
     outFile << "format ascii 1.0" << std::endl;
-    outFile << "element vertex " << 68 << std::endl;
+    outFile << "element vertex " << properties.landmarks.size() << std::endl;
     outFile << "property float x" << std::endl;
     outFile << "property float y" << std::endl;
     outFile << "property float z" << std::endl;
@@ -431,7 +471,7 @@ static void convertLandmarksToPly(const BfmProperties& properties, const std::st
     outFile << "end_header" << std::endl;
     //Vertices
 
-    for (int i = 0; i < 68; ++i) {
+    for (int i = 0; i < properties.landmarks.size(); ++i) {
         Eigen::Vector4f transformedLandmark(properties.landmarks[i].x(), properties.landmarks[i].y(), properties.landmarks[i].z(), 1.0f);
         auto currentLandmark = properties.transformation * transformedLandmark;
 

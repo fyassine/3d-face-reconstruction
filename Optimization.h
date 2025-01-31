@@ -178,7 +178,7 @@ private:
 
 struct SparseOptimization{
 public:
-    SparseOptimization(const Eigen::Vector3f& landmark_position_input, const Eigen::Vector3f& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties)
+    SparseOptimization(const Eigen::Vector3d& landmark_position_input, const Eigen::Vector3d& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties)
             : m_landmark_positions_input(landmark_position_input), m_bfm_properties(bfmProperties), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index) {}
 
     template <typename T>
@@ -188,13 +188,19 @@ public:
 
         Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
         Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
+        shape_offset.w() = T(1.0);
+        expression_offset.w() = T(1.0);
 
-        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
-        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
+        //shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]);
+        //shape_offset.y() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 1]);
+        //shape_offset.z() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 2]);
+
+        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
+        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
 
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
-            int vertex_idx = m_landmark_bfm_index;
+            int vertex_idx = m_landmark_bfm_index * 3;
             shape_offset += Eigen::Matrix<T, 4, 1>(
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
@@ -204,7 +210,7 @@ public:
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
-            int vertex_idx = m_landmark_bfm_index;
+            int vertex_idx = m_landmark_bfm_index * 3;
             expression_offset += Eigen::Matrix<T, 4, 1>(
                     T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
                     T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
@@ -212,6 +218,10 @@ public:
                     T(0)
             );
         }
+
+        //Eigen::Vector4d landMark4d = Eigen::Vector4d(m_landmark_bfm.x(), m_landmark_bfm.y(), m_landmark_bfm.z(), 1);
+        //Eigen::Vector4d transformedVertex = (m_bfm_properties.transformation.cast<double>() * landMark4d) + shape_offset.cast<double>() + expression_offset.cast<double>();
+
         Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
         Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + shape_offset + expression_offset;
 
@@ -223,8 +233,8 @@ public:
     }
 
 private:
-    const Eigen::Vector3f& m_landmark_positions_input;
-    const Eigen::Vector3f& m_landmark_bfm;
+    const Eigen::Vector3d& m_landmark_positions_input;
+    const Eigen::Vector3d& m_landmark_bfm;
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
     const BfmProperties& m_bfm_properties;
@@ -236,7 +246,7 @@ public:
     static void optimize(BfmProperties&, InputImage&);
 private:
     static void configureSolver(ceres::Solver::Options&);
-    static void optimizeSparseTerms(BfmProperties&, InputImage&, ceres::Problem&, Eigen::VectorXd& shapeParams, Eigen::VectorXd& expressionParams);
+    static void optimizeSparseTerms(BfmProperties&, InputImage&, Eigen::VectorXd& shapeParams, Eigen::VectorXd& expressionParams);
     static void optimizeDenseTerms(BfmProperties&, InputImage&, ceres::Problem&);
     static void optimizeColor();
     static void regularize(BfmProperties&, ceres::Problem&);
