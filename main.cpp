@@ -17,7 +17,7 @@ using namespace Eigen;
 using namespace std;
 
 int main() {
-    InputImage inputImage = readVideoData(dataFolderPath + "20250116_183206.bag");
+    InputImage inputImage = readVideoData(dataFolderPath + "20250127_200932.bag");
     const std::string imagePath = std::string(resultFolderPath + "color_frame_corrected.png");
     //const std::string imagePath = std::string(dataFolderPath + "testmyface.png");
     const std::string shapePredictorPath = std::string(dataFolderPath + "shape_predictor_68_face_landmarks.dat");

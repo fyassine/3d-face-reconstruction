@@ -54,7 +54,11 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     properties.colorParams = colorParamsD.cast<float>();
 }
 
-void Optimization::optimizeSparseTerms(BfmProperties& bfm, InputImage& inputImage, ceres::Problem& problem, Eigen::VectorXd& shapeParamsD, Eigen::VectorXd& expressionParamsD) {
+void Optimization::optimizeSparseTerms(BfmProperties& bfm, InputImage& inputImage, Eigen::VectorXd& shapeParamsD, Eigen::VectorXd& expressionParamsD) {
+    ceres::Problem problem;
+    ceres::Solver::Options options;
+    configureSolver(options);
+    ceres::Solver::Summary summary;
     auto bfmVertices = getVertices(bfm);
     auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
@@ -97,7 +101,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
                 expressionParamsD.data()
         );
     }
-    std::vector<double> identity_std_dev(199);
+    /*std::vector<double> identity_std_dev(199);
     std::vector<double> albedo_std_dev(199);
     std::vector<double> expression_std_dev(100);
     // Fill identity and albedo standard deviations
@@ -115,12 +119,12 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
             nullptr,
             shapeParamsD.data(),
             expressionParamsD.data()
-    );
+    );*/
     //optimizeDenseTerms(bfm, inputImage, problem);
     //regularize(bfm, problem);
 
     ceres::Solve(options, &sparseProblem, &sparseSummary);
-    //TODO Dense:
+    //TODO Dense: GETVERTICESWITHOUT PROCRUSTES erneut callen -> because new vertices are important
     //std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
 
     /*for (size_t i = 0; i < bfm.triangles.size(); i+=3) {
@@ -209,7 +213,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 20000;
+    options.max_num_iterations = 200;
     options.num_threads = 12;
 }
 
