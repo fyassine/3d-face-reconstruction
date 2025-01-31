@@ -189,12 +189,16 @@ public:
         Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
         Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
 
+        //shape_offset.x() = T(m_bfm_properties.shape_mean[m_landmark_bfm_index * 3]);
+        //shape_offset.y() = T(m_bfm_properties.shape_mean[m_landmark_bfm_index * 3 + 1]);
+        //shape_offset.z() = T(m_bfm_properties.shape_mean[m_landmark_bfm_index * 3 + 2]);
+
         auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis;
         auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis;
 
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
-            int vertex_idx = m_landmark_bfm_index;
+            int vertex_idx = m_landmark_bfm_index * 3;
             shape_offset += Eigen::Matrix<T, 4, 1>(
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
                     T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
@@ -204,7 +208,7 @@ public:
         }
 
         for (int i = 0; i < num_expression_params; ++i) {
-            int vertex_idx = m_landmark_bfm_index;
+            int vertex_idx = m_landmark_bfm_index * 3;
             expression_offset += Eigen::Matrix<T, 4, 1>(
                     T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
                     T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
