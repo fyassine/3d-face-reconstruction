@@ -201,54 +201,6 @@ static unsigned int setupShaders(){
     return shaderProgram;
 }
 
-/*static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
-    float fx = intrinsics(0, 0);
-    float fy = intrinsics(1, 1);
-    float cx = intrinsics(0, 2);
-    float cy = intrinsics(1, 2);
-
-    float l = -cx * near_plane / fx;                  // Left boundary
-    float r = (width - cx) * near_plane / fx;        // Right boundary
-    float b = -cy * near_plane / fy;                 // Bottom boundary
-    float t = (height - cy) * near_plane / fy;       // Top boundary
-
-    Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
-
-    projection(0, 0) = ((2 * near_plane) / (r - l));
-    projection(1, 1) = - ((2 * near_plane) / (t - b));
-    projection(2, 0) = (r + l) / (r - l);
-    projection(2, 1) = (t + b) / (t - b);
-    projection(2, 2) = - (far_plane + near_plane) / (far_plane - near_plane);
-
-    projection(3, 2) = (-2 * far_plane * near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 1.01f;
-    projection(3, 3) = 0;
-    return projection;
-}*/
-
-/*static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
-    float fx = intrinsics(0, 0);
-    float fy = intrinsics(1, 1);
-    float cx = intrinsics(0, 2);
-    float cy = intrinsics(1, 2);
-
-    // Adjust projection matrix calculation
-    float aspect = static_cast<float>(width) / height;
-    float top = near_plane * std::tan(std::atan(cy / fy));
-    float bottom = -top;
-    float right = top * aspect;
-    float left = -right;
-    Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
-    projection(0, 0) = (2 * near_plane) / (right - left);
-    projection(1, 1) = -((2 * near_plane) / (top - bottom));
-    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 2.0f;  // Critical part
-    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
-    projection(3, 3) = 0.0f;
-
-
-    return projection;
-}*/
 static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
     float fx = intrinsics(0, 0);
     float fy = intrinsics(1, 1);
@@ -266,7 +218,7 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 1.4f; //TODO: This should be -1
+    projection(2, 3) = 1.2f; //TODO: This should be -1
     projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
     projection(3, 3) = 0.0f;
 
