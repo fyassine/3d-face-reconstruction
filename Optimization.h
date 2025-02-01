@@ -127,8 +127,8 @@ private:
 
 struct ColorOptimization {
 public:
-    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const Eigen::Vector3f& illumination, const BfmProperties& bfmProperties, int color_id)
-        : m_albedo(albedo), m_image_color(image_color), m_illumination(illumination), m_bfm_properties(bfmProperties), m_color_id(color_id) {}
+    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const BfmProperties& bfmProperties, int color_id)
+        : m_albedo(albedo), m_image_color(image_color), m_bfm_properties(bfmProperties), m_color_id(color_id) {}
 
     template <typename T>
     bool operator()(const T* const color, T* residuals) const {
@@ -157,8 +157,8 @@ public:
             int color_idx = m_color_id * 3;
             color_offset += Eigen::Matrix<T, 3, 1>(
                     T(color[i] * T(m_colorPcaBasis(color_idx, i))),
-                    T(color[i] * T(m_colorPcaBasis(color_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(color[i] * T(m_colorPcaBasis(color_idx + 2, i)))  //maybe rows +1 wrong? Instead rows +0
+                    T(color[i] * T(m_colorPcaBasis(color_idx + 1, i))),
+                    T(color[i] * T(m_colorPcaBasis(color_idx + 2, i)))
             );
         }
         
@@ -166,15 +166,15 @@ public:
         Eigen::Matrix<T, 3, 1> albedo = m_albedo.cast<T>() + color_offset;
 
         // Illumination is already computed and passed as an argument
-        Eigen::Matrix<T, 3, 1> illumination = m_illumination.cast<T>(); // Converted to T for optimization
+        //Eigen::Matrix<T, 3, 1> illumination = m_illumination.cast<T>(); // Converted to T for optimization
 
         // Apply illumination to color (this step assumes illumination modifies the albedo in RGB channels)
-        Eigen::Matrix<T, 3, 1> modifiedColor = albedo.cwiseProduct(illumination);
+        //Eigen::Matrix<T, 3, 1> modifiedColor = albedo.cwiseProduct(illumination);
 
         // Compute residuals (compare modified color to image color)
-        T resulting_color = Eigen::Matrix<T, 3, 1>(modifiedColor.x() - T(m_image_color.x()),
-                                                   modifiedColor.y() - T(m_image_color.y()),
-                                                   modifiedColor.z() - T(m_image_color.z())).norm();
+        T resulting_color = Eigen::Matrix<T, 3, 1>(albedo.x() - T(m_image_color.x()),
+                                                   albedo.y() - T(m_image_color.y()),
+                                                   albedo.z() - T(m_image_color.z())).norm();
         
 //        // Uncomment everything below together (if needed)
 //        Eigen::Matrix<T, 3, 1> modifiedColor = m_albedo.cast<T>() + color_offset;
@@ -196,7 +196,6 @@ public:
 private:
     const Eigen::Vector3f m_albedo;
     const Eigen::Vector3f m_image_color;
-    const Eigen::Vector3f m_illumination;
     const BfmProperties& m_bfm_properties;
     const int m_color_id;
     static const int num_color_params = 199;

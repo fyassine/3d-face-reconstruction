@@ -129,15 +129,6 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     for (int i = 0; i < 100; ++i) {
         expression_std_dev[i] = std::sqrt(bfm.expressionPcaVariance[i]);
     }
-    /*sparseProblem.AddResidualBlock(
-            new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
-                    new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
-            nullptr,
-            shapeParamsD.data(),
-            expressionParamsD.data()
-    );*/
-    //optimizeDenseTerms(bfm, inputImage, problem);
-    //regularize(bfm, problem);
 
     ceres::Solve(options, &sparseProblem, &sparseSummary);
     for (int i = 0; i < offsets.size(); i += 3) {
@@ -174,8 +165,9 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     int width = 1280;
     int height = 720;
     std::cout << "Start: " << bfmVertices.size() << std::endl;
+    auto bfmColors = getColorValuesF(bfm);
 
-    for (int i = 0; i < bfmVertices.size(); i++) {
+    for (int i = 0; i < bfmVertices.size(); i+=100) {
         Eigen::Vector3f vertexBfm = bfmVerticesDepth[i];
         //std::cout << i << ": " << bfmVerticesDepth[i] << std::endl;
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
@@ -188,6 +180,15 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
+
+        /*Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        problem.AddResidualBlock(
+                new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
+                        new ColorOptimization(bfmColors[i], colorInputImage, bfm, i)
+                ),
+                nullptr,
+                colorParamsD.data()
+        );*/
     }
     std::cout << "End" << std::endl;
 
@@ -199,6 +200,13 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
             shapeParamsD.data(),
             expressionParamsD.data()
     );
+
+    /*problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
+                    new ColorRegularizationTerm(albedo_std_dev)),
+            nullptr,
+            colorParamsD.data()
+    );*/
 
     //options.max_num_iterations = 100;
     ceres::Solve(options, &problem, &summary);
