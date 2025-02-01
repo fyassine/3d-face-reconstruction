@@ -68,7 +68,8 @@ int main() {
     optimizer.optimize(properties, inputImage);
 
     std::vector<float> parsedVertices;
-    auto originalVertices = getVertices(properties);
+    //auto originalVertices = getVertices(properties);
+    auto originalVertices = getVerticesWithoutProcrustes(properties);
     for (int i = 0; i < originalVertices.size(); ++i) {
         parsedVertices.push_back(originalVertices[i].x());
         parsedVertices.push_back(originalVertices[i].y());

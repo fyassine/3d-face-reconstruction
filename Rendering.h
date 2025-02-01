@@ -162,11 +162,12 @@ static unsigned int setupShaders(){
         layout(location = 1) in vec3 aColor;
 
         uniform mat4 view;
+        uniform mat4 model;
         uniform mat4 projection;
 
         out vec3 vertexColor;
         void main() {
-            gl_Position = projection * view * vec4(aPos, 1.0);
+            gl_Position = projection * model * view * vec4(aPos, 1.0);
             vertexColor = aColor;
         }
     )";
@@ -262,9 +263,11 @@ static void renderLoop(GLuint texture,
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
+        GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
 
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, eigenToOpenGL(view));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, eigenToOpenGL(modelTransform));
         renderTriangle(vertices.size() / 3, indices, VAO);
         saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720);
         glfwSwapBuffers(window);
