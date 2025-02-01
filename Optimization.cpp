@@ -175,11 +175,11 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     int height = 720;
     std::cout << "Start: " << bfmVertices.size() << std::endl;
 
-    for (int i = 0; i < bfmVertices.size(); i+=100) {
+    for (int i = 0; i < bfmVertices.size(); i++) {
         Eigen::Vector3f vertexBfm = bfmVerticesDepth[i];
-        std::cout << i << ": " << bfmVerticesDepth[i] << std::endl;
+        //std::cout << i << ": " << bfmVerticesDepth[i] << std::endl;
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
-        std::cout << "Depth: " << ": " << depthInputImage << std::endl;
+        //std::cout << "Depth: " << ": " << depthInputImage << std::endl;
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], bfm, i)
@@ -243,7 +243,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 2000;
+    options.max_num_iterations = 100;
     options.num_threads = 24;
 }
 
