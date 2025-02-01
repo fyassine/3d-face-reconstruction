@@ -222,12 +222,12 @@ public:
         shape_offset.w() = T(1);
         expression_offset.w() = T(1);
 
-        shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
+        /*shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
         shape_offset.y() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 1]);
         shape_offset.z() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 2]);
         expression_offset.x() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
         expression_offset.y() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3 + 1]);
-        expression_offset.z() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3 + 2]);
+        expression_offset.z() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3 + 2]);*/
 
         auto m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
         auto m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
