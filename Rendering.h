@@ -218,7 +218,7 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 1.2f; //TODO: This should be -1
+    projection(2, 3) = 1.4f; //TODO: This should be -1
     projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
     projection(3, 3) = 0.0f;
 
@@ -233,17 +233,6 @@ static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
     }
     return glMat;
 }
-
-/*static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
-    GLfloat* glMat = new GLfloat[16];
-    // Transpose the matrix when copying
-    for (int row = 0; row < 4; ++row) {
-        for (int col = 0; col < 4; ++col) {
-            glMat[row * 4 + col] = mat(col, row);
-        }
-    }
-    return glMat;
-}*/
 
 static void renderLoop(GLuint texture,
                 GLFWwindow* window,
