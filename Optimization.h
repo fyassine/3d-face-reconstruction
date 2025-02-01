@@ -222,12 +222,12 @@ public:
         shape_offset.w() = T(1);
         expression_offset.w() = T(1);
 
-        /*shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
+        shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
         shape_offset.y() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 1]);
         shape_offset.z() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 2]);
         expression_offset.x() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
         expression_offset.y() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3 + 1]);
-        expression_offset.z() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3 + 2]);*/
+        expression_offset.z() = T(m_bfm_properties.expressionMean[m_landmark_bfm_index * 3 + 2]);
 
         auto m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
         auto m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
@@ -238,9 +238,9 @@ public:
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_landmark_bfm_index * 3;
             shape_offset += Eigen::Matrix<T, 4, 1>(
-                    T(shapeWeight) * T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
-                    T(shapeWeight) * T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
-                    T(shapeWeight) * T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i))),
+                    T(sqrt(m_bfm_properties.shapePcaVariance[i])) * T(shapeWeight) * T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                    T(sqrt(m_bfm_properties.shapePcaVariance[i])) * T(shapeWeight) * T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                    T(sqrt(m_bfm_properties.shapePcaVariance[i])) * T(shapeWeight) * T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i))),
                     T(0)
             );
         }
@@ -248,9 +248,9 @@ public:
         for (int i = 0; i < num_expression_params; ++i) {
             int vertex_idx = m_landmark_bfm_index * 3;
             expression_offset += Eigen::Matrix<T, 4, 1>(
-                    T(expressionWeight) * T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
-                    T(expressionWeight) * T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
-                    T(expressionWeight) * T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))),
+                    T(sqrt(m_bfm_properties.expressionPcaVariance[i])) * T(expressionWeight) * T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(sqrt(m_bfm_properties.expressionPcaVariance[i])) * T(expressionWeight) * T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
+                    T(sqrt(m_bfm_properties.expressionPcaVariance[i])) * T(expressionWeight) * T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))),
                     T(0)
             );
         }

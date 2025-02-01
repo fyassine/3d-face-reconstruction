@@ -70,7 +70,7 @@ static std::vector<Eigen::Vector3f> getVerticesWithoutProcrustes(BfmProperties p
     return vertices;
 }
 
-static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
+/*static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     std::vector<Eigen::Vector3f> vertices;
 
     Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
@@ -99,6 +99,42 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
         newVertex.x() = transformationVector.x();
         newVertex.y() = transformationVector.y();
         newVertex.z() = transformationVector.z();
+        vertices.emplace_back(newVertex);
+    }
+    return vertices;
+}*/
+
+static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
+    std::vector<Eigen::Vector3f> vertices;
+
+    Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
+    Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (shapeVar.cwiseSqrt().cwiseProduct(properties.shapeParams));
+    Eigen::VectorXf expressionVar = Eigen::Map<Eigen::VectorXf>(properties.expressionPcaVariance.data(), properties.expressionPcaVariance.size());
+    Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionParams));
+
+    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
+        Eigen::Vector3f newVertex;
+
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
+
+        Eigen::Vector4f transformationVector;
+        transformationVector.x() = newVertex.x();
+        transformationVector.y() = newVertex.y();
+        transformationVector.z() = newVertex.z();
+        transformationVector.w() = 1.0f;
+        transformationVector = properties.transformation * transformationVector;
+        newVertex.x() = transformationVector.x() + modifiedShape[i] + modifiedExpression[i];
+        newVertex.y() = transformationVector.y() + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        newVertex.z() = transformationVector.z() + modifiedShape[i + 2] + modifiedExpression[i + 2];
+
+
+        //newVertex.x() = properties.shapeMean[i] + modifiedShape[i] + modifiedExpression[i];
+        //newVertex.y() = properties.shapeMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        //newVertex.z() = properties.shapeMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+
+
         vertices.emplace_back(newVertex);
     }
     return vertices;
