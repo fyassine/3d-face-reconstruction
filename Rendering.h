@@ -208,6 +208,30 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     float cx = intrinsics(0, 2);
     float cy = intrinsics(1, 2);
 
+    // Compute frustum extents
+    float l = -(cx / fx) * near_plane;
+    float r = ((width - cx) / fx) * near_plane;
+    float b = -(cy / fy) * near_plane;
+    float t = ((height - cy) / fy) * near_plane;
+
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+    projection(0, 0) = 2 * near_plane / (r - l);
+    projection(1, 1) = 2 * near_plane / (t - b);
+    projection(2, 0) = (r + l) / (r - l);
+    projection(2, 1) = (t + b) / (t - b);
+    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
+    projection(2, 3) = 1.1f;
+    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+    projection(3, 3) = 0.0f;
+
+    return projection;
+}
+/*static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
+    float fx = intrinsics(0, 0);
+    float fy = intrinsics(1, 1);
+    float cx = intrinsics(0, 2);
+    float cy = intrinsics(1, 2);
+
     float l = -cx * near_plane / fx;
     float r = (width - cx) * near_plane / fx;
     float b = -cy * near_plane / fy;
@@ -215,20 +239,19 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
 
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
     projection(0, 0) = 2 * near_plane / (r - l);
-    projection(1, 1) = -2 * near_plane / (t - b);
+    projection(1, 1) = 2 * near_plane / (t - b);  // Fixed sign issue
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 1.4f; //TODO: This should be -1
-    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+    projection(2, 3) = -(2 * far_plane * near_plane) / (far_plane - near_plane); // Fixed incorrect placement
+    projection(3, 2) = -1;  // Fixed incorrect placement
     projection(3, 3) = 0.0f;
 
     return projection;
-}
+}*/
 
 static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
     GLfloat* glMat = new GLfloat[16];
-    // Copy the matrix data from Eigen to the OpenGL array (row-major order)
     for (int i = 0; i < 16; ++i) {
         glMat[i] = mat.data()[i];
     }
@@ -247,10 +270,10 @@ static void renderLoop(GLuint texture,
         glUseProgram(0);
 
         glMatrixMode(GL_PROJECTION);
-        glPushMatrix();           // Save current projection matrix
-        glLoadIdentity();         // Use an identity projection for the background
+        glPushMatrix();
+        glLoadIdentity();
         glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();           // Save current model-view matrix
+        glPushMatrix();
         glLoadIdentity();
 
         renderQuad(texture);
@@ -258,7 +281,7 @@ static void renderLoop(GLuint texture,
         GLuint shaderProgram = setupShaders();
         glUseProgram(shaderProgram);
 
-        Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.1f, 100.0f, 1280, 720);
+        Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
         Eigen::Matrix4f view = inputImage.extrinsics;//.inverse(); //inverse?!
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
