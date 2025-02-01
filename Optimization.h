@@ -7,6 +7,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <utility>
+#include "Rendering.h"
 
 // TODO: Put illumination in seperate header file
 
@@ -58,19 +59,44 @@ public:
                     const T* const expression,
                     T* residuals) const {
 
-        Eigen::Matrix<T, 3, 1> shape_offset = Eigen::Matrix<T, 3, 1>::Zero();
-        Eigen::Matrix<T, 3, 1> expression_offset = Eigen::Matrix<T, 3, 1>::Zero();
+        Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
+        Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
+        shape_offset.w() = T(1.0);
+        expression_offset.w() = T(1.0);
 
-        int vertex_idx = m_vertex_id * 3;
+        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
+        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
+        //int vertex_idx = m_vertex_id * 3;
 
-        shape_offset = m_bfm_properties.shapePcaBasis.block<3, num_shape_params>(vertex_idx, 0)
+        /*shape_offset = m_bfm_properties.shapePcaBasis.block<4, num_shape_params>(vertex_idx, 0)
                                .template cast<T>()
                        * Eigen::Map<const Eigen::Matrix<T, num_shape_params, 1>>(shape);
-        expression_offset = m_bfm_properties.expressionPcaBasis.block<3, num_expression_params>(vertex_idx, 0)
+        expression_offset = m_bfm_properties.expressionPcaBasis.block<4, num_expression_params>(vertex_idx, 0)
                                     .template cast<T>()
-                            * Eigen::Map<const Eigen::Matrix<T, num_expression_params, 1>>(expression);
+                            * Eigen::Map<const Eigen::Matrix<T, num_expression_params, 1>>(expression);*/
+        for (int i = 0; i < num_shape_params; ++i) {
+            int vertex_idx = m_vertex_id * 3;
+            shape_offset += Eigen::Matrix<T, 4, 1>(
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
+                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i))),
+                    T(0)
+            );
+        }
 
-        Eigen::Matrix<T, 3, 1> transformedVertex = m_vertex.cast<T>() + shape_offset + expression_offset;
+        for (int i = 0; i < num_expression_params; ++i) {
+            int vertex_idx = m_vertex_id * 3;
+            expression_offset += Eigen::Matrix<T, 4, 1>(
+                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
+                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))),
+                    T(0)
+            );
+        }
+
+        Eigen::Matrix<T, 4, 1> vertex4d = Eigen::Matrix<T, 4, 1>(T(m_vertex.x()), T(m_vertex.y()), T(m_vertex.z()), T(1));
+        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * vertex4d) + shape_offset + expression_offset;
+
 
         auto point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
                                                   transformedVertex.y(),
@@ -101,8 +127,8 @@ private:
 
 struct ColorOptimization {
 public:
-    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const Eigen::Vector3f& illumination, const BfmProperties& bfmProperties, int color_id)
-        : m_albedo(albedo), m_image_color(image_color), m_illumination(illumination), m_bfm_properties(bfmProperties), m_color_id(color_id) {}
+    ColorOptimization(const Eigen::Vector3f& albedo, const Eigen::Vector3f& image_color, const BfmProperties& bfmProperties, int color_id)
+        : m_albedo(albedo), m_image_color(image_color), m_bfm_properties(bfmProperties), m_color_id(color_id) {}
 
     template <typename T>
     bool operator()(const T* const color, T* residuals) const {
@@ -131,8 +157,8 @@ public:
             int color_idx = m_color_id * 3;
             color_offset += Eigen::Matrix<T, 3, 1>(
                     T(color[i] * T(m_colorPcaBasis(color_idx, i))),
-                    T(color[i] * T(m_colorPcaBasis(color_idx + 1, i))), //maybe rows +1 wrong? Instead rows +0
-                    T(color[i] * T(m_colorPcaBasis(color_idx + 2, i)))  //maybe rows +1 wrong? Instead rows +0
+                    T(color[i] * T(m_colorPcaBasis(color_idx + 1, i))),
+                    T(color[i] * T(m_colorPcaBasis(color_idx + 2, i)))
             );
         }
         
@@ -140,15 +166,15 @@ public:
         Eigen::Matrix<T, 3, 1> albedo = m_albedo.cast<T>() + color_offset;
 
         // Illumination is already computed and passed as an argument
-        Eigen::Matrix<T, 3, 1> illumination = m_illumination.cast<T>(); // Converted to T for optimization
+        //Eigen::Matrix<T, 3, 1> illumination = m_illumination.cast<T>(); // Converted to T for optimization
 
         // Apply illumination to color (this step assumes illumination modifies the albedo in RGB channels)
-        Eigen::Matrix<T, 3, 1> modifiedColor = albedo.cwiseProduct(illumination);
+        //Eigen::Matrix<T, 3, 1> modifiedColor = albedo.cwiseProduct(illumination);
 
         // Compute residuals (compare modified color to image color)
-        T resulting_color = Eigen::Matrix<T, 3, 1>(modifiedColor.x() - T(m_image_color.x()),
-                                                   modifiedColor.y() - T(m_image_color.y()),
-                                                   modifiedColor.z() - T(m_image_color.z())).norm();
+        T resulting_color = Eigen::Matrix<T, 3, 1>(albedo.x() - T(m_image_color.x()),
+                                                   albedo.y() - T(m_image_color.y()),
+                                                   albedo.z() - T(m_image_color.z())).norm();
         
 //        // Uncomment everything below together (if needed)
 //        Eigen::Matrix<T, 3, 1> modifiedColor = m_albedo.cast<T>() + color_offset;
@@ -170,7 +196,6 @@ public:
 private:
     const Eigen::Vector3f m_albedo;
     const Eigen::Vector3f m_image_color;
-    const Eigen::Vector3f m_illumination;
     const BfmProperties& m_bfm_properties;
     const int m_color_id;
     static const int num_color_params = 199;
@@ -178,20 +203,26 @@ private:
 
 struct SparseOptimization{
 public:
-    SparseOptimization(const Eigen::Vector3d& landmark_position_input, const Eigen::Vector3d& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties)
-            : m_landmark_positions_input(landmark_position_input), m_bfm_properties(bfmProperties), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index) {}
+    SparseOptimization(const Eigen::Vector3d& landmark_position_input, const Eigen::Vector3d& landmark_bfm, const int landmark_bfm_index, const BfmProperties& bfmProperties, const int index)
+            : m_landmark_positions_input(landmark_position_input), m_bfm_properties(bfmProperties), m_landmark_bfm(landmark_bfm), m_landmark_bfm_index(landmark_bfm_index), m_current_index(index) {}
 
     template <typename T>
     bool operator()(const T* const shape,
                     const T* const expression,
+                    const T* const offsets,
                     T* residuals) const {
+
+        /*std::cout << "Landmark index: " << m_current_index << std::endl;
+        std::cout << "Landmark index (BFM)(" << m_current_index<< "): "<< m_landmark_bfm_index << std::endl;
+        std::cout << "Target(" << m_current_index<< "): " << m_landmark_positions_input << std::endl;
+        std::cout << "Source(" << m_current_index<< "): " << m_landmark_bfm << std::endl;*/
 
         Eigen::Matrix<T, 4, 1> shape_offset = Eigen::Matrix<T, 4, 1>::Zero();
         Eigen::Matrix<T, 4, 1> expression_offset = Eigen::Matrix<T, 4, 1>::Zero();
         shape_offset.w() = T(1.0);
         expression_offset.w() = T(1.0);
 
-        //shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]);
+        //shape_offset.x() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3]); //We don't have to do that as get vertices already offsets the vertices by the mean?!
         //shape_offset.y() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 1]);
         //shape_offset.z() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 2]);
 
@@ -219,12 +250,16 @@ public:
             );
         }
 
-        //Eigen::Vector4d landMark4d = Eigen::Vector4d(m_landmark_bfm.x(), m_landmark_bfm.y(), m_landmark_bfm.z(), 1);
-        //Eigen::Vector4d transformedVertex = (m_bfm_properties.transformation.cast<double>() * landMark4d) + shape_offset.cast<double>() + expression_offset.cast<double>();
+        Eigen::Matrix<T, 4, 1> landMark4d = Eigen::Matrix<T, 4, 1>(T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
+        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4d) + shape_offset + expression_offset;
+        //Eigen::Matrix<T, 4, 1> offsetVector = Eigen::Matrix<T, 4, 1>(T(offsets[m_current_index * 3]), T(offsets[m_current_index * 3 + 1]), T(offsets[m_current_index * 3 + 2]), T(1));
+        //Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
+        //Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + offsetVector;//shape_offset + expression_offset;
 
-        Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
-        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + shape_offset + expression_offset;
+        //std::cout << "Transformed Vertex Dims(" << m_current_index << "): " << "(" << transformedVertex.rows() << ", " << transformedVertex.cols() << ")" << std::endl;
+        //std::cout << "Transformed Vertex Coordinates(" << m_current_index << ")" << transformedVertex.x() << ", " << 0 << ", " << 0 << std::endl;
 
+        //std::cout << "Landmarks Input(" << m_current_index << "): " << m_landmark_positions_input << std::endl;
         residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
         residuals[1] = transformedVertex.y() - T(m_landmark_positions_input.y());
         residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
@@ -233,12 +268,13 @@ public:
     }
 
 private:
-    const Eigen::Vector3d& m_landmark_positions_input;
-    const Eigen::Vector3d& m_landmark_bfm;
+    const Eigen::Vector3d m_landmark_positions_input;
+    const Eigen::Vector3d m_landmark_bfm;
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
     const BfmProperties& m_bfm_properties;
     const int m_landmark_bfm_index;
+    const int m_current_index;
 };
 
 class Optimization {

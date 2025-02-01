@@ -57,9 +57,13 @@ static std::vector<Eigen::Vector3f> getVerticesWithoutProcrustes(BfmProperties p
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
-        newVertex.x() = properties.shapeMean[i];// + properties.expressionMean[i];
-        newVertex.y() = properties.shapeMean[i + 1];// + properties.expressionMean[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2];// + properties.expressionMean[i + 2];
+        //newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
+        //newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
+        //newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
+
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
 
         vertices.emplace_back(newVertex);
     }
@@ -77,13 +81,13 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
-        //newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
-        //newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        //newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
+        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
 
-        newVertex.x() = properties.shapeMean[i] + modifiedShape[i] + modifiedExpression[i];
-        newVertex.y() = properties.shapeMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+        //newVertex.x() = properties.shapeMean[i] + modifiedShape[i] + modifiedExpression[i];
+        //newVertex.y() = properties.shapeMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        //newVertex.z() = properties.shapeMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
 
         Eigen::Vector4f transformationVector;
 
@@ -102,7 +106,7 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
 
 static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
     std::vector<int> indices;
-    auto vertices = getVertices(properties);
+    auto vertices = getVertices(properties); //TODO: getvertices without procrustes
     auto landmarks = properties.landmarks;
     for (int i = 0; i < landmarks.size(); ++i) {
         int currentIndex = 0;
@@ -497,7 +501,76 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     //+ translation: Halbe width und halbe height abziehen:
 
     properties.transformation = estimatedPose;// * rotationMatrix;
-    properties.landmark_indices = getLandmarkIndices(properties);
+    std::vector<int> indices;
+    indices.emplace_back(18463);
+    indices.emplace_back(21941);
+    indices.emplace_back(21354);
+    indices.emplace_back(13904);
+    indices.emplace_back(16415);
+    indices.emplace_back(14167);
+    indices.emplace_back(25399);
+    indices.emplace_back(18193);
+    indices.emplace_back(15867);
+    indices.emplace_back(12269);
+    indices.emplace_back(11447);
+    indices.emplace_back(10004);
+    indices.emplace_back(7724);
+    indices.emplace_back(200);
+    indices.emplace_back(7402);
+    indices.emplace_back(1888);
+    indices.emplace_back(4545);
+    indices.emplace_back(22050);
+    indices.emplace_back(20167);
+    indices.emplace_back(25269);
+    indices.emplace_back(24554);
+    indices.emplace_back(20687);
+    indices.emplace_back(6735);
+    indices.emplace_back(12889);
+    indices.emplace_back(6242);
+    indices.emplace_back(7173);
+    indices.emplace_back(72);
+    indices.emplace_back(15934);
+    indices.emplace_back(18713);
+    indices.emplace_back(15845);
+    indices.emplace_back(18086);
+    indices.emplace_back(25821);
+    indices.emplace_back(18740);
+    indices.emplace_back(19201);
+    indices.emplace_back(4806);
+    indices.emplace_back(6746);
+    indices.emplace_back(20818);
+    indices.emplace_back(17528);
+    indices.emplace_back(16910);
+    indices.emplace_back(14469);
+    indices.emplace_back(14337);
+    indices.emplace_back(18680);
+    indices.emplace_back(3321);
+    indices.emplace_back(10654);
+    indices.emplace_back(3681);
+    indices.emplace_back(3126);
+    indices.emplace_back(738);
+    indices.emplace_back(12881);
+    indices.emplace_back(16152);
+    indices.emplace_back(27501);
+    indices.emplace_back(18363);
+    indices.emplace_back(18353);
+    indices.emplace_back(4453);
+    indices.emplace_back(1663);
+    indices.emplace_back(1353);
+    indices.emplace_back(2251);
+    indices.emplace_back(4158);
+    indices.emplace_back(15821);
+    indices.emplace_back(15440);
+    indices.emplace_back(21063);
+    indices.emplace_back(15443);
+    indices.emplace_back(17507);
+    indices.emplace_back(15825);
+    indices.emplace_back(3664);
+    indices.emplace_back(1739);
+    indices.emplace_back(7753);
+    indices.emplace_back(15819);
+    indices.emplace_back(21705);
+    properties.landmark_indices = indices;//getLandmarkIndices(properties);
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
