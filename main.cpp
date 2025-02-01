@@ -64,6 +64,7 @@ int main() {
     }
     convertVerticesTest(landmarksFromIndices, resultFolderPath + "landmarksFromIndices.ply");
 
+    convertParametersToPly(properties, resultFolderPath + "BfmAfterProcrustes.ply");
     Optimization optimizer;
     optimizer.optimize(properties, inputImage);
 

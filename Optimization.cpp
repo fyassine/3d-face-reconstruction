@@ -209,7 +209,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     );*/
 
     //options.max_num_iterations = 100;
-    ceres::Solve(options, &problem, &summary);
+    //ceres::Solve(options, &problem, &summary);
     bfm.shapeParams = shapeParamsD.cast<float>();
     bfm.expressionParams = expressionParamsD.cast<float>();
     bfm.colorParams = colorParamsD.cast<float>();

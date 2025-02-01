@@ -226,8 +226,8 @@ public:
         //shape_offset.y() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 1]);
         //shape_offset.z() = T(m_bfm_properties.shapeMean[m_landmark_bfm_index * 3 + 2]);
 
-        auto& m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
-        auto& m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
+        auto m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
+        auto m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
 
         // Each parameter influences a single vertex coordinate
         for (int i = 0; i < num_shape_params; ++i) {
@@ -272,7 +272,7 @@ private:
     const Eigen::Vector3d m_landmark_bfm;
     static const int num_shape_params = 199;
     static const int num_expression_params = 100;
-    const BfmProperties& m_bfm_properties;
+    const BfmProperties m_bfm_properties;
     const int m_landmark_bfm_index;
     const int m_current_index;
 };
