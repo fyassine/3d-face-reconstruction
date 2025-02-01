@@ -262,23 +262,6 @@ static void renderLoop(GLuint texture,
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
-        //GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
-        /*view(3, 0) = 0.0f;
-        double angle = -1.2f;
-        angle *= (3.1415926535 / 180.0);
-        view(0, 0) = (float) cos(angle);
-        view(2, 2) = (float) cos(angle);
-        view(2, 0) = (float) sin(angle);
-        view(0, 2) = (float) -sin(angle);
-
-        Eigen::Matrix4f zrot = Eigen::Matrix4f::Identity();
-        double zAngle = 0.045f;
-        zrot(0, 0) = (float) cos(zAngle);
-        zrot(1, 1) = (float) cos(zAngle);
-        zrot(0, 1) = (float) sin(zAngle);
-        zrot(1, 0) = (float) -sin(zAngle);
-
-        view *= zrot;*/
 
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, eigenToOpenGL(view));
@@ -300,7 +283,7 @@ static void renderFaceOnTopOfImage(int width, int height,
                                     const std::vector<int>& indices,
                                     const std::vector<int>& colors,
                                     const char* backgroundImagePath, const InputImage& inputImage, const Eigen::Matrix4f& modelTransform) {
-    GLFWwindow* window = setupRendering(width, height); //just take width and height of background image?! -> create background struct with texture, width and height?
+    GLFWwindow* window = setupRendering(width, height);
     std::vector<float> vertexData = setupVertexData(vertices, colors);
     GLuint texture = loadTexture(backgroundImagePath);
     auto VAO = setupBuffers(indices, vertexData);
@@ -352,7 +335,6 @@ static void convertParametersToPlyWithoutProcrustes(const BfmProperties& propert
     }
     outFile.close();
 }
-
 
 static void convertParametersToPly(const BfmProperties& properties, const std::string& resultPath){
 
