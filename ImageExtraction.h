@@ -150,6 +150,7 @@ static void correctDepthOfLandmarks(InputImage& inputImage){
     for (int i = 0; i < (int) n; ++i) {
         if(abs(avg - inputImage.depthValuesLandmarks[i]) > stdDev){
             std::cout << i << std::endl;
+            if(i == 0) continue;
             inputImage.depthValuesLandmarks[i] = inputImage.depthValuesLandmarks[i - 1];//useKernel(inputImage, inputImage.landmarks[i], avg, stdDev);
         }
     }

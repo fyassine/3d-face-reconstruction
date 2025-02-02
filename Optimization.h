@@ -436,17 +436,17 @@ struct GeometryRegularizationTerm {
 
         // Identity parameters regularization
         for (int i = 0; i < num_identity_params; ++i) {
-            reg_energy_geometry += pow(identity_params[i] / T(identity_std_dev[i]), 2);
-            //residual[i] = identity_params[i] * T(sqrt(10));
+            //reg_energy_geometry += pow(identity_params[i] / T(identity_std_dev[i]), 2);
+            residual[i] = identity_params[i];// * T(sqrt(10));
         }
         // Expression parameters regularization
         for (int i = 0; i < num_expression_params; ++i) {
-            reg_energy_expression += pow(expression_params[i] / T(expression_std_dev[i]), 2);
-            //residual[num_identity_params + i] = expression_params[i] * T(sqrt(8));
+            //reg_energy_expression += pow(expression_params[i] / T(expression_std_dev[i]), 2);
+            residual[num_identity_params + i] = expression_params[i];// * T(sqrt(8));
         }
 
-        residual[0] = reg_energy_geometry;// * T(sqrt(100000));
-        residual[1] = reg_energy_expression;// * T(sqrt(1));
+        //residual[0] = reg_energy_geometry;
+        //residual[1] = reg_energy_expression;
         return true;
     }
 

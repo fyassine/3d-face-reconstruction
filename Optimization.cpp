@@ -176,13 +176,13 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     std::cout << "End" << std::endl;
 
 
-    problem.AddResidualBlock(
-            new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
+    /*problem.AddResidualBlock(
+            new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 299, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
             shapeParamsD.data(),
             expressionParamsD.data()
-    );
+    );*/
 
     /*problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
