@@ -88,31 +88,23 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     ceres::Solver::Summary sparseSummary;
 
     auto bfmVertices = getVerticesWithoutProcrustes(bfm);
-    convertVerticesTest(bfmVertices, resultFolderPath + "DaskönntederFehlersein.ply");
     auto landmarks_input_image = inputImage.landmarks;
     auto landmarks_depth_values = inputImage.depthValuesLandmarks;
-
-    std::vector<double> offsets;
-    for (int i = 0; i < 204; ++i) {
-        offsets.emplace_back(0);
-    }
 
     std::cout << landmarks_input_image.size() << std::endl;
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
-        std::cout << "Current Input Landmarks(" << i << "): " << std::endl;
-        std::cout << current_landmark.cast<double>() << std::endl;
-        std::cout << "Current BFM Vertices(" << i << "): " << std::endl;
-        std::cout << bfmVertices[bfm.landmark_indices[i]].cast<double>() << std::endl;
-        //TODO: Transform point manually
+
+        SparseOptimization optimizer(current_landmark.cast<double>(), bfmVertices[bfm.landmark_indices[i]].cast<double>(), bfm.landmark_indices[i], bfm, i);
+        optimizer.evaluateWithDoubles(shapeParamsD.data(), expressionParamsD.data());
+
         sparseProblem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100, 204>(
+                new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
                         new SparseOptimization(current_landmark.cast<double>(), bfmVertices[bfm.landmark_indices[i]].cast<double>(), bfm.landmark_indices[i], bfm, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
-                expressionParamsD.data(),
-                offsets.data()
+                expressionParamsD.data()
         );
     }
 
@@ -131,18 +123,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     }
 
     ceres::Solve(options, &sparseProblem, &sparseSummary);
-    for (int i = 0; i < offsets.size(); i += 3) {
-        auto current_landmark = convert2Dto3D(landmarks_input_image[i/3], landmarks_depth_values[i/3], inputImage.intrinsics, inputImage.extrinsics);
 
-        std::cout << "Offset Vector: " << offsets[i] << ", " << offsets[i + 1] << ", " << offsets[i + 2] << std::endl;
-        std::cout << "Image Landmark: " << current_landmark.x() << ", " << current_landmark.y() << ", " << current_landmark.z() << std::endl;
-        std::cout << "BFM Landmark: " << bfmVertices[bfm.landmark_indices[i/3]].x() << ", " << bfmVertices[bfm.landmark_indices[i/3]].y() << ", " << bfmVertices[bfm.landmark_indices[i/3]].z() << std::endl;
-        auto result = Eigen::Vector4f(bfmVertices[bfm.landmark_indices[i/3]].x(), bfmVertices[bfm.landmark_indices[i/3]].y(), bfmVertices[bfm.landmark_indices[i/3]].z(), 1.0f);
-        auto transformedLandmark = bfm.transformation * result;
-        std::cout << "BFM Landmark + Offset: " << transformedLandmark.x() + offsets[i] << ", " << transformedLandmark.y() + offsets[i + 1] << ", " << transformedLandmark.z() + offsets[i+2] << std::endl;
-    }
-    //print targetlandmarks, offsets
-    //TODO Dense: GETVERTICESWITHOUT PROCRUSTES erneut callen -> because new vertices are important
     auto bfmVerticesDepth = getVertices(bfm);
     std::vector<Vector3f> normals = std::vector<Vector3f>(bfmVertices.size(), Vector3f::Zero());
 

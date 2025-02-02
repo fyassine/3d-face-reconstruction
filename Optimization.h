@@ -209,10 +209,8 @@ public:
     template <typename T>
     bool operator()(const T* const shape,
                     const T* const expression,
-                    const T* const offsets,
                     T* residuals) const {
 
-// First get the base position (mean shape + mean expression)
         Eigen::Matrix<T, 4, 1> baseLandmark = Eigen::Matrix<T, 4, 1>(
                 T(m_landmark_bfm.x()),
                 T(m_landmark_bfm.y()),
@@ -220,30 +218,26 @@ public:
                 T(1)
         );
 
-        // Calculate shape modifications
         Eigen::Matrix<T, 4, 1> shapeOffset = Eigen::Matrix<T, 4, 1>::Zero();
-
         auto m_shapePcaBasis = m_bfm_properties.shapePcaBasis.cast<double>();
         for (int i = 0; i < num_shape_params; ++i) {
             int vertex_idx = m_landmark_bfm_index * 3;
             shapeOffset += Eigen::Matrix<T, 4, 1>(
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx, i))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i))),
-                    T(shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i))),
+                    shape[i] * T(m_shapePcaBasis(vertex_idx, i)),
+                    shape[i] * T(m_shapePcaBasis(vertex_idx + 1, i)),
+                    shape[i] * T(m_shapePcaBasis(vertex_idx + 2, i)),
                     T(0)
             );
         }
 
-        // Calculate expression modifications
         Eigen::Matrix<T, 4, 1> expressionOffset = Eigen::Matrix<T, 4, 1>::Zero();
-
         auto m_expressionBasis = m_bfm_properties.expressionPcaBasis.cast<double>();
         for (int i = 0; i < num_expression_params; ++i) {
             int vertex_idx = m_landmark_bfm_index * 3;
             expressionOffset += Eigen::Matrix<T, 4, 1>(
-                    T(expression[i] * T(m_expressionBasis(vertex_idx, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 1, i))),
-                    T(expression[i] * T(m_expressionBasis(vertex_idx + 2, i))),
+                    expression[i] * T(m_expressionBasis(vertex_idx, i)),
+                    expression[i] * T(m_expressionBasis(vertex_idx + 1, i)),
+                    expression[i] * T(m_expressionBasis(vertex_idx + 2, i)),
                     T(0)
             );
         }
@@ -255,14 +249,14 @@ public:
         // Apply transformation
         Eigen::Matrix<T, 4, 1> transformedVertex = m_bfm_properties.transformation.cast<T>() * modifiedVertex + shapeOffset + expressionOffset;
 
-        if(m_current_index == 0){
+        /*if(m_current_index == 0){
             std::cout << "BFM Landmark: " << baseLandmark << std::endl;
             std::cout << "Shape Offset: " << shapeOffset << std::endl;
             std::cout << "Expression Offset: " << expressionOffset << std::endl;
             std::cout << "Modified Vertex: " << modifiedVertex << std::endl;
             std::cout << "Transformed Vertex: " << transformedVertex << std::endl;
             std::cout << "Image Landmark: " << m_landmark_positions_input << std::endl;
-        }
+        }*/
 
         // Calculate residuals
         residuals[0] = transformedVertex.x() - T(m_landmark_positions_input.x());
@@ -270,6 +264,62 @@ public:
         residuals[2] = transformedVertex.z() - T(m_landmark_positions_input.z());
 
         return true;
+    }
+
+    void evaluateWithDoubles(const double* shape, const double* expression) const {
+        Eigen::Vector4f baseLandmark(
+                m_landmark_bfm.x(),
+                m_landmark_bfm.y(),
+                m_landmark_bfm.z(),
+                1.0
+        );
+
+        Eigen::Vector4f shapeOffset = Eigen::Vector4f::Zero();
+        for (int i = 0; i < num_shape_params; ++i) {
+            int vertex_idx = m_landmark_bfm_index * 3;
+            shapeOffset += Eigen::Vector4f(
+                    shape[i] * m_bfm_properties.shapePcaBasis(vertex_idx, i),
+                    shape[i] * m_bfm_properties.shapePcaBasis(vertex_idx + 1, i),
+                    shape[i] * m_bfm_properties.shapePcaBasis(vertex_idx + 2, i),
+                    0.0
+            );
+        }
+
+        Eigen::Vector4f expressionOffset = Eigen::Vector4f::Zero();
+        for (int i = 0; i < num_expression_params; ++i) {
+            int vertex_idx = m_landmark_bfm_index * 3;
+            expressionOffset += Eigen::Vector4f(
+                    expression[i] * m_bfm_properties.expressionPcaBasis(vertex_idx, i),
+                    expression[i] * m_bfm_properties.expressionPcaBasis(vertex_idx + 1, i),
+                    expression[i] * m_bfm_properties.expressionPcaBasis(vertex_idx + 2, i),
+                    0.0
+            );
+        }
+
+        // Print intermediate values
+        std::cout << "\nDebug Values for landmark " << m_current_index << ":\n";
+        std::cout << "Base Landmark:\n" << baseLandmark << "\n";
+        std::cout << "Shape Offset:\n" << shapeOffset << "\n";
+        std::cout << "Expression Offset:\n" << expressionOffset << "\n";
+
+        // Try both ways and compare
+        std::cout << "\nMethod 1 (offset before transform):\n";
+        Eigen::Vector4f modifiedVertex1 = baseLandmark + shapeOffset + expressionOffset;
+        Eigen::Vector4f transformedVertex1 = m_bfm_properties.transformation * modifiedVertex1;
+        std::cout << "Modified Vertex:\n" << modifiedVertex1 << "\n";
+        std::cout << "Transformed Vertex:\n" << transformedVertex1 << "\n";
+
+        std::cout << "\nMethod 2 (offset after transform):\n";
+        Eigen::Vector4f modifiedVertex2 = baseLandmark;
+        Eigen::Vector4f transformedVertex2 = m_bfm_properties.transformation * modifiedVertex2 + shapeOffset + expressionOffset;
+        std::cout << "Modified Vertex:\n" << modifiedVertex2 << "\n";
+        std::cout << "Transformed Vertex:\n" << transformedVertex2 << "\n";
+
+        std::cout << "\nTarget Position:\n" << m_landmark_positions_input << "\n";
+
+        // Also print some stats about the transformation matrix
+        std::cout << "\nTransformation Matrix:\n" << m_bfm_properties.transformation << "\n";
+        std::cout << "Transformation determinant: " << m_bfm_properties.transformation.determinant() << "\n";
     }
 
 private:
