@@ -26,6 +26,11 @@ int main() {
     DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
     auto landmarks2D = GetLandmarkVector(imagePath, shapePredictorPath);
     inputImage.landmarks = landmarks2D;
+    std::vector<Eigen::Vector2f> landmarksImage;
+    for (int i = 18; i < 68; ++i) {
+        landmarksImage.emplace_back(landmarks2D[i]);
+    }
+    inputImage.landmarks = landmarksImage;
     //printInputImage(inputImage);
 
     calculateDepthValuesLandmarks(inputImage);
@@ -34,18 +39,18 @@ int main() {
     const std::string outputPlyPath = std::string(resultFolderPath + "outputModel.ply");
     const std::string outputLandmarkPlyPath = std::string(resultFolderPath + "landmarks.ply");
     const std::string h5TestFile = std::string(dataFolderPath + "model2019_face12.h5");
-
+    std::cout << "0" << std::endl;
     BfmProperties properties;
     properties = getProperties(h5TestFile, inputImage);
-
+    std::cout << "1" << std::endl;
     convertParametersToPlyWithoutProcrustes(properties, resultFolderPath + "InitialBfmModel.ply");
-
+    std::cout << "2: " << inputImage.depthValuesLandmarks.size() << std::endl;
     std::vector<Eigen::Vector3f> targetPoints;
     //GetTargetLandmarks
     for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
         targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
     }
-
+    std::cout << "3" << std::endl;
     std::vector<Eigen::Vector2f> pointCloudVertices;
     for (int i = 0; i < inputImage.height; ++i) {
         for (int j = 0; j < inputImage.width; ++j) {

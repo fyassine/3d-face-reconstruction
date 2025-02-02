@@ -157,6 +157,7 @@ static void correctDepthOfLandmarks(InputImage& inputImage){
 }
 
 static void calculateDepthValuesLandmarks(InputImage& inputImage){
+    std::cout << "Hey: " << inputImage.landmarks.size() << std::endl;
     for (int i = 0; i < inputImage.landmarks.size(); ++i) {
         Eigen::Vector2f landmark = inputImage.landmarks[i];
         int pixel_x = (int) landmark.x();
@@ -164,7 +165,7 @@ static void calculateDepthValuesLandmarks(InputImage& inputImage){
         float depth_value = inputImage.depthValues[pixel_y * inputImage.width + pixel_x];
         inputImage.depthValuesLandmarks.emplace_back(depth_value);
     }
-    correctDepthOfLandmarks(inputImage);
+    //correctDepthOfLandmarks(inputImage);
 }
 
 static void writeColorToPng(rs2::video_frame color){

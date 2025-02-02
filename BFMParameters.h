@@ -385,83 +385,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
         }
     }
     properties.numberOfTriangles = properties.triangles.size() / 3;
-    std::vector<Eigen::Vector3f> landmarks;
-    landmarks.push_back({-73919.3f, 30876.3f, 19849.9f});
-    landmarks.push_back({-70737.7f, 5242.63f, 23751.0f});
-    landmarks.push_back({-67043.4f, -16524.0f, 30461.0f});
-    landmarks.push_back({-63378.7f, -32740.5f, 38981.6f});
-    landmarks.push_back({-55343.4f, -50362.6f, 48677.7f});
-    landmarks.push_back({-42926.8f, -63089.2f, 63733.5f});
-    landmarks.push_back({-27970.4f, -71516.9f, 81654.7f});
-    landmarks.push_back({-16291.4f, -74698.6f, 96297.7f});
-    landmarks.push_back({-48.2388f, -76505.2f, 99442.1f});
-    landmarks.push_back({16255.0f, -74471.6f, 96308.6f});
-    landmarks.push_back({27908.9f, -71417.7f, 81694.5f});
-    landmarks.push_back({42855.4f, -63229.9f, 63746.2f});
-    landmarks.push_back({56170.0f, -49032.8f, 48846.8f});
-    landmarks.push_back({63225.8f, -33092.0f, 38968.2f});
-    landmarks.push_back({66704.6f, -16882.1f, 30449.8f});
-    landmarks.push_back({70054.7f, 4963.69f, 23643.8f});
-    landmarks.push_back({73154.5f, 30854.0f, 20055.8f});
-    landmarks.push_back({-57346.8f, 45510.3f, 80483.7f});
-    landmarks.push_back({-49635.7f, 51531.3f, 92479.5f});
-    landmarks.push_back({-38958.6f, 53447.6f, 100454.0f});
-    landmarks.push_back({-29608.2f, 52236.6f, 104277.0f});
-    landmarks.push_back({-18702.9f, 50264.2f, 106598.0f});
-    landmarks.push_back({17860.7f, 50466.9f, 106508.0f});
-    landmarks.push_back({28544.3f, 51538.8f, 103733.0f});
-    landmarks.push_back({38062.0f, 52791.3f, 100413.0f});
-    landmarks.push_back({49630.6f, 50820.8f, 91989.9f});
-    landmarks.push_back({56468.8f, 46294.8f, 81118.2f});
-    landmarks.push_back({-146.369f, 34128.1f, 110560.0f});
-    landmarks.push_back({-116.763f, 24000.5f, 118205.0f});
-    landmarks.push_back({-20.8564f, 14347.0f, 125517.0f});
-    landmarks.push_back({13.2323f, 4430.29f, 131560.0f});
-    landmarks.push_back({-11574.5f, -7575.11f, 110567.0f});
-    landmarks.push_back({-5116.18f, -7991.94f, 114465.0f});
-    landmarks.push_back({-164.637f, -9165.1f, 117358.0f});
-    landmarks.push_back({4602.21f, -8039.56f, 114443.0f});
-    landmarks.push_back({11130.6f, -7555.56f, 110556.0f});
-    landmarks.push_back({-44627.6f, 33016.0f, 85710.8f});
-    landmarks.push_back({-37033.8f, 36953.1f, 92643.3f});
-    landmarks.push_back({-27261.5f, 37833.3f, 94881.4f});
-    landmarks.push_back({-18330.4f, 33041.4f, 91429.2f});
-    landmarks.push_back({-29058.9f, 29625.8f, 94046.1f});
-    landmarks.push_back({-37779.7f, 29124.5f, 91864.5f});
-    landmarks.push_back({18462.4f, 33379.7f, 92001.2f});
-    landmarks.push_back({27972.3f, 38007.0f, 94475.5f});
-    landmarks.push_back({37036.2f, 36535.4f, 91911.6f});
-    landmarks.push_back({45188.7f, 33094.9f, 85347.9f});
-    landmarks.push_back({38052.3f, 29349.8f, 91259.8f});
-    landmarks.push_back({29458.6f, 29444.7f, 93770.8f});
-    landmarks.push_back({-25539.6f, -33627.8f, 98388.9f});
-    landmarks.push_back({-15805.3f, -27611.8f, 110100.0f});
-    landmarks.push_back({-6628.37f, -23768.2f, 115463.0f}); //inner
-    landmarks.push_back({-192.025f, -24960.5f, 116208.0f}); //inner
-    landmarks.push_back({7616.04f, -23944.8f, 115018.0f}); //inner
-    landmarks.push_back({17230.8f, -27470.0f, 108906.0f});
-    landmarks.push_back({25143.8f, -33333.3f, 98094.7f});
-    landmarks.push_back({18575.5f, -36133.4f, 104735.0f});
-    landmarks.push_back({10856.5f, -38386.0f, 111107.0f});
-    landmarks.push_back({-175.34f, -39321.0f, 113471.0f});
-    landmarks.push_back({-11149.0f, -38397.3f, 111204.0f});
-    landmarks.push_back({-18695.9f, -35550.9f, 104488.0f});
-    landmarks.push_back({-22495.2f, -32862.2f, 99654.2f});
-    landmarks.push_back({-8644.35f, -30469.4f, 109984.0f});
-    landmarks.push_back({-279.868f, -30878.0f, 111425.0f});
-    landmarks.push_back({8088.77f, -30539.5f, 109996.0f});
-    landmarks.push_back({23331.7f, -32803.8f, 98654.9f});
-    landmarks.push_back({8140.39f, -35052.9f, 109408.0f}); //inner
-    landmarks.push_back({-257.674f, -35426.9f, 110736.0f}); //inner
-    landmarks.push_back({-9651.11f, -34987.6f, 108781.0f}); //inner
-    //landmarks.push_back({8140.39f, -32052.9f, 109408.0f}); //inner
-    //landmarks.push_back({-257.674f, -32426.9f, 110736.0f}); //inner
-    //landmarks.push_back({-9651.11f, -31987.6f, 108781.0f}); //inner
 
-    for (int i = 0; i < landmarks.size(); ++i) {
-        landmarks[i] /= 1000;
-    }
-    properties.landmarks = landmarks;
     ProcrustesAligner aligner;
 
     std::vector<Eigen::Vector3f> targetPoints;
@@ -469,13 +393,9 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
         targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
     }
-
-    Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
-    //+ translation: Halbe width und halbe height abziehen:
-
-    properties.transformation = estimatedPose;// * rotationMatrix;
     std::vector<int> indices;
-    indices.emplace_back(18463);
+    //TODO: If you want to use jaw, comment code in
+    /*indices.emplace_back(18463);
     indices.emplace_back(21941);
     indices.emplace_back(21354);
     indices.emplace_back(13904);
@@ -492,7 +412,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     indices.emplace_back(7402);
     indices.emplace_back(1888);
     indices.emplace_back(4545);
-    indices.emplace_back(22050);
+    indices.emplace_back(22050);*/
     indices.emplace_back(20167);
     indices.emplace_back(25269);
     indices.emplace_back(24554);
@@ -544,6 +464,16 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     indices.emplace_back(15819);
     indices.emplace_back(21705);
     properties.landmark_indices = indices;//getLandmarkIndices(properties);
+    std::vector<Eigen::Vector3f> landmarks;
+    auto vertices = getVerticesWithoutProcrustes(properties);
+    for (int i = 18; i < indices.size(); ++i) {
+        landmarks.emplace_back(vertices[indices[i]]);
+    }
+
+    Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
+    //+ translation: Halbe width und halbe height abziehen:
+
+    properties.transformation = estimatedPose;// * rotationMatrix;
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
