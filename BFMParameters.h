@@ -54,7 +54,10 @@ static std::vector<Eigen::Vector3f> getVerticesWithoutProcrustes(BfmProperties p
     Eigen::VectorXf expressionVar = Eigen::Map<Eigen::VectorXf>(properties.expressionPcaVariance.data(), properties.expressionPcaVariance.size());
     Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionParams));
 
-    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
+    //std::cout << "Modified Geometry: " << std::endl;
+    //std::cout << modifiedExpression + modifiedShape << std::endl;
+
+    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) { //Why is number of vertices * 3 not the same as properties.shapeMean.size()
         Eigen::Vector3f newVertex;
 
         //newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
@@ -115,19 +118,20 @@ static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
         Eigen::Vector3f newVertex;
 
+        //Apply new expression and shape before procrustes transformation
         newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
         newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
         newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
 
         Eigen::Vector4f transformationVector;
-        transformationVector.x() = newVertex.x();
-        transformationVector.y() = newVertex.y();
-        transformationVector.z() = newVertex.z();
+        transformationVector.x() = newVertex.x() + modifiedShape[i] + modifiedExpression[i];
+        transformationVector.y() = newVertex.y() + modifiedShape[i + 1] + modifiedExpression[i + 1];
+        transformationVector.z() = newVertex.z() + modifiedShape[i + 2] + modifiedExpression[i + 2];
         transformationVector.w() = 1.0f;
         transformationVector = properties.transformation * transformationVector;
-        newVertex.x() = transformationVector.x() + modifiedShape[i] + modifiedExpression[i];
-        newVertex.y() = transformationVector.y() + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        newVertex.z() = transformationVector.z() + modifiedShape[i + 2] + modifiedExpression[i + 2];
+        newVertex.x() = transformationVector.x();
+        newVertex.y() = transformationVector.y();
+        newVertex.z() = transformationVector.z();
 
 
         //newVertex.x() = properties.shapeMean[i] + modifiedShape[i] + modifiedExpression[i];

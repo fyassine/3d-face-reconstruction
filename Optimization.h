@@ -256,7 +256,7 @@ public:
         }
 
         Eigen::Matrix<T, 4, 1> landMark4d = Eigen::Matrix<T, 4, 1>(T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
-        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4d) + (shape_offset + expression_offset); //TODO: landMark4d + offset?! Shouldn't the offset be without procrustes
+        Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * (landMark4d + shape_offset + expression_offset)); //TODO: landMark4d + offset?! Shouldn't the offset be without procrustes
         //Eigen::Matrix<T, 4, 1> offsetVector = Eigen::Matrix<T, 4, 1>(T(offsets[m_current_index * 3]), T(offsets[m_current_index * 3 + 1]), T(offsets[m_current_index * 3 + 2]), T(1));
         //Eigen::Matrix<T, 4, 1> landMark4 = Eigen::Matrix<T, 4, 1> (T(m_landmark_bfm.x()), T(m_landmark_bfm.y()), T(m_landmark_bfm.z()), T(1));
         //Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * landMark4) + offsetVector;//shape_offset + expression_offset;

@@ -70,7 +70,7 @@ int main() {
 
     std::vector<float> parsedVertices;
     //auto originalVertices = getVertices(properties);
-    auto originalVertices = getVerticesWithoutProcrustes(properties);
+    auto originalVertices = getVerticesWithoutProcrustes(properties); //Sollte das nicht die normale get vertices methode sein?
     for (int i = 0; i < originalVertices.size(); ++i) {
         parsedVertices.push_back(originalVertices[i].x());
         parsedVertices.push_back(originalVertices[i].y());
