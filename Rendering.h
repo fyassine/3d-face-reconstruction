@@ -54,11 +54,11 @@ static void saveFramebufferToFile(const char* filename, int width, int height) {
     // Flip the image vertically (since OpenGL's origin is at the bottom-left)
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            unsigned char* pixel = FreeImage_GetScanLine(image, height - y - 1) + x * 4;
-            pixel[FI_RGBA_RED] = pixels[(y * width + x) * 4 + 0];   // Red
-            pixel[FI_RGBA_GREEN] = pixels[(y * width + x) * 4 + 1]; // Green
-            pixel[FI_RGBA_BLUE] = pixels[(y * width + x) * 4 + 2];  // Blue
-            pixel[FI_RGBA_ALPHA] = pixels[(y * width + x) * 4 + 3]; // Alpha
+            //unsigned char* pixel = FreeImage_GetScanLine(image, height - y - 1) + x * 4;
+            //pixel[FI_RGBA_RED] = pixels[(y * width + x) * 4 + 0];   // Red
+            //pixel[FI_RGBA_GREEN] = pixels[(y * width + x) * 4 + 1]; // Green
+            //pixel[FI_RGBA_BLUE] = pixels[(y * width + x) * 4 + 2];  // Blue
+            //pixel[FI_RGBA_ALPHA] = pixels[(y * width + x) * 4 + 3]; // Alpha
         }
     }
 
@@ -113,6 +113,8 @@ static GLFWwindow* setupRendering(int width, int height){
         std::cerr << "Failed to initialize GLEW" << std::endl;
         return nullptr;
     }
+
+    //glFrontFace(GL_CCW);
     //glewInit();
     return window;
 }
@@ -167,7 +169,7 @@ static unsigned int setupShaders(){
 
         out vec3 vertexColor;
         void main() {
-            gl_Position = projection * model * view * vec4(aPos, 1.0);
+            gl_Position = projection * view * model * vec4(aPos, 1.0);
             vertexColor = aColor;
         }
     )";
@@ -220,7 +222,7 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = 1.1f;
+    projection(2, 3) = -1.5f;
     projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
     projection(3, 3) = 0.0f;
 
@@ -280,17 +282,32 @@ static void renderLoop(GLuint texture,
 
         GLuint shaderProgram = setupShaders();
         glUseProgram(shaderProgram);
-
+        glFrontFace(GL_CCW);
+        glDisable(GL_CULL_FACE);
         Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
-        Eigen::Matrix4f view = inputImage.extrinsics;//.inverse(); //inverse?!
+        //Eigen::Matrix4f view = inputImage.extrinsics.inverse(); //inverse?!
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
         GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
 
+
+        Eigen::Matrix3f rotation = inputImage.extrinsics.block<3,3>(0,0).transpose();  // Invert rotation
+        Eigen::Vector3f translation = -rotation * inputImage.extrinsics.block<3,1>(0,3);  // Adjust translation
+        Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
+        view.block<3,3>(0,0) = rotation;
+        view.block<3,1>(0,3) = translation;
+
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, eigenToOpenGL(view));
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, eigenToOpenGL(modelTransform));
+        auto modelTransformMatrix = modelTransform;
+        //modelTransformMatrix(2, 3) = -modelTransform(2, 3); // Move model in front of the camera
+        //modelTransformMatrix(1, 1) *= -1; // Flip upside down
+        //modelTransformMatrix(2, 3) = 3;//-modelTransform(2, 3);
+        std::cout << "Projection Matrix:\n" << projection << std::endl;
+        std::cout << "View Matrix (Extrinsics Inverted):\n" << view << std::endl;
+        std::cout << "Model Matrix:\n" << modelTransformMatrix << std::endl;
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, eigenToOpenGL(modelTransformMatrix));
         renderTriangle(vertices.size() / 3, indices, VAO);
         saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720);
         glfwSwapBuffers(window);

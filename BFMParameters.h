@@ -466,7 +466,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     properties.landmark_indices = indices;//getLandmarkIndices(properties);
     std::vector<Eigen::Vector3f> landmarks;
     auto vertices = getVerticesWithoutProcrustes(properties);
-    for (int i = 18; i < indices.size(); ++i) {
+    for (int i = 0; i < indices.size(); ++i) {
         landmarks.emplace_back(vertices[indices[i]]);
     }
 

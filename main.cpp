@@ -13,11 +13,13 @@
 #include "ProcrustesAligner.h"
 #include "ImageExtraction.h"
 
+#include "Renderer.h"
+
 using namespace Eigen;
 using namespace std;
 
-int main() {
-    InputImage inputImage = readVideoData(dataFolderPath + "20250127_200932.bag");
+/*int main() {
+    InputImage inputImage = readVideoData(dataFolderPath + "20250201_191331.bag");
     const std::string imagePath = std::string(resultFolderPath + "color_frame_corrected.png");
     //const std::string imagePath = std::string(dataFolderPath + "testmyface.png");
     const std::string shapePredictorPath = std::string(dataFolderPath + "shape_predictor_68_face_landmarks.dat");
@@ -110,4 +112,21 @@ int main() {
 
     convertParametersToPly(properties, resultFolderPath + "BfmModel.ply");
     renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, (resultFolderPath + "color_frame_corrected.png").c_str(), inputImage, properties.transformation);
+}*/
+
+int main() {
+    int width = 640, height = 480;
+    Renderer renderer(width, height);
+
+    Eigen::Matrix3f intrinsics;
+    intrinsics << 600, 0, 320,
+                0, 600, 240,
+                0, 0, 1;
+    renderer.setupCamera(intrinsics);
+
+    std::vector<Eigen::Vector3f> vertices = { {0.0f, 0.5f, 0.0f}, {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f} };
+    std::vector<Face> faces = { {0, 1, 2}};
+
+    renderer.run(vertices, faces);
+    return 0;
 }

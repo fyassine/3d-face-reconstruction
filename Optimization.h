@@ -299,8 +299,8 @@ public:
         // Print intermediate values
         std::cout << "\nDebug Values for landmark " << m_current_index << ":\n";
         std::cout << "Base Landmark:\n" << baseLandmark << "\n";
-        std::cout << "Shape Offset:\n" << shapeOffset << "\n";
-        std::cout << "Expression Offset:\n" << expressionOffset << "\n";
+        std::cout << "Shape Offset:\n" << shapeOffset << "\n"; //Das ist 0 weil shape und expression offset bei 0 beginnen
+        std::cout << "Expression Offset:\n" << expressionOffset << "\n"; //Das ist 0 weil shape und expression offset bei 0 beginnen
 
         // Try both ways and compare
         std::cout << "\nMethod 1 (offset before transform):\n";

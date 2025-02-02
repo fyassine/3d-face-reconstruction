@@ -95,8 +95,8 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     for (int i = 0; i < landmarks_input_image.size(); ++i) {
         auto current_landmark = convert2Dto3D(landmarks_input_image[i], landmarks_depth_values[i], inputImage.intrinsics, inputImage.extrinsics);
 
-        SparseOptimization optimizer(current_landmark.cast<double>(), bfmVertices[bfm.landmark_indices[i]].cast<double>(), bfm.landmark_indices[i], bfm, i);
-        optimizer.evaluateWithDoubles(shapeParamsD.data(), expressionParamsD.data());
+        //SparseOptimization optimizer(current_landmark.cast<double>(), bfmVertices[bfm.landmark_indices[i]].cast<double>(), bfm.landmark_indices[i], bfm, i);
+        //optimizer.evaluateWithDoubles(shapeParamsD.data(), expressionParamsD.data());
 
         sparseProblem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<SparseOptimization, 3, 199, 100>(
@@ -162,14 +162,14 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
                 expressionParamsD.data()
         );
 
-        /*Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, bfm, i)
                 ),
                 nullptr,
                 colorParamsD.data()
-        );*/
+        );
     }
     std::cout << "End" << std::endl;
 
@@ -182,15 +182,15 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
             expressionParamsD.data()
     );
 
-    /*problem.AddResidualBlock(
+    problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<ColorRegularizationTerm, 1, 199>(
                     new ColorRegularizationTerm(albedo_std_dev)),
             nullptr,
             colorParamsD.data()
-    );*/
+    );
 
     //options.max_num_iterations = 100;
-    //ceres::Solve(options, &problem, &summary);
+    ceres::Solve(options, &problem, &summary);
     bfm.shapeParams = shapeParamsD.cast<float>();
     bfm.expressionParams = expressionParamsD.cast<float>();
     bfm.colorParams = colorParamsD.cast<float>();
@@ -232,7 +232,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 200;
+    options.max_num_iterations = 3;
     options.num_threads = 24;
 }
 
