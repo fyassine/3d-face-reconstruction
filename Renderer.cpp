@@ -44,6 +44,15 @@ void Renderer::setupCamera(const Eigen::Matrix3f& intrinsics) {
     float top = cy / fy;
     float near = 0.1f, far = 100.0f;
 
+    float aspectRatio = (float) width / (float) height;
+    if (aspectRatio > 1.0f) {
+        bottom /= aspectRatio;
+        top /= aspectRatio;
+    } else {
+        left *= aspectRatio;
+        right *= aspectRatio;
+    }
+
     glFrustum(left, right, bottom, top, near, far);
     glMatrixMode(GL_MODELVIEW);
 }
@@ -51,7 +60,6 @@ void Renderer::setupCamera(const Eigen::Matrix3f& intrinsics) {
 void Renderer::renderModel(const std::vector<Eigen::Vector3f>& vertices, const std::vector<Face>& faces) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, -0.0f);
 
     glBegin(GL_TRIANGLES);
     for (const auto& face : faces) {

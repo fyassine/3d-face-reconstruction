@@ -336,6 +336,12 @@ static InputImage readVideoData(std::string path){
         inputImage.height = intrinsics.height;
 
         // Set intrinsics as an Eigen::Matrix3f
+        std::cout << "FX: " << intrinsics.fx << std::endl;
+        std::cout << "FY: " << intrinsics.fy << std::endl;
+        std::cout << "PPX: " << intrinsics.ppx << std::endl;
+        std::cout << "PPY: " << intrinsics.ppy << std::endl;
+        std::cout << "Width: " << intrinsics.width << std::endl;
+        std::cout << "Height: " << intrinsics.height << std::endl;
         inputImage.intrinsics << intrinsics.fx, 0, intrinsics.ppx,
                 0, intrinsics.fy, intrinsics.ppy,
                 0, 0, 1;

@@ -37,6 +37,57 @@ static GLuint loadTexture(const char* filename) {
     return texture;
 }
 
+static GLuint loadTextureUpsideDown(const char* filename) {
+    // Load the image
+    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename, 0);
+    FIBITMAP* image = FreeImage_Load(format, filename);
+    if (!image) {
+        std::cerr << "Oh no! This image cannot be loaded: " << filename << std::endl;
+        return 0;
+    }
+
+    // Convert to 32-bit format (RGBA)
+    FIBITMAP* image32bit = FreeImage_ConvertTo32Bits(image);
+    FreeImage_Unload(image);
+
+    // Get width, height, and image data
+    int width = FreeImage_GetWidth(image32bit);
+    int height = FreeImage_GetHeight(image32bit);
+    void* data = FreeImage_GetBits(image32bit);
+
+    // Flip the image vertically
+    int pitch = FreeImage_GetPitch(image32bit);
+    unsigned char* rowData = new unsigned char[pitch];
+    for (int y = 0; y < height / 2; ++y) {
+        unsigned char* topRow = (unsigned char*)data + y * pitch;
+        unsigned char* bottomRow = (unsigned char*)data + (height - y - 1) * pitch;
+
+        // Swap rows
+        memcpy(rowData, topRow, pitch);
+        memcpy(topRow, bottomRow, pitch);
+        memcpy(bottomRow, rowData, pitch);
+    }
+
+    delete[] rowData;
+
+    // Generate and bind the OpenGL texture
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Upload the flipped image data to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Clean up
+    FreeImage_Unload(image32bit);
+
+    return texture;
+}
+
 static void saveFramebufferToFile(const char* filename, int width, int height) {
     // Create a buffer to store the pixel data (RGBA format)
     std::vector<unsigned char> pixels(width * height * 4); // RGBA format
@@ -222,7 +273,7 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
     projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
-    projection(2, 3) = -1.5f;
+    projection(2, 3) = 1.01f;
     projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
     projection(3, 3) = 0.0f;
 
@@ -282,8 +333,6 @@ static void renderLoop(GLuint texture,
 
         GLuint shaderProgram = setupShaders();
         glUseProgram(shaderProgram);
-        glFrontFace(GL_CCW);
-        glDisable(GL_CULL_FACE);
         Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
         //Eigen::Matrix4f view = inputImage.extrinsics.inverse(); //inverse?!
 
@@ -295,8 +344,11 @@ static void renderLoop(GLuint texture,
         Eigen::Matrix3f rotation = inputImage.extrinsics.block<3,3>(0,0).transpose();  // Invert rotation
         Eigen::Vector3f translation = -rotation * inputImage.extrinsics.block<3,1>(0,3);  // Adjust translation
         Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
-        view.block<3,3>(0,0) = rotation;
-        view.block<3,1>(0,3) = translation;
+        //view(1, 1) = -view(1, 1);
+        //view(0, 0) = -view(0, 0);
+        //view(2, 2) = -view(2, 2);
+        //view.block<3,3>(0,0) = rotation;
+        //view.block<3,1>(0,3) = translation;
 
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, eigenToOpenGL(view));
@@ -328,7 +380,7 @@ static void renderFaceOnTopOfImage(int width, int height,
                                     const char* backgroundImagePath, const InputImage& inputImage, const Eigen::Matrix4f& modelTransform) {
     GLFWwindow* window = setupRendering(width, height);
     std::vector<float> vertexData = setupVertexData(vertices, colors);
-    GLuint texture = loadTexture(backgroundImagePath);
+    GLuint texture = loadTextureUpsideDown(backgroundImagePath);
     auto VAO = setupBuffers(indices, vertexData);
     renderLoop(texture, window, vertices, indices, VAO, inputImage, modelTransform);
     cleanUp(texture, window);
