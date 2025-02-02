@@ -73,7 +73,7 @@ static std::vector<Eigen::Vector3f> getVerticesWithoutProcrustes(BfmProperties p
     return vertices;
 }
 
-/*static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
+static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties) {
     std::vector<Eigen::Vector3f> vertices;
 
     Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
@@ -82,88 +82,21 @@ static std::vector<Eigen::Vector3f> getVerticesWithoutProcrustes(BfmProperties p
     Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionParams));
 
     for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
-        Eigen::Vector3f newVertex;
+        Eigen::Vector4f vertex;
+        vertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
+        vertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
+        vertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
+        vertex.w() = 1.0f;
 
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i] + modifiedShape[i] + modifiedExpression[i];
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+        vertex.x() += modifiedShape[i] + modifiedExpression[i];
+        vertex.y() += modifiedShape[i + 1] + modifiedExpression[i + 1];
+        vertex.z() += modifiedShape[i + 2] + modifiedExpression[i + 2];
 
-        //newVertex.x() = properties.shapeMean[i] + modifiedShape[i] + modifiedExpression[i];
-        //newVertex.y() = properties.shapeMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        //newVertex.z() = properties.shapeMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
+        vertex = properties.transformation * vertex;
 
-        Eigen::Vector4f transformationVector;
-
-        transformationVector.x() = newVertex.x();
-        transformationVector.y() = newVertex.y();
-        transformationVector.z() = newVertex.z();
-        transformationVector.w() = 1.0f;
-        transformationVector = properties.transformation * transformationVector;
-        newVertex.x() = transformationVector.x();
-        newVertex.y() = transformationVector.y();
-        newVertex.z() = transformationVector.z();
-        vertices.emplace_back(newVertex);
+        vertices.emplace_back(Eigen::Vector3f(vertex.x(), vertex.y(), vertex.z()));
     }
     return vertices;
-}*/
-
-static std::vector<Eigen::Vector3f> getVertices(BfmProperties properties){
-    std::vector<Eigen::Vector3f> vertices;
-
-    Eigen::VectorXf shapeVar = Eigen::Map<Eigen::VectorXf>(properties.shapePcaVariance.data(), properties.shapePcaVariance.size());
-    Eigen::VectorXf modifiedShape = properties.shapePcaBasis * (shapeVar.cwiseSqrt().cwiseProduct(properties.shapeParams));
-    Eigen::VectorXf expressionVar = Eigen::Map<Eigen::VectorXf>(properties.expressionPcaVariance.data(), properties.expressionPcaVariance.size());
-    Eigen::VectorXf modifiedExpression = properties.expressionPcaBasis * (expressionVar.cwiseSqrt().cwiseProduct(properties.expressionParams));
-
-    for (int i = 0; i < properties.numberOfVertices * 3; i+=3) {
-        Eigen::Vector3f newVertex;
-
-        //Apply new expression and shape before procrustes transformation
-        newVertex.x() = properties.shapeMean[i] + properties.expressionMean[i];
-        newVertex.y() = properties.shapeMean[i + 1] + properties.expressionMean[i + 1];
-        newVertex.z() = properties.shapeMean[i + 2] + properties.expressionMean[i + 2];
-
-        Eigen::Vector4f transformationVector;
-        transformationVector.x() = newVertex.x() + modifiedShape[i] + modifiedExpression[i];
-        transformationVector.y() = newVertex.y() + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        transformationVector.z() = newVertex.z() + modifiedShape[i + 2] + modifiedExpression[i + 2];
-        transformationVector.w() = 1.0f;
-        transformationVector = properties.transformation * transformationVector;
-        newVertex.x() = transformationVector.x();
-        newVertex.y() = transformationVector.y();
-        newVertex.z() = transformationVector.z();
-
-
-        //newVertex.x() = properties.shapeMean[i] + modifiedShape[i] + modifiedExpression[i];
-        //newVertex.y() = properties.shapeMean[i + 1] + modifiedShape[i + 1] + modifiedExpression[i + 1];
-        //newVertex.z() = properties.shapeMean[i + 2] + modifiedShape[i + 2] + modifiedExpression[i + 2];
-
-
-        vertices.emplace_back(newVertex);
-    }
-    return vertices;
-}
-
-static std::vector<int> getLandmarkIndices(const BfmProperties& properties){
-    std::vector<int> indices;
-    auto vertices = getVertices(properties); //TODO: getvertices without procrustes
-    auto landmarks = properties.landmarks;
-    for (int i = 0; i < landmarks.size(); ++i) {
-        int currentIndex = 0;
-        float minDistance = 10000000.0f;
-        auto transformedLandmark = properties.transformation * Eigen::Vector4f(landmarks[i].x(), landmarks[i].y(), landmarks[i].z(), 1.0f); //sind landmarks schon transformed? oder muss da noch transformation angewendet werden??!!
-        auto currentLandmark = Eigen::Vector3f(transformedLandmark.x(), transformedLandmark.y(), transformedLandmark.z());
-        for (int j = 0; j < vertices.size(); ++j) {
-            auto currentVertex = vertices[j];
-            float currentDistance = sqrtf(powf(currentLandmark.x() - currentVertex.x(), 2) + powf(currentLandmark.y() - currentVertex.y(), 2) + powf(currentLandmark.z() - currentVertex.z(), 2));
-            if(currentDistance < minDistance){
-                minDistance = currentDistance;
-                currentIndex = j;
-            }
-        }
-        indices.push_back(currentIndex);
-    }
-    return indices;
 }
 
 static std::vector<Eigen::Vector3f> getNormals(BfmProperties properties){
