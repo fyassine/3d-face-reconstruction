@@ -48,11 +48,12 @@ struct Illumination {
 struct GeometryOptimization {
 public:
     GeometryOptimization(Eigen::Vector3f vertex,
+                         Eigen::Vector3f targetVertex,
                          const float& depth,
                          Eigen::Vector3f normal,
                          const BfmProperties& bfmProperties,
                          int vertex_id) :
-            m_vertex(std::move(vertex)), m_depth(depth), m_normal(std::move(normal)), m_bfm_properties(bfmProperties), m_vertex_id(vertex_id) {}
+            m_vertex(vertex), m_target_vertex(targetVertex), m_depth(depth), m_normal(std::move(normal)), m_bfm_properties(bfmProperties), m_vertex_id(vertex_id) {}
 
     template<typename T>
     bool operator()(const T* const shape,
@@ -98,22 +99,40 @@ public:
         Eigen::Matrix<T, 4, 1> transformedVertex = (m_bfm_properties.transformation.cast<T>() * vertex4d) + shape_offset + expression_offset;
 
 
-        auto point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
+        //Dont use depth, use vertex
+
+        /*auto point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
                                                   transformedVertex.y(),
                                                   transformedVertex.z() - T(m_depth));
 
         T point_to_plane = Eigen::Matrix<T, 3, 1>(transformedVertex.x(),
                                                               transformedVertex.y(),
-                                                              transformedVertex.z() - T(m_depth)).dot(m_normal.cast<T>());
+                                                              transformedVertex.z() - T(m_depth)).dot(m_normal.cast<T>());*/
+
+        auto point_to_point = Eigen::Matrix<T, 3, 1>(transformedVertex.x() - T(m_target_vertex.x()),
+                                                     transformedVertex.y() - T(m_target_vertex.y()),
+                                                     transformedVertex.z() - T(m_target_vertex.z()));
+
+        T point_to_plane = Eigen::Matrix<T, 3, 1>(transformedVertex.x() - T(m_target_vertex.x()),
+                                                  transformedVertex.y() - T(m_target_vertex.y()),
+                                                  transformedVertex.z() - T(m_target_vertex.z())).dot(m_normal.cast<T>());
 
         residuals[0] = point_to_point.squaredNorm();
         residuals[1] = point_to_plane;
+
+        //residuals[0] = transformedVertex.x() - T(m_target_vertex.x());
+        //residuals[1] = transformedVertex.y() - T(m_target_vertex.y());
+        //residuals[2] = transformedVertex.z() - T(m_target_vertex.z());
+
+        //residuals[3] = point_to_plane;
 
         return true;
     }
 
 private:
     const Eigen::Vector3f m_vertex;
+    const Eigen::Vector3f m_target_vertex;
+
     const float m_depth;
     const Eigen::Vector3f m_normal;
 

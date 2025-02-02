@@ -380,7 +380,7 @@ static void renderFaceOnTopOfImage(int width, int height,
                                     const char* backgroundImagePath, const InputImage& inputImage, const Eigen::Matrix4f& modelTransform) {
     GLFWwindow* window = setupRendering(width, height);
     std::vector<float> vertexData = setupVertexData(vertices, colors);
-    GLuint texture = loadTextureUpsideDown(backgroundImagePath);
+    GLuint texture = loadTexture(backgroundImagePath);
     auto VAO = setupBuffers(indices, vertexData);
     renderLoop(texture, window, vertices, indices, VAO, inputImage, modelTransform);
     cleanUp(texture, window);

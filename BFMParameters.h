@@ -395,7 +395,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     }
     std::vector<int> indices;
     //TODO: If you want to use jaw, comment code in
-    /*indices.emplace_back(18463);
+    indices.emplace_back(18463);
     indices.emplace_back(21941);
     indices.emplace_back(21354);
     indices.emplace_back(13904);
@@ -412,7 +412,7 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
     indices.emplace_back(7402);
     indices.emplace_back(1888);
     indices.emplace_back(4545);
-    indices.emplace_back(22050);*/
+    indices.emplace_back(22050);
     indices.emplace_back(20167);
     indices.emplace_back(25269);
     indices.emplace_back(24554);

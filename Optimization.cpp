@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inputImage, ceres::Problem& problem) {
+/*void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inputImage, ceres::Problem& problem) {
 
     auto bfmVertices = getVertices(properties);
     auto bfmColors = getColorValuesF(properties);
@@ -40,7 +40,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
         
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
+                new ceres::AutoDiffCostFunction<GeometryOptimization, 4, 199, 100>(
                         new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], properties, i)
                 ),
                 nullptr,
@@ -52,7 +52,7 @@ void Optimization::optimizeDenseTerms(BfmProperties& properties, InputImage& inp
     properties.shapeParams = shapeParamsD.cast<float>();
     properties.expressionParams = expressionParamsD.cast<float>();
     properties.colorParams = colorParamsD.cast<float>();
-}
+}*/
 
 /*void Optimization::optimizeSparseTerms(BfmProperties& bfm, InputImage& inputImage, Eigen::VectorXd& shapeParamsD, Eigen::VectorXd& expressionParamsD) {
     ceres::Problem problem;
@@ -153,28 +153,30 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
         //std::cout << i << ": " << bfmVerticesDepth[i] << std::endl;
         float depthInputImage = getDepthValueFromInputImage(vertexBfm, inputImage.depthValues, width, height, inputImage.intrinsics, inputImage.extrinsics);
         //std::cout << "Depth: " << ": " << depthInputImage << std::endl;
+        auto target2D = convert3Dto2D(vertexBfm, inputImage.intrinsics, inputImage.extrinsics);
+        auto target = convert2Dto3D(target2D, depthInputImage, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<GeometryOptimization, 2, 199, 100>(
-                        new GeometryOptimization(bfmVertices[i], depthInputImage, normals[i], bfm, i)
+                        new GeometryOptimization(bfmVertices[i], target, depthInputImage, normals[i], bfm, i)
                 ),
                 nullptr,
                 shapeParamsD.data(),
                 expressionParamsD.data()
         );
 
-        Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
+        /*Eigen::Vector3f colorInputImage = getColorValueFromInputImage(vertexBfm, inputImage.color, width, height, inputImage.intrinsics, inputImage.extrinsics);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimization, 1, 199>(
                         new ColorOptimization(bfmColors[i], colorInputImage, bfm, i)
                 ),
                 nullptr,
                 colorParamsD.data()
-        );
+        );*/
     }
     std::cout << "End" << std::endl;
 
 
-    problem.AddResidualBlock(
+    /*problem.AddResidualBlock(
             new ceres::AutoDiffCostFunction<GeometryRegularizationTerm, 2, 199, 100>(
                     new GeometryRegularizationTerm(identity_std_dev, expression_std_dev)),
             nullptr,
@@ -187,7 +189,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
                     new ColorRegularizationTerm(albedo_std_dev)),
             nullptr,
             colorParamsD.data()
-    );
+    );*/
 
     //options.max_num_iterations = 100;
     ceres::Solve(options, &problem, &summary);
@@ -232,7 +234,7 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.use_nonmonotonic_steps = false;
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
-    options.max_num_iterations = 3;
+    options.max_num_iterations = 1000;
     options.num_threads = 24;
 }
 
