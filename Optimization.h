@@ -445,8 +445,8 @@ struct GeometryRegularizationTerm {
             //residual[num_identity_params + i] = expression_params[i] * T(sqrt(8));
         }
 
-        residual[0] = reg_energy_geometry * T(sqrt(100000));
-        residual[1] = reg_energy_expression * T(sqrt(1));
+        residual[0] = reg_energy_geometry;// * T(sqrt(100000));
+        residual[1] = reg_energy_expression;// * T(sqrt(1));
         return true;
     }
 

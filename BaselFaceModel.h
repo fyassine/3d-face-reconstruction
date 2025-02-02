@@ -3,7 +3,10 @@
 
 
 class BaselFaceModel {
-
+public:
+    BaselFaceModel();
+    ~BaselFaceModel();
+private:
 };
 
 

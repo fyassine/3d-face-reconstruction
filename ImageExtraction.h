@@ -165,7 +165,7 @@ static void calculateDepthValuesLandmarks(InputImage& inputImage){
         float depth_value = inputImage.depthValues[pixel_y * inputImage.width + pixel_x];
         inputImage.depthValuesLandmarks.emplace_back(depth_value);
     }
-    //correctDepthOfLandmarks(inputImage);
+    correctDepthOfLandmarks(inputImage);
 }
 
 static void writeColorToPng(rs2::video_frame color){
