@@ -9,9 +9,12 @@ public:
     ~SingleInputFrame();
 private:
     std::vector<Vector3d> m_rgb_data;
+public:
+    const std::vector<Vector3d> &getMLandmarks() const;
+
+private:
     std::vector<double> m_depth_data;
     std::vector<Vector3d> m_landmarks;
 };
-
 
 #endif //FACE_RECONSTRUCTION_SINGLEINPUTFRAME_H
