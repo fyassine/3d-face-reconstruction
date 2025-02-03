@@ -131,7 +131,7 @@ static std::vector<Eigen::Vector3i> getColorValues(BfmProperties properties){
         Eigen::Vector3i newColorValue;
         newColorValue.x() = (int) ((properties.colorMean[i] + modifiedColor[i]) * 255);
         newColorValue.y() = (int) ((properties.colorMean[i + 1] + modifiedColor[i + 1]) * 255);
-        newColorValue.z() = (int) ((properties.colorMean[i + 2] + modifiedColor[i + 1]) * 255);
+        newColorValue.z() = (int) ((properties.colorMean[i + 2] + modifiedColor[i + 1]) * 255); //i + 2 not 1 lol
         colorValues.emplace_back(newColorValue);
     }
     return colorValues;
@@ -401,10 +401,10 @@ static void initializeBFM(const std::string& path, BfmProperties& properties, co
         landmarks.emplace_back(vertices[indices[i]]);
     }
 
-    Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
+    //Matrix4f estimatedPose = aligner.estimatePose(landmarks, targetPoints);
     //+ translation: Halbe width und halbe height abziehen:
 
-    properties.transformation = estimatedPose;// * rotationMatrix;
+    //properties.transformation = estimatedPose;// * rotationMatrix;
 }
 
 #endif //FACE_RECONSTRUCTION_BFMPARAMETERS_H
