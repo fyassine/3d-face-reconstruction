@@ -18,11 +18,12 @@
 #include "InputDataExtractor.h"
 #include "InputData.h"
 #include "Optimizer.h"
+#include "ModelConverter.h"
 
 using namespace Eigen;
 using namespace std;
 
-#define NAME_OF_BAG_FILE "20250116_183206.bag"
+#define NAME_OF_BAG_FILE "20250127_200932.bag"
 
 /*int main() {
     InputImage inputImage = readVideoData(dataFolderPath + "20250127_200932.bag");
@@ -141,12 +142,30 @@ int main(){
 
     baselFaceModel.computeTransformationMatrix(&inputData);
 
+    auto verticesBeforeSparse = baselFaceModel.getVerticesWithoutTransformation();
+    auto colorBeforeSparse = baselFaceModel.getColorValues();
+    ModelConverter::convertToPly(verticesBeforeSparse, colorBeforeSparse, baselFaceModel.getFaces(), "BfmBeforeSparseTerms.ply");
+
+    auto landmarksBeforeSparse = baselFaceModel.getLandmarks();
+    ModelConverter::convertToPly(landmarksBeforeSparse, "LandmarksBeforeSparse.ply");
+
+    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesBeforeSparse), colorBeforeSparse, baselFaceModel.getFaces(), "ModelAfterProcrustes.ply");
+    ModelConverter::convertToPly(baselFaceModel.transformVertices(landmarksBeforeSparse), "LandmarksAfterProcrustes.ply");
+
+    auto landmarksOfInputData = inputData.getMCurrentFrame().getMLandmarks();
+    ModelConverter::convertToPly(landmarksOfInputData, "LandmarksOfInputImage.ply");
+
+    ModelConverter::convertImageToPly(inputData.getMCurrentFrame().getMDepthData(), inputData.getMCurrentFrame().getMRgbData(), "BackprojectedImage.ply", inputData.getMIntrinsicMatrix(), inputData.getMExtrinsicMatrix());
+
     Optimizer optimizer(&baselFaceModel, &inputData);
     optimizer.optimizeSparseTerms();
     //optimizer.optimize();
 
     auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto colorAfterTransformation = baselFaceModel.getColorValues();
+    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
 
+    auto landmarksAfterSparse = baselFaceModel.getLandmarks();
+    ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
     //TODO: Create ModelConverter and Renderer
 }
