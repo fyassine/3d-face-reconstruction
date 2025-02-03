@@ -4,6 +4,7 @@
 #include "Eigen.h"
 #include "ProcrustesAligner.h"
 #include "FileReader.h"
+#include "InputData.h"
 
 #define HDF5_FILE_PATH "model2019_face12.h5"
 #define FACES_FILE_PATH "faces.txt"
@@ -18,19 +19,34 @@ public:
     void setupFaces();
     void setupHDF5Data();
     void initializeParameters();
-    void computeTransformationMatrix();
+    void computeTransformationMatrix(InputData* inputData);
 
     std::vector<Vector3d> getTransformedVertices();
     std::vector<Vector3d> getVerticesWithoutTransformation();
     Vector3d getVertex(int vertexId);
-    Vector3d getColorValues();
+    std::vector<Vector3i> getColorValues();
 
     std::vector<Vector3d> getLandmarks();
     std::vector<Vector3d> getNormals();
 
-private:
+    const std::vector<double> &getColorMean() const;
+    const MatrixXd &getColorPcaBasis() const;
+    const std::vector<double> &getColorPcaVariance() const;
+    const std::vector<double> &getShapeMean() const;
+    const MatrixXd &getShapePcaBasis() const;
+    const std::vector<double> &getShapePcaVariance() const;
+    const std::vector<double> &getExpressionMean() const;
+    const MatrixXd &getExpressionPcaBasis() const;
+    const std::vector<double> &getExpressionPcaVariance() const;
+    VectorXd &getColorParams();
+    VectorXd &getShapeParams();
+    VectorXd &getExpressionParams();
+    const Matrix4d &getTransformation() const;
+    const std::vector<int> &getLandmarkIndices() const;
 
-    Matrix4f transformation; //TODO: really here?!
+private:
+    Matrix4d transformation;
+    //TODO: really here?!
     std::vector<int> landmark_indices;
     std::vector<int> faces;
 
@@ -46,9 +62,9 @@ private:
     MatrixXd expressionPcaBasis;
     std::vector<double> expressionPcaVariance;
 
-    Eigen::VectorXd colorParams;
-    Eigen::VectorXd shapeParams;
-    Eigen::VectorXd expressionParams;
+    VectorXd colorParams;
+    VectorXd shapeParams;
+    VectorXd expressionParams;
 };
 
 
