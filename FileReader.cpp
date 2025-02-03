@@ -59,7 +59,7 @@ std::vector<double> FileReader::readHDF5File(const std::string &filePath, const 
         hsize_t dims[1];
         dataSpace.getSimpleExtentDims(dims, nullptr);
         target.resize(dims[0]);
-        dataset.read(target.data(), H5::PredType::NATIVE_FLOAT);
+        dataset.read(target.data(), H5::PredType::NATIVE_DOUBLE);
     } catch (H5::Exception& e) {
         std::cerr << "Error reading BFM parameters: " << e.getDetailMsg() << std::endl;
     }
@@ -89,7 +89,7 @@ MatrixXd FileReader::readMatrixHDF5File(const std::string &filePath, const std::
         dataspace.getSimpleExtentDims(dims, nullptr);
         matrix.resize(static_cast<int>(dims[0]), static_cast<int>(dims[1]));
         std::vector<double> buffer(static_cast<size_t>(dims[0] * dims[1]));
-        dataset.read(buffer.data(), H5::PredType::NATIVE_FLOAT);
+        dataset.read(buffer.data(), H5::PredType::NATIVE_DOUBLE);
         matrix = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(
                 buffer.data(), static_cast<int>(dims[0]), static_cast<int>(dims[1]));
     } catch (H5::Exception& e) {

@@ -23,6 +23,7 @@ public:
 
     std::vector<Vector3d> getTransformedVertices();
     std::vector<Vector3d> getVerticesWithoutTransformation();
+    std::vector<Vector3d> transformVertices(const std::vector<Vector3d>& vertices);
     Vector3d getVertex(int vertexId);
     std::vector<Vector3i> getColorValues();
 
@@ -43,6 +44,8 @@ public:
     VectorXd &getExpressionParams();
     const Matrix4d &getTransformation() const;
     const std::vector<int> &getLandmarkIndices() const;
+
+    const std::vector<int> &getFaces() const;
 
 private:
     Matrix4d transformation;

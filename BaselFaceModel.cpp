@@ -45,6 +45,7 @@ void BaselFaceModel::setupHDF5Data() {
     colorMean = FileReader::readHDF5File(HDF5_FILE_PATH, "/color/model", "mean");
     colorPcaVariance = FileReader::readHDF5File(HDF5_FILE_PATH, "/color/model", "pcaVariance");
     colorPcaBasis = FileReader::readMatrixHDF5File(HDF5_FILE_PATH, "/color/model", "pcaBasis");
+    std::cout << shapeMean[0] << std::endl;
 }
 
 void BaselFaceModel::initializeParameters() {
@@ -56,7 +57,12 @@ void BaselFaceModel::initializeParameters() {
 void BaselFaceModel::computeTransformationMatrix(InputData* inputData) {
     ProcrustesAligner aligner;
     auto landmarks_bfm = getLandmarks();
-    transformation = aligner.estimatePose(landmarks_bfm, inputData->getMCurrentFrame().getMLandmarks());
+    auto landmarks_image = inputData->getMCurrentFrame().getMLandmarks();
+
+    std::vector<Vector3d> source(landmarks_bfm.begin() + 18, landmarks_bfm.end());
+    std::vector<Vector3d> target(landmarks_image.begin() + 18, landmarks_image.end());
+
+    transformation = aligner.estimatePose(source, target);
 }
 
 std::vector<Vector3d> BaselFaceModel::getTransformedVertices() {
@@ -87,6 +93,8 @@ std::vector<Vector3i> BaselFaceModel::getColorValues() {
     Eigen::VectorXd colorVar = Eigen::Map<Eigen::VectorXd>(colorPcaVariance.data(), (int) colorPcaVariance.size());
     Eigen::VectorXd modifiedColor = colorPcaBasis * (colorVar.cwiseSqrt().cwiseProduct(colorParams));
     std::vector<Eigen::Vector3i> colorValues;
+
+    std::cout << colorPcaBasis(0, 0) << std::endl;
 
     int n = (int) shapeMean.size();
     for (int i = 0; i < n; i+=3) {
@@ -157,4 +165,18 @@ const Matrix4d &BaselFaceModel::getTransformation() const {
 
 const std::vector<int> &BaselFaceModel::getLandmarkIndices() const {
     return landmark_indices;
+}
+
+const std::vector<int> &BaselFaceModel::getFaces() const {
+    return faces;
+}
+
+std::vector<Vector3d> BaselFaceModel::transformVertices(const std::vector<Vector3d>& vertices) {
+    std::vector<Vector3d> transformedVertices;
+    for (int i = 0; i < vertices.size(); ++i) {
+        Vector4d oldVertex(vertices[i].x(), vertices[i].y(), vertices[i].z(), 1.0);
+        Vector4d newVertex = transformation * oldVertex;
+        transformedVertices.emplace_back(newVertex.x(), newVertex.y(), newVertex.z());
+    }
+    return transformedVertices;
 }
