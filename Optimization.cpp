@@ -146,6 +146,7 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     int width = 1280;
     int height = 720;
     std::cout << "Start: " << bfmVertices.size() << std::endl;
+    std::cout << "Start: " << bfmVertices.size() << std::endl;
     auto bfmColors = getColorValuesF(bfm);
 
     for (int i = 0; i < bfmVertices.size(); i+=100) {
