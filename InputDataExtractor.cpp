@@ -29,7 +29,6 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
         {
             rs2::frameset unaligned_frames = pipe.wait_for_frames();  // Ensure we get frames
             rs2::frameset frameset = align.process(unaligned_frames);
-            std::cout << "Number of frames in frameset: " << frameset.size() << std::endl;
 
             auto depth = frameset.get_depth_frame();
             auto color = frameset.get_color_frame();
@@ -133,7 +132,7 @@ std::vector<Vector3d> InputDataExtractor::searchForLandmarks(std::vector<double>
         Eigen::Vector2d landmark = landmarks2D[i];
         int pixel_x = (int) landmark.x();
         int pixel_y = (int) landmark.y();
-        double depth_value = depthValues[pixel_y * 720 + pixel_x];
+        double depth_value = depthValues[pixel_y * 1280 + pixel_x];
         //TODO: Correct Depth Value OR set landmark to -1, -1, -1
         landmarks.emplace_back(convert2Dto3D(landmark, depth_value, intrinsics, extrinsics));
     }
