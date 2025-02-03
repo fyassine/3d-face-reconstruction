@@ -15,9 +15,14 @@
 #include "BaselFaceModel.h"
 
 #include "Renderer.h"
+#include "InputDataExtractor.h"
+#include "InputData.h"
+#include "Optimizer.h"
 
 using namespace Eigen;
 using namespace std;
+
+#define NAME_OF_BAG_FILE "20250116_183206.bag"
 
 /*int main() {
     InputImage inputImage = readVideoData(dataFolderPath + "20250127_200932.bag");
@@ -132,4 +137,10 @@ using namespace std;
 
 int main(){
     BaselFaceModel baselFaceModel;
+    InputData inputData = InputDataExtractor::extractInputData(NAME_OF_BAG_FILE);
+
+    //Optimizer optimizer(&baselFaceModel, &inputData);
+    //optimizer.optimize();
+
+    //TODO: Create ModelConverter and Renderer
 }

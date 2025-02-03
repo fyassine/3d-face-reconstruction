@@ -3,6 +3,8 @@
 #include "InputDataExtractor.h"
 #include "FacialLandmarks.h"
 
+#define NUMBER_OF_FRAMES 10
+
 InputDataExtractor::InputDataExtractor() = default;
 
 InputDataExtractor::~InputDataExtractor() = default;
@@ -15,7 +17,7 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
     try {
         rs2::pipeline pipe;
         rs2::config cfg;
-        cfg.enable_device_from_file(path);
+        cfg.enable_device_from_file(DATA_FOLDER_PATH + path);
         cfg.enable_stream(RS2_STREAM_COLOR);
         cfg.enable_stream(RS2_STREAM_DEPTH);
         pipe.start(cfg);
@@ -25,8 +27,9 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
         int height;
 
         {
-            rs2::frameset unaligned_frames;
+            rs2::frameset unaligned_frames = pipe.wait_for_frames();  // Ensure we get frames
             rs2::frameset frameset = align.process(unaligned_frames);
+            std::cout << "Number of frames in frameset: " << frameset.size() << std::endl;
 
             auto depth = frameset.get_depth_frame();
             auto color = frameset.get_color_frame();
@@ -51,7 +54,10 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
             }
         }
 
-        while (true) {
+        int counter = 0;
+        while (NUMBER_OF_FRAMES > counter) {
+            counter++;
+            std::cout << "HEy" << std::endl;
             rs2::frameset unaligned_frames;
             if (!pipe.poll_for_frames(&unaligned_frames)) {
                 break;
@@ -132,6 +138,7 @@ std::vector<Vector3d> InputDataExtractor::searchForLandmarks(std::vector<double>
         //TODO: Correct Depth Value
         landmarks.emplace_back(convert2Dto3D(landmark, depth_value, intrinsics, extrinsics));
     }
+    return landmarks;
 }
 
 Vector3d InputDataExtractor::convert2Dto3D(const Vector2d &point, double depth, const Matrix3d &intrinsics,
