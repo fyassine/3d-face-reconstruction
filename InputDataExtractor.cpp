@@ -3,7 +3,7 @@
 #include "InputDataExtractor.h"
 #include "FacialLandmarks.h"
 
-#define NUMBER_OF_FRAMES 10
+#define NUMBER_OF_FRAMES 1
 
 InputDataExtractor::InputDataExtractor() = default;
 
@@ -57,7 +57,6 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
         int counter = 0;
         while (NUMBER_OF_FRAMES > counter) {
             counter++;
-            std::cout << "HEy" << std::endl;
             rs2::frameset unaligned_frames;
             if (!pipe.poll_for_frames(&unaligned_frames)) {
                 break;
@@ -135,7 +134,7 @@ std::vector<Vector3d> InputDataExtractor::searchForLandmarks(std::vector<double>
         int pixel_x = (int) landmark.x();
         int pixel_y = (int) landmark.y();
         double depth_value = depthValues[pixel_y * 720 + pixel_x];
-        //TODO: Correct Depth Value
+        //TODO: Correct Depth Value OR set landmark to -1, -1, -1
         landmarks.emplace_back(convert2Dto3D(landmark, depth_value, intrinsics, extrinsics));
     }
     return landmarks;
