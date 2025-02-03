@@ -139,8 +139,14 @@ int main(){
     BaselFaceModel baselFaceModel;
     InputData inputData = InputDataExtractor::extractInputData(NAME_OF_BAG_FILE);
 
-    //Optimizer optimizer(&baselFaceModel, &inputData);
+    baselFaceModel.computeTransformationMatrix(&inputData);
+
+    Optimizer optimizer(&baselFaceModel, &inputData);
+    optimizer.optimizeSparseTerms();
     //optimizer.optimize();
+
+    auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
+    auto colorAfterTransformation = baselFaceModel.getColorValues();
 
     //TODO: Create ModelConverter and Renderer
 }
