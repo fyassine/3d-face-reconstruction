@@ -1,5 +1,26 @@
-//
-// Created by Leo on 03.02.2025.
-//
-
 #include "Optimizer.h"
+
+Optimizer::Optimizer(BaselFaceModel *baselFaceModel, SingleInputFrame *singleInputFrame) {
+    m_baselFaceModel = baselFaceModel;
+    m_singleInputFrame = singleInputFrame;
+}
+
+Optimizer::~Optimizer() = default;
+
+void Optimizer::optimizeSparseTerms() {
+
+}
+
+void Optimizer::optimizeDenseGeometryTerm() {
+
+}
+
+void Optimizer::optimizeDenseColorTerm() {
+
+}
+
+void Optimizer::optimize() {
+    optimizeSparseTerms();
+    optimizeDenseGeometryTerm();
+    optimizeDenseColorTerm();
+}
