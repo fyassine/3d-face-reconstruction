@@ -56,4 +56,20 @@ void BaselFaceModel::computeTransformationMatrix() {
 
 }
 
+std::vector<Vector3d> BaselFaceModel::getTransformedVertices() {
+    return std::vector<Vector3d>();
+}
+
+std::vector<Vector3d> BaselFaceModel::getVerticesWithoutTransformation() {
+    return std::vector<Vector3d>();
+}
+
+std::vector<Vector3d> BaselFaceModel::getNormals() {
+    return std::vector<Vector3d>();
+}
+
+Vector3d BaselFaceModel::getColorValues() {
+    return Eigen::Vector3d();
+}
+
 BaselFaceModel::~BaselFaceModel() = default;

@@ -23,11 +23,10 @@ public:
     std::vector<Vector3d> getTransformedVertices();
     std::vector<Vector3d> getVerticesWithoutTransformation();
     Vector3d getVertex(int vertexId);
+    Vector3d getColorValues();
 
     std::vector<Vector3d> getLandmarks();
     std::vector<Vector3d> getNormals();
-
-    std::vector<Vector3d> transformVertices(std::vector<Vector3d> vertices);
 
 private:
 
