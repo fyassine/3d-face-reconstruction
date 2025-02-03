@@ -21,10 +21,8 @@ using namespace std;
 int main() {
     InputImage inputImage = readVideoData(dataFolderPath + "20250127_200932.bag");
     const std::string imagePath = std::string(resultFolderPath + "color_frame_corrected.png");
-    //const std::string imagePath = std::string(dataFolderPath + "testmyface.png");
     const std::string shapePredictorPath = std::string(dataFolderPath + "shape_predictor_68_face_landmarks.dat");
     const std::string outputPath = std::string(resultFolderPath + "output_corrected.png");
-    //const char* imagePath, const char* shapePredictorPath, bool saveResult=false, const char* resultPath=""
     DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
     auto landmarks2D = GetLandmarkVector(imagePath, shapePredictorPath);
     inputImage.landmarks = landmarks2D;

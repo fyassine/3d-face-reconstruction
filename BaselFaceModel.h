@@ -3,6 +3,11 @@
 
 #include "Eigen.h"
 #include "ProcrustesAligner.h"
+#include "FileReader.h"
+
+#define HDF5_FILE_PATH "model2019_face12.h5"
+#define FACES_FILE_PATH "faces.txt"
+#define LANDMARKS_FILE_PATH "landmarks.txt"
 
 class BaselFaceModel {
 public:
@@ -25,21 +30,22 @@ public:
     std::vector<Vector3d> transformVertices(std::vector<Vector3d> vertices);
 
 private:
+
     Matrix4f transformation; //TODO: really here?!
     std::vector<int> landmark_indices;
     std::vector<int> faces;
 
     std::vector<double> colorMean;
-    std::vector<double> colorPcaBasis;
+    MatrixXd colorPcaBasis;
     std::vector<double> colorPcaVariance;
 
     std::vector<double> shapeMean;
-    std::vector<double> shapePcaBasis;
+    MatrixXd shapePcaBasis;
     std::vector<double> shapePcaVariance;
 
     std::vector<double> expressionMean;
+    MatrixXd expressionPcaBasis;
     std::vector<double> expressionPcaVariance;
-    std::vector<double> expressionPcaBasis;
 
     Eigen::VectorXd colorParams;
     Eigen::VectorXd shapeParams;
