@@ -223,43 +223,6 @@ static std::vector<Eigen::Vector3f> readLandmarksBFM(const std::string& path){
     return landmarks;
 }
 
-static std::vector<Vector2f> readLandmarksInputImage(const std::string& path){
-    const std::string inputFile = std::string(path);
-    std::ifstream inFile(inputFile);
-    std::string line;
-    std::vector<Vector2f> landmarksImage;
-    while (std::getline(inFile, line)) {
-        std::istringstream iss(line);
-        float first, second;
-        if (iss >> first >> second) {
-            Eigen::Vector2f newLandmark;
-            newLandmark.x() = first;
-            newLandmark.y() = second;
-            landmarksImage.emplace_back(newLandmark);
-        } else {
-            std::cerr << "Error: Incorrect input file" << std::endl;
-        }
-    }
-    return landmarksImage;
-}
-
-static std::vector<float> readLandmarksDepthInputImage(const std::string& path){
-    const std::string inputFile = std::string(path);
-    std::ifstream inFile(inputFile);
-    std::string line;
-    std::vector<float> depthValues;
-    while (std::getline(inFile, line)) {
-        std::istringstream iss(line);
-        float first;
-        if (iss >> first) {
-            depthValues.emplace_back(first);
-        } else {
-            std::cerr << "Error: Incorrect input file" << std::endl;
-        }
-    }
-    return depthValues;
-}
-
 static Eigen::Vector3f convert2Dto3D(const Eigen::Vector2f& point, float depth, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics) {
     float fX = depthIntrinsics(0, 0);
     float fY = depthIntrinsics(1, 1);
