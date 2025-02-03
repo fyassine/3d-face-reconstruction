@@ -17,6 +17,11 @@ SingleInputFrame* InputData::processNextFrame() {
     if(m_current_frame_index >= m_frames.size()){
         return nullptr;
     }
+    m_currentFrame = m_frames[m_current_frame_index];
     m_current_frame_index++;
-    return &m_frames[m_current_frame_index - 1];
+    return &m_currentFrame;
+}
+
+const SingleInputFrame &InputData::getMCurrentFrame() const {
+    return m_currentFrame;
 }
