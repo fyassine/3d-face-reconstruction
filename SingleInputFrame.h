@@ -7,12 +7,14 @@ class SingleInputFrame {
 public:
     SingleInputFrame(std::vector<Vector3d> rgbData, std::vector<double> depthData, std::vector<Vector3d> landmarks);
     ~SingleInputFrame();
-private:
-    std::vector<Vector3d> m_rgb_data;
-public:
     const std::vector<Vector3d> &getMLandmarks() const;
 
+    const std::vector<Vector3d> &getMRgbData() const;
+
+    const std::vector<double> &getMDepthData() const;
+
 private:
+    std::vector<Vector3d> m_rgb_data;
     std::vector<double> m_depth_data;
     std::vector<Vector3d> m_landmarks;
 };
