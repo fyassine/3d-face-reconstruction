@@ -6,7 +6,7 @@ FileReader::FileReader() = default;
 FileReader::~FileReader() = default;
 
 std::vector<Vector3d> FileReader::read3DVerticesFromTxt(const std::string& path) {
-    const std::string inputFile = std::string(dataFolderPath + path);
+    const std::string inputFile = std::string(DATA_FOLDER_PATH + path);
     std::ifstream inFile(inputFile);
     std::string line;
     std::vector<Eigen::Vector3d> vertices;
@@ -14,7 +14,7 @@ std::vector<Vector3d> FileReader::read3DVerticesFromTxt(const std::string& path)
         std::istringstream iss(line);
         float first, second, third;
         if (iss >> first >> second >> third) {
-            Eigen::Vector3f newVertex;
+            Eigen::Vector3d newVertex;
             newVertex.x() = first;
             newVertex.y() = second;
             newVertex.z() = third;
@@ -28,7 +28,7 @@ std::vector<Vector3d> FileReader::read3DVerticesFromTxt(const std::string& path)
 
 std::vector<int> FileReader::readIntFromTxt(const std::string &path) {
     std::vector<int> result;
-    const std::string inputFile = std::string(dataFolderPath + path);
+    const std::string inputFile = std::string(DATA_FOLDER_PATH + path);
     std::ifstream inFile(inputFile);
     std::string line;
     while (std::getline(inFile, line)) {
@@ -45,7 +45,7 @@ std::vector<int> FileReader::readIntFromTxt(const std::string &path) {
 
 std::vector<double> FileReader::readHDF5File(const std::string &filePath, const std::string &groupPath, const std::string &datasetPath) {
 
-    H5::H5File file(dataFolderPath + filePath, H5F_ACC_RDONLY);
+    H5::H5File file(DATA_FOLDER_PATH + filePath, H5F_ACC_RDONLY);
     if (!file.getId()) {
         std::cerr << "Error opening file!" << std::endl;
     }
@@ -70,7 +70,7 @@ std::vector<double> FileReader::readHDF5File(const std::string &filePath, const 
 MatrixXd FileReader::readMatrixHDF5File(const std::string &filePath, const std::string &groupPath,
                                         const std::string &datasetPath) {
 
-    H5::H5File file(dataFolderPath + filePath, H5F_ACC_RDONLY);
+    H5::H5File file(DATA_FOLDER_PATH + filePath, H5F_ACC_RDONLY);
     if (!file.getId()) {
         std::cerr << "Error opening file!" << std::endl;
     }

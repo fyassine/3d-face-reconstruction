@@ -4,9 +4,6 @@
 #include "Eigen.h"
 #include <H5Cpp.h>
 
-const std::string dataFolderPath = DATA_FOLDER_PATH;
-const std::string resultFolderPath = RESULT_FOLDER_PATH;
-
 class FileReader {
 public:
     FileReader();
