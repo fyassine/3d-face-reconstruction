@@ -2,8 +2,7 @@
 #define FACE_RECONSTRUCTION_BASELFACEMODEL_H
 
 #include "Eigen.h"
-const std::string dataFolderPath = DATA_FOLDER_PATH;
-const std::string resultFolderPath = RESULT_FOLDER_PATH;
+#include "ProcrustesAligner.h"
 
 class BaselFaceModel {
 public:
@@ -14,11 +13,16 @@ public:
     void setupFaces();
     void setupHDF5Data();
     void initializeParameters();
+    void computeTransformationMatrix();
 
-    std::vector<Vector3d> getAllVertices();
+    std::vector<Vector3d> getTransformedVertices();
+    std::vector<Vector3d> getVerticesWithoutTransformation();
     Vector3d getVertex(int vertexId);
 
+    std::vector<Vector3d> getLandmarks();
     std::vector<Vector3d> getNormals();
+
+    std::vector<Vector3d> transformVertices(std::vector<Vector3d> vertices);
 
 private:
     Matrix4f transformation; //TODO: really here?!
