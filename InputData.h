@@ -11,15 +11,16 @@ public:
 
     ~InputData();
     SingleInputFrame* processNextFrame();
+    const SingleInputFrame &getMCurrentFrame() const;
+
+    const Matrix3d &getMIntrinsicMatrix() const;
+
+    const Matrix4d &getMExtrinsicMatrix() const;
+
 private:
     int m_current_frame_index = 0;
     SingleInputFrame m_currentFrame;
-public:
-    const SingleInputFrame &getMCurrentFrame() const;
-
-private:
     std::vector<SingleInputFrame> m_frames;
-
     int m_width;
     int m_height;
     Matrix3d m_intrinsic_matrix;

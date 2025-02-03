@@ -25,3 +25,11 @@ SingleInputFrame* InputData::processNextFrame() {
 const SingleInputFrame &InputData::getMCurrentFrame() const {
     return m_currentFrame;
 }
+
+const Matrix3d &InputData::getMIntrinsicMatrix() const {
+    return m_intrinsic_matrix;
+}
+
+const Matrix4d &InputData::getMExtrinsicMatrix() const {
+    return m_extrinsic_matrix;
+}
