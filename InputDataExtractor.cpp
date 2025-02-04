@@ -79,6 +79,7 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
                     rgbData[i * width + j] = Vector3d(color_pixel[0] / 255.0, color_pixel[1] / 255.0, color_pixel[2] / 255.0);
                 }
             }
+
             convertVideoFrameToPng(color);
             std::vector<Vector3d> landmarks = searchForLandmarks(depthData, extracted_intrinsic_matrix, extracted_extrinsic_matrix);
             frames.emplace_back(rgbData, depthData, landmarks);

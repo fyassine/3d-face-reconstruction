@@ -71,9 +71,9 @@ void ModelConverter::convertImageToPly(const std::vector<double>& depth, const s
                                        const Matrix3d& intrinsics, const Matrix4d& extrinsics) {
 
     std::vector<Eigen::Vector2d> pointCloudVertices;
-    for (int i = 0; i < 720; ++i) {
-        for (int j = 0; j < 1280; ++j) {
-            pointCloudVertices.emplace_back(Eigen::Vector2d(j, i));
+    for (int y = 0; y < 720; ++y) {
+        for (int x = 0; x < 1280; ++x) {
+            pointCloudVertices.emplace_back(x, y);
         }
     }
 

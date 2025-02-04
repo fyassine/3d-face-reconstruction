@@ -55,11 +55,13 @@ BaselFaceModel processFace(const std::string& path){
     auto colorAfterTransformation = baselFaceModel.getColorValues();
     auto mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
-    ModelConverter::convertToPly(verticesAfterTransformation, mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
+    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
+
+    auto inputVertices = inputData.getAllCorrespondences(baselFaceModel.transformVertices(verticesAfterTransformation));
+    ModelConverter::convertToPly(inputVertices, colorAfterTransformation, baselFaceModel.getFaces(), "CorrespondencesBfm.ply");
 
     auto landmarksAfterSparse = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
-
 
     //TODO: Smth wrong with reg for dense
     optimizer.optimizeDenseGeometryTerm();

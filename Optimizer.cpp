@@ -78,6 +78,7 @@ void Optimizer::optimizeDenseGeometryTerm() {
     auto correspondingColors = m_inputData->getCorrespondingColors(transformedVertices);
     for (int i = 0; i < n; i+=100) {
         Vector3d targetPoint = correspondingPoints[i];
+        Vector3d correspondingColor = Vector3d(correspondingColors[i].x() / 255.0, correspondingColors[i].y() / 255.0, correspondingColors[i].z() / 255.0);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<DenseOptimizationCost, 3, 199, 100>(
                         new DenseOptimizationCost(m_baselFaceModel, targetPoint, i)
@@ -88,7 +89,7 @@ void Optimizer::optimizeDenseGeometryTerm() {
         );
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimizationCost, 3, 199>(
-                        new ColorOptimizationCost(m_baselFaceModel, targetPoint, i)
+                        new ColorOptimizationCost(m_baselFaceModel, correspondingColor, i)
                 ),
                 nullptr,
                 m_baselFaceModel->getColorParams().data()
@@ -103,6 +104,11 @@ void Optimizer::optimizeDenseGeometryTerm() {
             new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE)
     );
     problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
+
+    ceres::CostFunction* colorCost = new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
+            new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE)
+    );
+    problem.AddResidualBlock(colorCost, nullptr, m_baselFaceModel->getColorParams().data());
 
     ceres::Solver::Summary summary;
     std::cout << "Dense Optimization initiated." << std::endl;

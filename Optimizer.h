@@ -9,11 +9,12 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
-#define SHAPE_REG_WEIGHT_SPARSE 0.002 //0.005
-#define EXPRESSION_REG_WEIGHT_SPARSE 0.001 //0.01 1/num of residuals?!
+#define SHAPE_REG_WEIGHT_SPARSE 0.002
+#define EXPRESSION_REG_WEIGHT_SPARSE 0.001
 
-#define SHAPE_REG_WEIGHT_DENSE 0.01 //0.005
-#define EXPRESSION_REG_WEIGHT_DENSE 0.005 //0.01 1/num of residuals?!
+#define SHAPE_REG_WEIGHT_DENSE 0.01
+#define EXPRESSION_REG_WEIGHT_DENSE 0.005
+#define COLOR_REG_WEIGHT_DENSE 0.01
 
 class Optimizer {
 public:
@@ -270,6 +271,23 @@ struct ExpressionRegularizerCost
 
 private:
     double m_expression_weight;
+};
+
+struct ColorRegularizerCost
+{
+    ColorRegularizerCost(double colorWeight) : m_color_weight(colorWeight) {}
+
+    template<typename T>
+    bool operator()(T const* color, T* residuals) const
+    {
+        for (int i = 0; i < NUM_COLOR_PARAMETERS; i++) {
+            residuals[i] = color[i] * T(m_color_weight);
+        }
+        return true;
+    }
+
+private:
+    double m_color_weight;
 };
 
 
