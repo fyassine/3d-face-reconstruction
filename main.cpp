@@ -53,33 +53,38 @@ BaselFaceModel processFace(const std::string& path){
 
     auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto colorAfterTransformation = baselFaceModel.getColorValues();
+    auto mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
+    ModelConverter::convertToPly(verticesAfterTransformation, mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
+
     auto landmarksAfterSparse = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
 
     //TODO: Smth wrong with reg for dense
-    /*optimizer.optimizeDenseGeometryTerm();
+    optimizer.optimizeDenseGeometryTerm();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
+    auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
     colorAfterTransformation = baselFaceModel.getColorValues();
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTerms.ply");
+    ModelConverter::convertToPly(transformedVerticesDense, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTermsProcrustes.ply");
     auto landmarksAfterDense = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
-    */
+
     return baselFaceModel;
 }
 
 int main(){
 
     //LEOS FACE
-    auto sourceFace = processFace(LEO_CRAZY);
-    auto targetFace = processFace(NELI_LOOKING_SERIOUS);
+    auto sourceFace = processFace(LEO_LOOKING_NORMAL);
+    /*auto targetFace = processFace(NELI_LOOKING_SERIOUS);
     targetFace.expressionTransfer(&sourceFace);
 
     auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
     auto colorAfterTransformation = targetFace.getColorValues();
-    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, targetFace.getFaces(), "ExpressionTransfer.ply");
+    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, targetFace.getFaces(), "ExpressionTransfer.ply");*/
 
     //TODO: Create Renderer
 }

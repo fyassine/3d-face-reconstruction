@@ -9,8 +9,11 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
-#define SHAPE_REG_WEIGHT 0.002 //0.005
-#define EXPRESSION_REG_WEIGHT 0.001 //0.01 1/num of residuals?!
+#define SHAPE_REG_WEIGHT_SPARSE 0.002 //0.005
+#define EXPRESSION_REG_WEIGHT_SPARSE 0.001 //0.01 1/num of residuals?!
+
+#define SHAPE_REG_WEIGHT_DENSE 0.01 //0.005
+#define EXPRESSION_REG_WEIGHT_DENSE 0.005 //0.01 1/num of residuals?!
 
 class Optimizer {
 public:
@@ -92,6 +95,7 @@ private:
     int m_landmark_bfm_index;
 };
 
+//TODO: Set weights so that all are on same scale
 struct DenseOptimizationCost {
 public:
     DenseOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d point_image, int landmark_bfm_index)
@@ -144,8 +148,8 @@ public:
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        residuals[0] = transformedVertex.x() - T(m_point_image.x());
-        residuals[1] = transformedVertex.y() - T(m_point_image.y());
+        residuals[0] = transformedVertex.x() - T(m_point_image.x()); //TODO: l2 norm
+        residuals[1] = transformedVertex.y() - T(m_point_image.y()); //compute cos between two normals; 1- cos
         residuals[2] = transformedVertex.z() - T(m_point_image.z());
 
         return true;
@@ -155,6 +159,50 @@ private:
     BaselFaceModel* m_baselFaceModel;
     Vector3d m_point_image;
     int m_landmark_bfm_index;
+};
+
+struct ColorOptimizationCost {
+public:
+    ColorOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d colorImage, int vertexIndex)
+            : m_baselFaceModel{baselFaceModel}, m_color_image{colorImage}, m_vertex_index{vertexIndex} {}
+
+    template <typename T>
+    bool operator()(const T* const color,
+                    T* residuals) const {
+
+        auto colorMean = m_baselFaceModel->getColorMean();
+        auto colorPcaBasis = m_baselFaceModel->getColorPcaBasis();
+        auto colorVariance = m_baselFaceModel->getColorPcaVariance();
+
+        Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
+                T(colorMean[m_vertex_index * 3]),
+                T(colorMean[m_vertex_index * 3 + 1]),
+                T(colorMean[m_vertex_index * 3 + 2]),
+                T(1)
+        );
+
+        for (int i = 0; i < NUM_COLOR_PARAMETERS; ++i) {
+            int vertex_idx = m_vertex_index * 3;
+            T param = T(sqrt(colorVariance[i])) * color[i];
+            offset += Eigen::Matrix<T, 4, 1>(
+                    param * T(colorPcaBasis(vertex_idx, i)),
+                    param * T(colorPcaBasis(vertex_idx + 1, i)),
+                    param * T(colorPcaBasis(vertex_idx + 2, i)),
+                    T(0)
+            );
+        }
+
+        residuals[0] = offset.x() - T(m_color_image.x()); //l2 norm
+        residuals[1] = offset.y() - T(m_color_image.y()); //compute cos between two normals; 1 - cos
+        residuals[2] = offset.z() - T(m_color_image.z());
+
+        return true;
+    }
+
+private:
+    BaselFaceModel* m_baselFaceModel;
+    Vector3d m_color_image;
+    int m_vertex_index;
 };
 
 struct GeometryRegularizationCost {
@@ -191,31 +239,37 @@ struct GeometryRegularizationCost {
 
 struct ShapeRegularizerCost
 {
-    ShapeRegularizerCost() = default;
+    ShapeRegularizerCost(double shapeWeight) : m_shape_weight(shapeWeight) {}
 
     template<typename T>
     bool operator()(T const* shape, T* residuals) const
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
-            residuals[i] = shape[i] * T(SHAPE_REG_WEIGHT);
+            residuals[i] = shape[i] * T(m_shape_weight); //squared values -> l2 norm
         }
         return true;
     }
+
+private:
+    double m_shape_weight;
 
 };
 
 struct ExpressionRegularizerCost
 {
-    ExpressionRegularizerCost() = default;
+    ExpressionRegularizerCost(double expressionWeight) : m_expression_weight(expressionWeight) {}
 
     template<typename T>
     bool operator()(T const* expression, T* residuals) const
     {
-        for (int j = 0; j < NUM_EXPRESSION_PARAMETERS; j++) {
-            residuals[j] = expression[j] * T(EXPRESSION_REG_WEIGHT);
+        for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; i++) {
+            residuals[i] = expression[i] * T(m_expression_weight);
         }
         return true;
     }
+
+private:
+    double m_expression_weight;
 };
 
 

@@ -234,6 +234,6 @@ void Optimization::configureSolver(ceres::Solver::Options &options) {
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = 1;
     options.max_num_iterations = 1000;
-    options.num_threads = 24;
+    options.num_threads = 12;
 }
 

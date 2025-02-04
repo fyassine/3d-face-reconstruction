@@ -16,6 +16,8 @@ public:
     const Matrix4d &getMExtrinsicMatrix() const;
 
     Vector3d getCorrespondingPoint(const Vector3d& bfmVertex);
+    std::vector<Vector3i> getCorrespondingColors(std::vector<Vector3d> vertices);
+    std::vector<Vector3d> getAllCorrespondences(std::vector<Vector3d> vertices);
 
 private:
     int m_current_frame_index = 0;

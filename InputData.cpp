@@ -35,10 +35,33 @@ const Matrix4d &InputData::getMExtrinsicMatrix() const {
     return m_extrinsic_matrix;
 }
 
+std::vector<Vector3d> InputData::getAllCorrespondences(std::vector<Vector3d> vertices) {
+    auto depthData = m_currentFrame.getMDepthData();
+    std::vector<Vector3d> correspondences;
+    for (int i = 0; i < vertices.size(); ++i) {
+        auto target2D = InputDataExtractor::convert3Dto2D(vertices[i], m_intrinsic_matrix, m_extrinsic_matrix);
+        double depthInputImage = depthData[(int) target2D.x() + (int) target2D.y() * m_width];
+        auto target = InputDataExtractor::convert2Dto3D(target2D, depthInputImage, m_intrinsic_matrix, m_extrinsic_matrix);
+        correspondences.emplace_back(target);
+    }
+    return correspondences;
+}
+
 Vector3d InputData::getCorrespondingPoint(const Vector3d& bfmVertex) {
     auto depthData = m_currentFrame.getMDepthData();
     auto target2D = InputDataExtractor::convert3Dto2D(bfmVertex, m_intrinsic_matrix, m_extrinsic_matrix);
     double depthInputImage = depthData[(int) target2D.x() + (int) target2D.y() * m_width];
     auto target = InputDataExtractor::convert2Dto3D(target2D, depthInputImage, m_intrinsic_matrix, m_extrinsic_matrix);
     return target;
+}
+
+std::vector<Vector3i> InputData::getCorrespondingColors(std::vector<Vector3d> vertices) {
+    std::vector<Vector3i> colorValues;
+    std::vector<Vector3d> colorImage = m_currentFrame.getMRgbData();
+    for (int i = 0; i < vertices.size(); ++i) {
+        auto coordinate2D = InputDataExtractor::convert3Dto2D(vertices[i], m_intrinsic_matrix, m_extrinsic_matrix);
+        Vector3d newColor = colorImage[coordinate2D.x() + coordinate2D.y() * 1280];
+        colorValues.emplace_back( (int) (newColor.x() * 255), (int) (newColor.y() * 255), (int) (newColor.z() * 255));
+    }
+    return colorValues;
 }
