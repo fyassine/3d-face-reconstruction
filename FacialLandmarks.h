@@ -34,7 +34,7 @@ static dlib::full_object_detection GetLandmarks(const std::string& imagePath, co
     return shape_predictor(image, detectedFaces[0]);
 }
 
-static std::vector<Eigen::Vector2f> GetLandmarkVector(const std::string& imagePath, const std::string& shapePredictorPath) {
+static std::vector<Eigen::Vector2d> GetLandmarkVector(const std::string& imagePath, const std::string& shapePredictorPath) {
     auto frontal_face_detector = dlib::get_frontal_face_detector();
     dlib::shape_predictor shape_predictor;
     dlib::deserialize(shapePredictorPath) >> shape_predictor;
@@ -42,11 +42,11 @@ static std::vector<Eigen::Vector2f> GetLandmarkVector(const std::string& imagePa
     dlib::load_image(image, imagePath);
     auto detectedFaces = frontal_face_detector(image);
     auto shape = shape_predictor(image, detectedFaces[0]);
-    std::vector<Eigen::Vector2f> landmarks2D;
+    std::vector<Eigen::Vector2d> landmarks2D;
     for (int i = 0; i < shape.num_parts(); ++i) {
-        Eigen::Vector2f newLandmark;
-        newLandmark.x() = (float) shape.part(i).x();
-        newLandmark.y() = (float) shape.part(i).y();
+        Eigen::Vector2d newLandmark;
+        newLandmark.x() = (double) shape.part(i).x();
+        newLandmark.y() = (double) shape.part(i).y();
         landmarks2D.emplace_back(newLandmark);
     }
     return landmarks2D;

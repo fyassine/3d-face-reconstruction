@@ -120,7 +120,8 @@ static float useKernel(const InputImage& inputImage, const Eigen::Vector2f& coor
                 continue;
             }
             currentDepth = depth < currentDepth ? depth : currentDepth;
-            if(abs(avg - currentDepth) > stdDev){
+            if(abs(avg - currentDepth) < stdDev){
+                std::cout << currentDepth << std::endl;
                 return currentDepth;
             }
         }
@@ -143,13 +144,17 @@ static void correctDepthOfLandmarks(InputImage& inputImage){
     stdDev /= (float) n;
     stdDev = sqrtf(stdDev);
 
+    std::cout << "Start Correction" << std::endl;
     //stdDev has to be bigger!!! Otherwise there would be flagged depth values in a perfect model
     //Shouldn't I use abs(avg) and abs(inputImage.depthValuesLandmarks[i]) as a negative depth value might otherwise lead to a wrong result
     for (int i = 0; i < (int) n; ++i) {
         if(abs(avg - inputImage.depthValuesLandmarks[i]) > stdDev){
-            inputImage.depthValuesLandmarks[i] = useKernel(inputImage, inputImage.landmarks[i], avg, stdDev);
+            std::cout << i << std::endl;
+            if(i == 0) continue;
+            inputImage.depthValuesLandmarks[i] = inputImage.depthValuesLandmarks[i - 1];//useKernel(inputImage, inputImage.landmarks[i], avg, stdDev);
         }
     }
+    std::cout << "End Correction" << std::endl;
 }
 
 static void calculateDepthValuesLandmarks(InputImage& inputImage){
@@ -331,6 +336,12 @@ static InputImage readVideoData(std::string path){
         inputImage.height = intrinsics.height;
 
         // Set intrinsics as an Eigen::Matrix3f
+        std::cout << "FX: " << intrinsics.fx << std::endl;
+        std::cout << "FY: " << intrinsics.fy << std::endl;
+        std::cout << "PPX: " << intrinsics.ppx << std::endl;
+        std::cout << "PPY: " << intrinsics.ppy << std::endl;
+        std::cout << "Width: " << intrinsics.width << std::endl;
+        std::cout << "Height: " << intrinsics.height << std::endl;
         inputImage.intrinsics << intrinsics.fx, 0, intrinsics.ppx,
                 0, intrinsics.fy, intrinsics.ppy,
                 0, 0, 1;
