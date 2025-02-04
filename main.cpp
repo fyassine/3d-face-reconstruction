@@ -15,7 +15,7 @@
 #include "BaselFaceModel.h"
 
 #include "Renderer.h"
-#include "InputDataExtractor.h"
+//#include "InputDataExtractor.h"
 #include "InputData.h"
 #include "Optimizer.h"
 #include "ModelConverter.h"
@@ -23,7 +23,10 @@
 using namespace Eigen;
 using namespace std;
 
-#define NAME_OF_BAG_FILE "20250127_200932.bag"
+#define LEO_LOOKING_NORMAL "20250127_200932.bag"
+#define NELI_LOOKING_SERIOUS "20250116_183206.bag"
+#define LEO_CRAZY "20250201_195224.bag"
+
 
 /*int main() {
     InputImage inputImage = readVideoData(dataFolderPath + "20250127_200932.bag");
@@ -137,8 +140,10 @@ using namespace std;
 }*/
 
 int main(){
+
+    //LEOS FACE
     BaselFaceModel baselFaceModel;
-    InputData inputData = InputDataExtractor::extractInputData(NAME_OF_BAG_FILE);
+    InputData inputData = InputDataExtractor::extractInputData(LEO_CRAZY);
 
     baselFaceModel.computeTransformationMatrix(&inputData);
 
@@ -164,8 +169,16 @@ int main(){
     auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto colorAfterTransformation = baselFaceModel.getColorValues();
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
-
     auto landmarksAfterSparse = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
-    //TODO: Create ModelConverter and Renderer
+
+    optimizer.optimizeDenseGeometryTerm();
+
+    verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
+    colorAfterTransformation = baselFaceModel.getColorValues();
+    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTerms.ply");
+    auto landmarksAfterDense = baselFaceModel.getLandmarks();
+    ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
+    //TODO: Create Renderer
+
 }
