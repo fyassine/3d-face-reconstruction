@@ -158,3 +158,22 @@ Vector3d InputDataExtractor::convert2Dto3D(const Vector2d &point, double depth, 
     return {worldCoords.x(), worldCoords.y(), worldCoords.z()};
 }
 
+Vector2d InputDataExtractor::convert3Dto2D(const Eigen::Vector3d& point, const Eigen::Matrix3d& depthIntrinsics, const Eigen::Matrix4d& extrinsics) {
+    Eigen::Matrix4d depthExtrinsicsInv = extrinsics.inverse();
+    Eigen::Vector4d worldCoord(point.x(), point.y(), point.z(), 1.0);
+    Eigen::Vector4d cameraCoord = depthExtrinsicsInv * worldCoord;
+
+    double fX = depthIntrinsics(0, 0); // focal length in x direction
+    double fY = depthIntrinsics(1, 1); // focal length in y direction
+    double cX = depthIntrinsics(0, 2); // optical center in x direction
+    double cY = depthIntrinsics(1, 2); // optical center in y direction
+
+    double x = cameraCoord.x() / cameraCoord.z();
+    double y = cameraCoord.y() / cameraCoord.z();
+
+    double u = fX * x + cX;
+    double v = fY * y + cY;
+
+    return Vector2d{u, v};
+}
+

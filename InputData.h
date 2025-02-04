@@ -12,10 +12,10 @@ public:
     ~InputData();
     SingleInputFrame* processNextFrame();
     const SingleInputFrame &getMCurrentFrame() const;
-
     const Matrix3d &getMIntrinsicMatrix() const;
-
     const Matrix4d &getMExtrinsicMatrix() const;
+
+    Vector3d getCorrespondingPoint(const Vector3d& bfmVertex);
 
 private:
     int m_current_frame_index = 0;
