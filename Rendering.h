@@ -2,7 +2,6 @@
 #define FACE_RECONSTRUCTION_RENDERING_H
 
 #include <dlib/opencv.h>
-//#include "opencv2/imgcodecs.hpp"
 #include "BFMParameters.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -38,6 +37,57 @@ static GLuint loadTexture(const char* filename) {
     return texture;
 }
 
+static GLuint loadTextureUpsideDown(const char* filename) {
+    // Load the image
+    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename, 0);
+    FIBITMAP* image = FreeImage_Load(format, filename);
+    if (!image) {
+        std::cerr << "Oh no! This image cannot be loaded: " << filename << std::endl;
+        return 0;
+    }
+
+    // Convert to 32-bit format (RGBA)
+    FIBITMAP* image32bit = FreeImage_ConvertTo32Bits(image);
+    FreeImage_Unload(image);
+
+    // Get width, height, and image data
+    int width = FreeImage_GetWidth(image32bit);
+    int height = FreeImage_GetHeight(image32bit);
+    void* data = FreeImage_GetBits(image32bit);
+
+    // Flip the image vertically
+    int pitch = FreeImage_GetPitch(image32bit);
+    unsigned char* rowData = new unsigned char[pitch];
+    for (int y = 0; y < height / 2; ++y) {
+        unsigned char* topRow = (unsigned char*)data + y * pitch;
+        unsigned char* bottomRow = (unsigned char*)data + (height - y - 1) * pitch;
+
+        // Swap rows
+        memcpy(rowData, topRow, pitch);
+        memcpy(topRow, bottomRow, pitch);
+        memcpy(bottomRow, rowData, pitch);
+    }
+
+    delete[] rowData;
+
+    // Generate and bind the OpenGL texture
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Upload the flipped image data to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Clean up
+    FreeImage_Unload(image32bit);
+
+    return texture;
+}
+
 static void saveFramebufferToFile(const char* filename, int width, int height) {
     // Create a buffer to store the pixel data (RGBA format)
     std::vector<unsigned char> pixels(width * height * 4); // RGBA format
@@ -55,11 +105,11 @@ static void saveFramebufferToFile(const char* filename, int width, int height) {
     // Flip the image vertically (since OpenGL's origin is at the bottom-left)
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            unsigned char* pixel = FreeImage_GetScanLine(image, height - y - 1) + x * 4;
-            pixel[FI_RGBA_RED] = pixels[(y * width + x) * 4 + 0];   // Red
-            pixel[FI_RGBA_GREEN] = pixels[(y * width + x) * 4 + 1]; // Green
-            pixel[FI_RGBA_BLUE] = pixels[(y * width + x) * 4 + 2];  // Blue
-            pixel[FI_RGBA_ALPHA] = pixels[(y * width + x) * 4 + 3]; // Alpha
+            //unsigned char* pixel = FreeImage_GetScanLine(image, height - y - 1) + x * 4;
+            //pixel[FI_RGBA_RED] = pixels[(y * width + x) * 4 + 0];   // Red
+            //pixel[FI_RGBA_GREEN] = pixels[(y * width + x) * 4 + 1]; // Green
+            //pixel[FI_RGBA_BLUE] = pixels[(y * width + x) * 4 + 2];  // Blue
+            //pixel[FI_RGBA_ALPHA] = pixels[(y * width + x) * 4 + 3]; // Alpha
         }
     }
 
@@ -71,7 +121,6 @@ static void saveFramebufferToFile(const char* filename, int width, int height) {
     // Unload the image
     FreeImage_Unload(image);
 }
-
 
 static void renderQuad(GLuint texture) {
     glEnable(GL_TEXTURE_2D);
@@ -101,18 +150,23 @@ static void renderTriangle(int verticesSize,
 static GLFWwindow* setupRendering(int width, int height){
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
+        return nullptr;
     }
-    GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL Texture", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(width, height, "Output", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();
+        return nullptr;
     }
     glfwMakeContextCurrent(window);
-    glewExperimental = GL_TRUE; // Ensure experimental extensions are enabled
+    //glewExperimental = GL_TRUE; // Ensure experimental extensions are enabled
     if (glewInit() != GLEW_OK) {
         std::cerr << "Failed to initialize GLEW" << std::endl;
+        return nullptr;
     }
-    glewInit();
+
+    //glFrontFace(GL_CCW);
+    //glewInit();
     return window;
 }
 
@@ -161,11 +215,12 @@ static unsigned int setupShaders(){
         layout(location = 1) in vec3 aColor;
 
         uniform mat4 view;
+        uniform mat4 model;
         uniform mat4 projection;
 
         out vec3 vertexColor;
         void main() {
-            gl_Position = projection * view * vec4(aPos, 1.0);
+            gl_Position = projection * view * model * vec4(aPos, 1.0);
             vertexColor = aColor;
         }
     )";
@@ -206,73 +261,50 @@ static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsic
     float cx = intrinsics(0, 2);
     float cy = intrinsics(1, 2);
 
-    float l = -cx * near_plane / fx;                  // Left boundary
-    float r = (width - cx) * near_plane / fx;        // Right boundary
-    float b = -cy * near_plane / fy;                 // Bottom boundary
-    float t = (height - cy) * near_plane / fy;       // Top boundary
+    // Compute frustum extents
+    float l = -(cx / fx) * near_plane;
+    float r = ((width - cx) / fx) * near_plane;
+    float b = -(cy / fy) * near_plane;
+    float t = ((height - cy) / fy) * near_plane;
 
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
-
-    projection(0, 0) = ((2 * near_plane) / (r - l));   //TODO: Move - to model?!
-    projection(1, 1) = - ((2 * near_plane) / (t - b)); //TODO: Move - to model?!
+    projection(0, 0) = 2 * near_plane / (r - l);
+    projection(1, 1) = 2 * near_plane / (t - b);
     projection(2, 0) = (r + l) / (r - l);
     projection(2, 1) = (t + b) / (t - b);
-    projection(2, 2) = - (far_plane + near_plane) / (far_plane - near_plane);
-
-    projection(3, 2) = (-2 * far_plane * near_plane) / (far_plane - near_plane);
+    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
     projection(2, 3) = 1.01f;
-    //projection(1, 3) = -5.0f;
-    projection(3, 3) = 0;
+    projection(3, 2) = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+    projection(3, 3) = 0.0f;
+
     return projection;
 }
-
-static Eigen::Matrix4f orthographicProjectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
+/*static Eigen::Matrix4f projectionFromIntrinsics(const Eigen::Matrix3f& intrinsics, float near_plane, float far_plane, int width, int height) {
     float fx = intrinsics(0, 0);
     float fy = intrinsics(1, 1);
     float cx = intrinsics(0, 2);
     float cy = intrinsics(1, 2);
 
-    // Calculate orthographic boundaries
-    float l = -cx * near_plane / fx;                  // Left boundary
-    float r = (width - cx) * near_plane / fx;         // Right boundary
-    float b = -cy * near_plane / fy;                  // Bottom boundary
-    float t = (height - cy) * near_plane / fy;        // Top boundary
+    float l = -cx * near_plane / fx;
+    float r = (width - cx) * near_plane / fx;
+    float b = -cy * near_plane / fy;
+    float t = (height - cy) * near_plane / fy;
 
-    // Create orthographic projection matrix
     Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
-
-    // Scale factors for orthographic projection
-    projection(0, 0) = (2.0f / (r - l));  // Scale for X-axis
-    projection(1, 1) = - (2.0f / (t - b));  // Scale for Y-axis
-    projection(2, 2) = - 2.0f / (far_plane - near_plane);  // Scale for Z-axis
-
-    // Offsets for translation (center the object in the view)
-    projection(0, 3) = - (r + l) / (r - l) + 800;  // Translate along X, 400 noch hardcoded
-    projection(1, 3) = - (t + b) / (t - b);  // Translate along Y
-    projection(2, 3) = - (far_plane + near_plane) / (far_plane - near_plane);  // Translate along Z
-
-    projection(3, 3) = 1.0f;  // Homogeneous coordinate
+    projection(0, 0) = 2 * near_plane / (r - l);
+    projection(1, 1) = 2 * near_plane / (t - b);  // Fixed sign issue
+    projection(2, 0) = (r + l) / (r - l);
+    projection(2, 1) = (t + b) / (t - b);
+    projection(2, 2) = -(far_plane + near_plane) / (far_plane - near_plane);
+    projection(2, 3) = -(2 * far_plane * near_plane) / (far_plane - near_plane); // Fixed incorrect placement
+    projection(3, 2) = -1;  // Fixed incorrect placement
+    projection(3, 3) = 0.0f;
 
     return projection;
-}
-
-static Eigen::Matrix4f inverseExtrinsics(const Eigen::Matrix4f& extrinsics) {
-    /*Eigen::Vector3f translation = extrinsics.block<3, 1>(0, 3);
-
-    // Move camera slightly back along z-axis
-    translation.z() -= 950.0f;  // Adjust this value as needed
-
-    // Create a new extrinsic matrix with updated translation
-    Eigen::Matrix4f newExtrinsics = extrinsics;
-    newExtrinsics.block<3, 1>(0, 3) = translation;
-
-    // Return the inverse to get the view matrix*/
-    return extrinsics.inverse();
-}
+}*/
 
 static GLfloat* eigenToOpenGL(const Eigen::Matrix4f& mat) {
     GLfloat* glMat = new GLfloat[16];
-    // Copy the matrix data from Eigen to the OpenGL array (row-major order)
     for (int i = 0; i < 16; ++i) {
         glMat[i] = mat.data()[i];
     }
@@ -288,63 +320,48 @@ static void renderLoop(GLuint texture,
     glDepthFunc(GL_LESS);
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-        //glUseProgram(setupBackgroundShaders());
         glUseProgram(0);
 
         glMatrixMode(GL_PROJECTION);
-        glPushMatrix();           // Save current projection matrix
-        glLoadIdentity();         // Use an identity projection for the background
+        glPushMatrix();
+        glLoadIdentity();
         glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();           // Save current model-view matrix
+        glPushMatrix();
         glLoadIdentity();
 
         renderQuad(texture);
 
-        //setProjectionMatrix(inputImage, 0.1f, 100.0f);
-        //setModelViewMatrix(inputImage);
         GLuint shaderProgram = setupShaders();
         glUseProgram(shaderProgram);
-
         Eigen::Matrix4f projection = projectionFromIntrinsics(inputImage.intrinsics, 0.001f, 100.0f, 1280, 720);
-        Eigen::Matrix4f view = inverseExtrinsics(inputImage.extrinsics); //inverse?!
+        //Eigen::Matrix4f view = inputImage.extrinsics.inverse(); //inverse?!
 
         GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
-        //GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
-        view(3, 0) = 0.0f;
-        double angle = -1.2f;
-        angle *= (3.1415926535 / 180.0);
-        view(0, 0) = (float) cos(angle);
-        view(2, 2) = (float) cos(angle);
-        view(2, 0) = (float) sin(angle);
-        view(0, 2) = (float) -sin(angle);
+        GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
 
-        Eigen::Matrix4f zrot = Eigen::Matrix4f::Identity();
-        double zAngle = 0.045f;
-        zrot(0, 0) = (float) cos(zAngle);
-        zrot(1, 1) = (float) cos(zAngle);
-        zrot(0, 1) = (float) sin(zAngle);
-        zrot(1, 0) = (float) -sin(zAngle);
 
-        view *= zrot;
+        Eigen::Matrix3f rotation = inputImage.extrinsics.block<3,3>(0,0).transpose();  // Invert rotation
+        Eigen::Vector3f translation = -rotation * inputImage.extrinsics.block<3,1>(0,3);  // Adjust translation
+        Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
+        //view(1, 1) = -view(1, 1);
+        //view(0, 0) = -view(0, 0);
+        //view(2, 2) = -view(2, 2);
+        //view.block<3,3>(0,0) = rotation;
+        //view.block<3,1>(0,3) = translation;
 
         glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, eigenToOpenGL(projection));
-        glUniformMatrix4fv(viewLoc, 1, GL_TRUE, eigenToOpenGL(view));
-        /*auto modelMatrix = modelTransform;
-        modelMatrix(0, 0) = -modelMatrix(0, 0);
-        modelMatrix(1, 1) = -modelMatrix(1, 1);
-        modelMatrix(2, 2) = -modelMatrix(2, 2);
-        std::cout << "Z-Axis: " << modelMatrix(3, 2) << std::endl;
-        Eigen::Vector4f testVector = Eigen::Vector4f(0, 0, 0, 1.0f);
-        std::cout << projection * modelMatrix * view * testVector << std::endl;
-        modelMatrix(2, 3) += 6;
-        std::cout << projection * modelMatrix * view  * testVector << std::endl;
-        glUniformMatrix4fv(modelLoc, 1, GL_TRUE, eigenToOpenGL(modelMatrix));*/
-
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, eigenToOpenGL(view));
+        auto modelTransformMatrix = modelTransform;
+        //modelTransformMatrix(2, 3) = -modelTransform(2, 3); // Move model in front of the camera
+        //modelTransformMatrix(1, 1) *= -1; // Flip upside down
+        //modelTransformMatrix(2, 3) = 3;//-modelTransform(2, 3);
+        std::cout << "Projection Matrix:\n" << projection << std::endl;
+        std::cout << "View Matrix (Extrinsics Inverted):\n" << view << std::endl;
+        std::cout << "Model Matrix:\n" << modelTransformMatrix << std::endl;
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, eigenToOpenGL(modelTransformMatrix));
         renderTriangle(vertices.size() / 3, indices, VAO);
-
-        saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720); // TODO: Use real width and height!!! and real output Path
-
+        saveFramebufferToFile((resultFolderPath + "rendering.png").c_str(), 1280, 720);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -361,11 +378,10 @@ static void renderFaceOnTopOfImage(int width, int height,
                                     const std::vector<int>& indices,
                                     const std::vector<int>& colors,
                                     const char* backgroundImagePath, const InputImage& inputImage, const Eigen::Matrix4f& modelTransform) {
-    GLFWwindow* window = setupRendering(width, height); //just take width and height of background image?! -> create background struct with texture, width and height?
+    GLFWwindow* window = setupRendering(width, height);
     std::vector<float> vertexData = setupVertexData(vertices, colors);
     GLuint texture = loadTexture(backgroundImagePath);
     auto VAO = setupBuffers(indices, vertexData);
-    //setupShaders();
     renderLoop(texture, window, vertices, indices, VAO, inputImage, modelTransform);
     cleanUp(texture, window);
 }
@@ -374,6 +390,45 @@ static BfmProperties getProperties(const std::string& path, const InputImage& in
     BfmProperties properties;
     initializeBFM(path, properties, inputImage);
     return properties;
+}
+
+static void convertParametersToPlyWithoutProcrustes(const BfmProperties& properties, const std::string& resultPath){
+
+    std::ofstream outFile(resultPath);
+    //Header
+    outFile << "ply" << std::endl;
+    outFile << "format ascii 1.0" << std::endl;
+    outFile << "element vertex " << properties.numberOfVertices << std::endl;
+    outFile << "property float x" << std::endl;
+    outFile << "property float y" << std::endl;
+    outFile << "property float z" << std::endl;
+    outFile << "property uchar red" << std::endl;
+    outFile << "property uchar green" << std::endl;
+    outFile << "property uchar blue" << std::endl;
+    outFile << "property uchar alpha" << std::endl;
+    outFile << "element face " << properties.numberOfTriangles << std::endl;
+    outFile << "property list uchar int vertex_indices" << std::endl;
+    outFile << "end_header" << std::endl;
+    //Vertices
+    auto vertices = getVerticesWithoutProcrustes(properties);
+    auto colorValues = getColorValues(properties);
+    for (int i = 0; i < properties.numberOfVertices; i++) {
+        //Position
+        auto x = vertices[i].x();
+        auto y = vertices[i].y();
+        auto z = vertices[i].z();
+        //Color
+        auto r = colorValues[i].x();
+        auto g = colorValues[i].y();
+        auto b = colorValues[i].z();
+        outFile << x << " " << y << " " << z << " " << r << " "<< g << " "<< b << " 255"<< std::endl;
+    }
+
+    //Faces
+    for (int i = 0; i < properties.numberOfTriangles * 3; i+=3) {
+        outFile << "3 " << properties.triangles[i] << " " << properties.triangles[i + 1] << " " << properties.triangles[i + 2] << std::endl;
+    }
+    outFile.close();
 }
 
 static void convertParametersToPly(const BfmProperties& properties, const std::string& resultPath){
@@ -421,7 +476,7 @@ static void convertLandmarksToPly(const BfmProperties& properties, const std::st
     //Header
     outFile << "ply" << std::endl;
     outFile << "format ascii 1.0" << std::endl;
-    outFile << "element vertex " << 68 << std::endl;
+    outFile << "element vertex " << properties.landmarks.size() << std::endl;
     outFile << "property float x" << std::endl;
     outFile << "property float y" << std::endl;
     outFile << "property float z" << std::endl;
@@ -434,7 +489,7 @@ static void convertLandmarksToPly(const BfmProperties& properties, const std::st
     outFile << "end_header" << std::endl;
     //Vertices
 
-    for (int i = 0; i < 68; ++i) {
+    for (int i = 0; i < properties.landmarks.size(); ++i) {
         Eigen::Vector4f transformedLandmark(properties.landmarks[i].x(), properties.landmarks[i].y(), properties.landmarks[i].z(), 1.0f);
         auto currentLandmark = properties.transformation * transformedLandmark;
 
