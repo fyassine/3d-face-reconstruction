@@ -259,7 +259,7 @@ static Eigen::Vector2f convert3Dto2D(const Eigen::Vector3f& point, const Eigen::
     return Eigen::Vector2f(u, v);
 }
 
-static float getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vector<float> depthValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
+static double getDepthValueFromInputImage(const Eigen::Vector3f& point, std::vector<float> depthValues, int width, int height, const Eigen::Matrix3f& depthIntrinsics, const Eigen::Matrix4f& extrinsics){
     auto pixelCoordinates = convert3Dto2D(point, depthIntrinsics, extrinsics);
     return depthValues[(int) pixelCoordinates.x() + (int) pixelCoordinates.y() * width];
 }

@@ -180,3 +180,7 @@ std::vector<Vector3d> BaselFaceModel::transformVertices(const std::vector<Vector
     }
     return transformedVertices;
 }
+
+void BaselFaceModel::expressionTransfer(BaselFaceModel *baselFaceModel) {
+    expressionParams = baselFaceModel->getExpressionParams();
+}

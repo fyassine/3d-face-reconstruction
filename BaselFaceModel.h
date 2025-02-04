@@ -30,6 +30,8 @@ public:
     std::vector<Vector3d> getLandmarks();
     std::vector<Vector3d> getNormals();
 
+    void expressionTransfer(BaselFaceModel* baselFaceModel);
+
     const std::vector<double> &getColorMean() const;
     const MatrixXd &getColorPcaBasis() const;
     const std::vector<double> &getColorPcaVariance() const;
