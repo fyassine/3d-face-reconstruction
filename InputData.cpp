@@ -56,7 +56,6 @@ Vector3d InputData::getCorrespondingPoint(const Vector3d& bfmVertex) {
 }
 
 std::vector<Vector3i> InputData::getCorrespondingColors(std::vector<Vector3d> vertices) {
-    std::cout << "Hey" << std::endl;
     std::vector<Vector3i> colorValues;
     std::vector<Vector3d> colorImage = m_currentFrame.getMRgbData();
 
@@ -66,6 +65,5 @@ std::vector<Vector3i> InputData::getCorrespondingColors(std::vector<Vector3d> ve
         Vector3i newColorInt = Vector3i((int) (newColor.x() * 255), (int) (newColor.y() * 255), (int) (newColor.z() * 255));
         colorValues.emplace_back(newColorInt);
     }
-    std::cout << "Bye" << std::endl;
     return colorValues;
 }

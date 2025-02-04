@@ -73,6 +73,8 @@ BaselFaceModel processFace(const std::string& path){
     ModelConverter::convertToPly(transformedVerticesDense, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTermsProcrustes.ply");
     auto landmarksAfterDense = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
+    mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
+    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
 
     return baselFaceModel;
 }
