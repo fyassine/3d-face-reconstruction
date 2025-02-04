@@ -27,123 +27,9 @@ using namespace std;
 #define NELI_LOOKING_SERIOUS "20250116_183206.bag"
 #define LEO_CRAZY "20250201_195224.bag"
 
-
-/*int main() {
-    InputImage inputImage = readVideoData(dataFolderPath + "20250127_200932.bag");
-    const std::string imagePath = std::string(resultFolderPath + "color_frame_corrected.png");
-    const std::string shapePredictorPath = std::string(dataFolderPath + "shape_predictor_68_face_landmarks.dat"); //TODO: this path should be a pragma later
-    const std::string outputPath = std::string(resultFolderPath + "output_corrected.png");
-    DrawLandmarksOnImage(imagePath, outputPath, shapePredictorPath);
-    auto landmarks2D = GetLandmarkVector(imagePath, shapePredictorPath);
-    inputImage.landmarks = landmarks2D;
-    std::vector<Eigen::Vector2f> landmarksImage;
-    for (int i = 0; i < 68; ++i) { //Set to 18 to ignore jaw
-        landmarksImage.emplace_back(landmarks2D[i]);
-    }
-    inputImage.landmarks = landmarksImage;
-    //printInputImage(inputImage);
-
-    calculateDepthValuesLandmarks(inputImage);
-
-    std::cout << "TEST" << std::endl;
-    const std::string outputPlyPath = std::string(resultFolderPath + "outputModel.ply");
-    const std::string outputLandmarkPlyPath = std::string(resultFolderPath + "landmarks.ply");
-    const std::string h5TestFile = std::string(dataFolderPath + "model2019_face12.h5");
-    std::cout << "0" << std::endl;
-    BfmProperties properties;
-    properties = getProperties(h5TestFile, inputImage);
-    std::cout << "1" << std::endl;
-    convertParametersToPlyWithoutProcrustes(properties, resultFolderPath + "InitialBfmModel.ply");
-    std::cout << "2: " << inputImage.depthValuesLandmarks.size() << std::endl;
-    std::vector<Eigen::Vector3f> targetPoints;
-    //GetTargetLandmarks
-    for (int i = 0; i < inputImage.depthValuesLandmarks.size(); ++i) {
-        targetPoints.emplace_back(convert2Dto3D(inputImage.landmarks[i], inputImage.depthValuesLandmarks[i], inputImage.intrinsics, inputImage.extrinsics));
-    }
-    std::cout << "3" << std::endl;
-    std::vector<Eigen::Vector2f> pointCloudVertices;
-    for (int i = 0; i < inputImage.height; ++i) {
-        for (int j = 0; j < inputImage.width; ++j) {
-            pointCloudVertices.emplace_back(Eigen::Vector2f(j, i));
-        }
-    }
-
-    std::vector<Eigen::Vector3i> color255;
-    for (int i = 0; i < inputImage.color.size(); ++i) {
-        color255.emplace_back(Eigen::Vector3i(inputImage.color[i].x() * 255, inputImage.color[i].y() * 255, inputImage.color[i].z() * 255));
-    }
-
-    std::vector<Eigen::Vector3f> landmarksFromIndices;
-    for (int i = 0; i < properties.landmark_indices.size(); ++i) {
-        landmarksFromIndices.emplace_back(getVertices(properties)[properties.landmark_indices[i]]);
-    }
-    convertVerticesTest(landmarksFromIndices, resultFolderPath + "landmarksFromIndices.ply");
-
-    convertParametersToPly(properties, resultFolderPath + "BfmAfterProcrustes.ply");
-    Optimization optimizer;
-    optimizer.optimize(properties, inputImage);
-
-    std::vector<float> parsedVertices;
-    //auto originalVertices = getVertices(properties);
-    auto originalVertices = getVerticesWithoutProcrustes(properties); //Sollte das nicht die normale get vertices methode sein?
-    for (int i = 0; i < originalVertices.size(); ++i) {
-        parsedVertices.push_back(originalVertices[i].x());
-        parsedVertices.push_back(originalVertices[i].y());
-        parsedVertices.push_back(originalVertices[i].z());
-        if(i == 0){
-            std::cout << "TestVertex: " << originalVertices[i].x() << ", " << originalVertices[i].y() << ", " << originalVertices[i].z() << ";" << std::endl;
-        }
-    }
-
-    std::vector<int> parsedColor;
-    auto originalColorValues = getColorValues(properties);
-    for (int i = 0; i < originalColorValues.size(); ++i) {
-        parsedColor.push_back(originalColorValues[i].x());
-        parsedColor.push_back(originalColorValues[i].y());
-        parsedColor.push_back(originalColorValues[i].z());
-        if(i == 0){
-            std::cout << originalColorValues[i].x() / 255.0f << ", " << originalColorValues[i].y() / 255.0f<< ", " << originalColorValues[i].z() / 255.0f << ";" << std::endl;
-        }
-    }
-
-    getPointCloud(pointCloudVertices, inputImage.depthValues, color255, resultFolderPath +"pls.ply", inputImage.intrinsics, inputImage.extrinsics);
-    convertVerticesTest(targetPoints, resultFolderPath + "warumklapptdasnicht.ply");
-
-    std::vector<Eigen::Vector3f> landmarksFromIndicesAfterOpt;
-    for (int i = 0; i < properties.landmark_indices.size(); ++i) {
-        landmarksFromIndicesAfterOpt.emplace_back(getVertices(properties)[properties.landmark_indices[i]]);
-    }
-    convertVerticesTest(landmarksFromIndicesAfterOpt, resultFolderPath + "landmarksFromIndicesAfterOptimization.ply");
-
-    std::vector<Eigen::Vector3f> landmarksss = readLandmarksBFM(dataFolderPath + "InitialLandmarkCoordinates.txt");
-    convertVerticesTest(landmarksss, resultFolderPath + "InitialLandmarks.ply");
-
-    convertParametersToPly(properties, resultFolderPath + "BfmModel.ply");
-    renderFaceOnTopOfImage(1280, 720, parsedVertices, properties.triangles, parsedColor, (resultFolderPath + "color_frame_corrected.png").c_str(), inputImage, properties.transformation);
-}*
-
-/*int main() {
-    int width = 1280, height = 480;
-    Renderer renderer(width, height);
-
-    Eigen::Matrix3f intrinsics;
-    intrinsics << 600, 0, 320,
-                0, 600, 240,
-                0, 0, 1;
-    renderer.setupCamera(intrinsics);
-
-    std::vector<Eigen::Vector3f> vertices = { {0.0f, 0.5f, 0.0f}, {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f} };
-    std::vector<Face> faces = { {0, 1, 2}};
-
-    renderer.run(vertices, faces);
-    return 0;
-}*/
-
-int main(){
-
-    //LEOS FACE
+BaselFaceModel processFace(const std::string& path){
     BaselFaceModel baselFaceModel;
-    InputData inputData = InputDataExtractor::extractInputData(LEO_CRAZY);
+    InputData inputData = InputDataExtractor::extractInputData(path);
 
     baselFaceModel.computeTransformationMatrix(&inputData);
 
@@ -164,7 +50,6 @@ int main(){
 
     Optimizer optimizer(&baselFaceModel, &inputData);
     optimizer.optimizeSparseTerms();
-    //optimizer.optimize();
 
     auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto colorAfterTransformation = baselFaceModel.getColorValues();
@@ -172,13 +57,29 @@ int main(){
     auto landmarksAfterSparse = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
-    optimizer.optimizeDenseGeometryTerm();
+
+    //TODO: Smth wrong with reg for dense
+    /*optimizer.optimizeDenseGeometryTerm();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     colorAfterTransformation = baselFaceModel.getColorValues();
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTerms.ply");
     auto landmarksAfterDense = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
-    //TODO: Create Renderer
+    */
+    return baselFaceModel;
+}
 
+int main(){
+
+    //LEOS FACE
+    auto sourceFace = processFace(LEO_CRAZY);
+    auto targetFace = processFace(NELI_LOOKING_SERIOUS);
+    targetFace.expressionTransfer(&sourceFace);
+
+    auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
+    auto colorAfterTransformation = targetFace.getColorValues();
+    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, targetFace.getFaces(), "ExpressionTransfer.ply");
+
+    //TODO: Create Renderer
 }

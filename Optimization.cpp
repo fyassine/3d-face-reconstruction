@@ -112,12 +112,10 @@ void Optimization::optimize(BfmProperties& bfm, InputImage& inputImage) {
     std::vector<double> identity_std_dev(199);
     std::vector<double> albedo_std_dev(199);
     std::vector<double> expression_std_dev(100);
-    // Fill identity and albedo standard deviations
     for (int i = 0; i < 199; ++i) {
         identity_std_dev[i] = std::sqrt(bfm.shapePcaVariance[i]);
         albedo_std_dev[i] = std::sqrt(bfm.colorPcaVariance[i]);
     }
-    // Fill expression standard deviations
     for (int i = 0; i < 100; ++i) {
         expression_std_dev[i] = std::sqrt(bfm.expressionPcaVariance[i]);
     }

@@ -9,6 +9,9 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
+#define SHAPE_REG_WEIGHT 0.002 //0.005
+#define EXPRESSION_REG_WEIGHT 0.001 //0.01 1/num of residuals?!
+
 class Optimizer {
 public:
     Optimizer(BaselFaceModel* baselFaceModel, InputData* inputData);
@@ -87,6 +90,132 @@ private:
     BaselFaceModel* m_baselFaceModel;
     Vector3d m_landmark_image;
     int m_landmark_bfm_index;
+};
+
+struct DenseOptimizationCost {
+public:
+    DenseOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d point_image, int landmark_bfm_index)
+            : m_baselFaceModel{baselFaceModel}, m_point_image{point_image}, m_landmark_bfm_index{landmark_bfm_index} {}
+
+    template <typename T>
+    bool operator()(const T* const shape,
+                    const T* const expression,
+                    T* residuals) const {
+
+        auto shapeMean = m_baselFaceModel->getShapeMean();
+        auto expressionMean = m_baselFaceModel->getExpressionMean();
+
+        auto shapePcaBasis = m_baselFaceModel->getShapePcaBasis();
+        auto expressionPcaBasis = m_baselFaceModel->getExpressionPcaBasis();
+
+        auto shapeVariance = m_baselFaceModel->getShapePcaVariance();
+        auto expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
+
+        auto transformationMatrix = m_baselFaceModel->getTransformation();
+
+        Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
+                T(shapeMean[m_landmark_bfm_index * 3]) + T(expressionMean[m_landmark_bfm_index * 3]),
+                T(shapeMean[m_landmark_bfm_index * 3 + 1]) + T(expressionMean[m_landmark_bfm_index * 3 + 1]),
+                T(shapeMean[m_landmark_bfm_index * 3 + 2]) + T(expressionMean[m_landmark_bfm_index * 3 + 2]),
+                T(1)
+        );
+
+        for (int i = 0; i < NUM_SHAPE_PARAMETERS; ++i) {
+            int vertex_idx = m_landmark_bfm_index * 3;
+            T param = T(sqrt(shapeVariance[i])) * shape[i];
+            offset += Eigen::Matrix<T, 4, 1>(
+                    param * T(shapePcaBasis(vertex_idx, i)),
+                    param * T(shapePcaBasis(vertex_idx + 1, i)),
+                    param * T(shapePcaBasis(vertex_idx + 2, i)),
+                    T(0)
+            );
+        }
+
+        for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; ++i) {
+            int vertex_idx = m_landmark_bfm_index * 3;
+            T param = T(sqrt(expressionVariance[i])) * expression[i];
+            offset += Eigen::Matrix<T, 4, 1>(
+                    param * T(expressionPcaBasis(vertex_idx, i)),
+                    param * T(expressionPcaBasis(vertex_idx + 1, i)),
+                    param * T(expressionPcaBasis(vertex_idx + 2, i)),
+                    T(0)
+            );
+        }
+
+        Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
+
+        residuals[0] = transformedVertex.x() - T(m_point_image.x());
+        residuals[1] = transformedVertex.y() - T(m_point_image.y());
+        residuals[2] = transformedVertex.z() - T(m_point_image.z());
+
+        return true;
+    }
+
+private:
+    BaselFaceModel* m_baselFaceModel;
+    Vector3d m_point_image;
+    int m_landmark_bfm_index;
+};
+
+struct GeometryRegularizationCost {
+    template <typename T>
+    bool operator()(const T* const shape,
+                    const T* const expression,
+                    T* residual) const {
+        T reg_energy_geometry = T(0);
+        T reg_energy_expression = T(0);
+
+        for (int i = 0; i < num_identity_params; ++i) {
+            reg_energy_geometry += pow(shape[i] / T(identity_std_dev[i]), 2);
+        }
+        for (int i = 0; i < num_expression_params; ++i) {
+            reg_energy_expression += pow(expression[i] / T(expression_std_dev[i]), 2);
+        }
+
+        residual[0] = reg_energy_geometry;
+        residual[1] = reg_energy_expression;
+        return true;
+    }
+
+    GeometryRegularizationCost(const std::vector<double>& id_std,
+                               const std::vector<double>& exp_std)
+            : identity_std_dev(id_std)
+            , expression_std_dev(exp_std) {}
+
+    const std::vector<double> identity_std_dev;
+    const std::vector<double> expression_std_dev;
+
+    static constexpr int num_identity_params = 199;
+    static constexpr int num_expression_params = 100;
+};
+
+struct ShapeRegularizerCost
+{
+    ShapeRegularizerCost() = default;
+
+    template<typename T>
+    bool operator()(T const* shape, T* residuals) const
+    {
+        for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
+            residuals[i] = shape[i] * T(SHAPE_REG_WEIGHT);
+        }
+        return true;
+    }
+
+};
+
+struct ExpressionRegularizerCost
+{
+    ExpressionRegularizerCost() = default;
+
+    template<typename T>
+    bool operator()(T const* expression, T* residuals) const
+    {
+        for (int j = 0; j < NUM_EXPRESSION_PARAMETERS; j++) {
+            residuals[j] = expression[j] * T(EXPRESSION_REG_WEIGHT);
+        }
+        return true;
+    }
 };
 
 
