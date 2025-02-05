@@ -1,82 +1,58 @@
 #include "Renderer.h"
 
-Renderer::Renderer(int width, int height) : width(width), height(height), window(nullptr) {
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        exit(-1);
+Renderer::~Renderer() = default;
+
+void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector<Vector3i>& modelColors, const std::vector<int>& modelFaces, const Matrix3d& intrinsicMatrix, const Matrix4d& extrinsicMatrix) {
+    cv::Mat image = cv::imread("../../../Result/color_frame_for_landmark_detection.png");
+
+    cv::Mat intrinsics = (cv::Mat_<double>(3,3) << intrinsicMatrix(0,0), intrinsicMatrix(0,1), intrinsicMatrix(0,2),
+            intrinsicMatrix(1,0), intrinsicMatrix(1,1), intrinsicMatrix(1,2),
+            intrinsicMatrix(2,0), intrinsicMatrix(2,1), intrinsicMatrix(2,2));
+    cv::Mat R = (cv::Mat_<double>(3,3) << extrinsicMatrix(0,0), extrinsicMatrix(0,1), extrinsicMatrix(0,2),
+            extrinsicMatrix(1,0), extrinsicMatrix(1,1), extrinsicMatrix(1,2),
+            extrinsicMatrix(2,0), extrinsicMatrix(2,1), extrinsicMatrix(2,2));
+    cv::Mat t = (cv::Mat_<double>(3,1) << extrinsicMatrix(0,3), extrinsicMatrix(1,3), extrinsicMatrix(2,3));
+
+    std::vector<cv::Point3f> vertices;
+    for (const auto& v : modelVertices) {
+        vertices.push_back(cv::Point3f(v(0), v(1), v(2)));
     }
 
-    window = glfwCreateWindow(width, height, "Rendered Face", nullptr, nullptr);
-    if (!window) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        exit(-1);
-    }
-    glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
-        exit(-1);
+    std::vector<cv::Vec3i> faces;
+    for (size_t i = 0; i < modelFaces.size(); i += 3) {
+        faces.push_back(cv::Vec3i(modelFaces[i], modelFaces[i+1], modelFaces[i+2]));
     }
 
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color to black
+    std::vector<cv::Scalar> colors;
+    for (const auto& color : modelColors) {
+        colors.push_back(cv::Scalar(color(0), color(1), color(2)));  // BGR format in OpenCV, vllt. invertieren?
+    }
+
+    renderModel(image, vertices, faces, intrinsics, R, t, colors);
+
+    cv::imshow("Rendered Image", image);
+    cv::waitKey(0);
 }
 
-Renderer::~Renderer() {
-    glfwDestroyWindow(window);
-    glfwTerminate();
+void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &vertices, const std::vector<cv::Vec3i> &faces,
+                      const cv::Mat &intrinsicMatrix, const cv::Mat &R, const cv::Mat &t, const std::vector<cv::Scalar> &colors) {
+    std::vector<cv::Point2f> projectedPoints;
+
+    // Project 3D points to 2D
+    cv::Mat rvec;
+    cv::Rodrigues(R, rvec);  // Convert rotation matrix to vector
+    cv::projectPoints(vertices, rvec, t, intrinsicMatrix, cv::Mat(), projectedPoints);
+
+    // Draw each face
+    for (size_t i = 0; i < faces.size(); ++i) {
+        cv::Point pts[3];
+        for (int j = 0; j < 3; ++j) {
+            pts[j] = projectedPoints[faces[i][j]];
+        }
+        cv::fillConvexPoly(image, pts, 3, colors[i]);
+    }
 }
 
-void Renderer::setupCamera(const Eigen::Matrix3f& intrinsics) {
-    this->intrinsics = intrinsics;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+Renderer::Renderer() {
 
-    float fx = intrinsics(0, 0);
-    float fy = intrinsics(1, 1);
-    float cx = intrinsics(0, 2);
-    float cy = intrinsics(1, 2);
-
-    float left = -cx / fx;
-    float right = ((float) width - cx) / fx;
-    float bottom = -(cy - (float) height) / fy;
-    float top = cy / fy;
-    float near = 0.1f, far = 100.0f;
-
-    float aspectRatio = (float) width / (float) height;
-    if (aspectRatio > 1.0f) {
-        bottom /= aspectRatio;
-        top /= aspectRatio;
-    } else {
-        left *= aspectRatio;
-        right *= aspectRatio;
-    }
-
-    glFrustum(left, right, bottom, top, near, far);
-    glMatrixMode(GL_MODELVIEW);
-}
-
-void Renderer::renderModel(const std::vector<Eigen::Vector3f>& vertices, const std::vector<Face>& faces) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-
-    glBegin(GL_TRIANGLES);
-    for (const auto& face : faces) {
-        glColor3f(1.0f, 0.0f, 0.0f); // Set color to red
-        glVertex3f(vertices[face.v1].x(), vertices[face.v1].y(), vertices[face.v1].z());
-        glColor3f(0.0f, 1.0f, 0.0f); // Set color to green
-        glVertex3f(vertices[face.v2].x(), vertices[face.v2].y(), vertices[face.v2].z());
-        glColor3f(0.0f, 0.0f, 1.0f); // Set color to blue
-        glVertex3f(vertices[face.v3].x(), vertices[face.v3].y(), vertices[face.v3].z());
-    }
-    glEnd();
-}
-
-void Renderer::run(const std::vector<Eigen::Vector3f>& vertices, const std::vector<Face>& faces) {
-    while (!glfwWindowShouldClose(window)) {
-        renderModel(vertices, faces);
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
 }

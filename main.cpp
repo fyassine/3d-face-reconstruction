@@ -57,6 +57,7 @@ BaselFaceModel processFace(const std::string& path){
     auto mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
     ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
+    //Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), inputData.getMIntrinsicMatrix(), inputData.getMExtrinsicMatrix());
 
     auto inputVertices = inputData.getAllCorrespondences(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(inputVertices, colorAfterTransformation, baselFaceModel.getFaces(), "CorrespondencesBfm.ply");
