@@ -9,8 +9,11 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
-#define SHAPE_REG_WEIGHT_SPARSE 0.002
-#define EXPRESSION_REG_WEIGHT_SPARSE 0.001
+//#define SHAPE_REG_WEIGHT_SPARSE 0.002
+//#define EXPRESSION_REG_WEIGHT_SPARSE 0.001
+
+#define SHAPE_REG_WEIGHT_SPARSE 0.01
+#define EXPRESSION_REG_WEIGHT_SPARSE 0.01
 
 #define SHAPE_REG_WEIGHT_DENSE 0.03
 #define EXPRESSION_REG_WEIGHT_DENSE 0.005
@@ -240,54 +243,59 @@ struct GeometryRegularizationCost {
 
 struct ShapeRegularizerCost
 {
-    ShapeRegularizerCost(double shapeWeight) : m_shape_weight(shapeWeight) {}
+    ShapeRegularizerCost(double shapeWeight, std::vector<double> variance) : m_shape_weight(shapeWeight), m_variance(variance) {}
 
     template<typename T>
     bool operator()(T const* shape, T* residuals) const
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
-            residuals[i] = shape[i] * T(m_shape_weight); //squared values -> l2 norm
+            //residuals[i] = shape[i] * T(m_shape_weight); //squared values -> l2 norm
+            residuals[i] = (shape[i] / sqrt(m_variance[i])) * m_shape_weight;
         }
         return true;
     }
 
 private:
     double m_shape_weight;
-
+    std::vector<double> m_variance;
 };
 
 struct ExpressionRegularizerCost
 {
-    ExpressionRegularizerCost(double expressionWeight) : m_expression_weight(expressionWeight) {}
+    ExpressionRegularizerCost(double expressionWeight, std::vector<double> variance) : m_expression_weight(expressionWeight), m_variance(variance) {}
 
     template<typename T>
     bool operator()(T const* expression, T* residuals) const
     {
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; i++) {
-            residuals[i] = expression[i] * T(m_expression_weight);
+            //residuals[i] = expression[i] * T(m_expression_weight); //TODO: Try to divide by eigenvalue -> var
+            residuals[i] = (expression[i] / sqrt(m_variance[i])) * m_expression_weight;
         }
         return true;
     }
 
 private:
     double m_expression_weight;
+    std::vector<double> m_variance;
 };
 
 struct ColorRegularizerCost
 {
-    ColorRegularizerCost(double colorWeight) : m_color_weight(colorWeight) {}
+    ColorRegularizerCost(double colorWeight, std::vector<double> variance) : m_color_weight(colorWeight), m_variance(variance) {}
 
     template<typename T>
     bool operator()(T const* color, T* residuals) const
     {
         for (int i = 0; i < NUM_COLOR_PARAMETERS; i++) {
-            residuals[i] = color[i] * T(m_color_weight);
+            //residuals[i] = color[i] * T(m_color_weight);
+            residuals[i] = color[i] / m_variance[i];
         }
         return true;
     }
 
 private:
     double m_color_weight;
+    std::vector<double> m_variance;
 };
 
 

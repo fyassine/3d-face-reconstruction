@@ -50,12 +50,12 @@ void Optimizer::optimizeSparseTerms() {
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
     ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE)
+            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
     );
     problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
 
     ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE)
+            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
     );
     problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
 
@@ -96,17 +96,17 @@ void Optimizer::optimizeDenseGeometryTerm() {
         );
     }
     ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE)
+            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE, m_baselFaceModel->getShapePcaVariance())
     );
     problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
 
     ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE)
+            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
     );
     problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
 
     ceres::CostFunction* colorCost = new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
-            new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE)
+            new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
     );
     problem.AddResidualBlock(colorCost, nullptr, m_baselFaceModel->getColorParams().data());
 
