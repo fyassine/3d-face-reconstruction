@@ -49,15 +49,13 @@ void Optimizer::optimizeSparseTerms() {
     );*/
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
-    ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE)
-    );
-    problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
+            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
+    ), nullptr, m_baselFaceModel->getShapeParams().data());
 
-    ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE)
-    );
-    problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
+            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
+    ), nullptr, m_baselFaceModel->getExpressionParams().data());
 
     std::cout << "End of Adding Residual Blocks for Regularization" << std::endl;
 
@@ -76,8 +74,9 @@ void Optimizer::optimizeDenseGeometryTerm() {
     int n = (int) vertices.size();
     auto correspondingPoints = m_inputData->getAllCorrespondences(transformedVertices);
     auto correspondingColors = m_inputData->getCorrespondingColors(transformedVertices);
-    for (int i = 0; i < n; i+=100) {
+    for (int i = 0; i < n; i+=100) { //TODO: Use random subsets instead
         Vector3d targetPoint = correspondingPoints[i];
+        Vector3d correspondingColor = Vector3d(correspondingColors[i].x() / 255.0, correspondingColors[i].y() / 255.0, correspondingColors[i].z() / 255.0);
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<DenseOptimizationCost, 3, 199, 100>(
                         new DenseOptimizationCost(m_baselFaceModel, targetPoint, i)
@@ -88,21 +87,23 @@ void Optimizer::optimizeDenseGeometryTerm() {
         );
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<ColorOptimizationCost, 3, 199>(
-                        new ColorOptimizationCost(m_baselFaceModel, targetPoint, i)
+                        new ColorOptimizationCost(m_baselFaceModel, correspondingColor, i)
                 ),
                 nullptr,
                 m_baselFaceModel->getColorParams().data()
         );
     }
-    ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE)
-    );
-    problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
+            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE, m_baselFaceModel->getShapePcaVariance())
+    ), nullptr, m_baselFaceModel->getShapeParams().data());
 
-    ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE)
-    );
-    problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
+            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
+    ), nullptr, m_baselFaceModel->getExpressionParams().data());
+
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
+            new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
+    ), nullptr, m_baselFaceModel->getColorParams().data());
 
     ceres::Solver::Summary summary;
     std::cout << "Dense Optimization initiated." << std::endl;
@@ -123,11 +124,9 @@ void Optimizer::optimize() {
 
 void Optimizer::configureSolver() {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-    options.dense_linear_algebra_library_type = ceres::CUDA;
-    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = false; //TODO: Maybe das hier löschen
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = true;
-    options.max_num_iterations = 5;
-    options.num_threads = 12;
+    options.max_num_iterations = 50;
+    options.num_threads = 8;
 }

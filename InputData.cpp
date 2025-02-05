@@ -12,6 +12,8 @@ InputData::InputData(std::vector<SingleInputFrame> frames, int width, int height
     m_extrinsic_matrix = std::move(extrinsic_matrix);
 }
 
+InputData::InputData() = default;
+
 InputData::~InputData() = default;
 
 SingleInputFrame* InputData::processNextFrame() {
@@ -58,10 +60,31 @@ Vector3d InputData::getCorrespondingPoint(const Vector3d& bfmVertex) {
 std::vector<Vector3i> InputData::getCorrespondingColors(std::vector<Vector3d> vertices) {
     std::vector<Vector3i> colorValues;
     std::vector<Vector3d> colorImage = m_currentFrame.getMRgbData();
+
     for (int i = 0; i < vertices.size(); ++i) {
         auto coordinate2D = InputDataExtractor::convert3Dto2D(vertices[i], m_intrinsic_matrix, m_extrinsic_matrix);
-        Vector3d newColor = colorImage[coordinate2D.x() + coordinate2D.y() * 1280];
-        colorValues.emplace_back( (int) (newColor.x() * 255), (int) (newColor.y() * 255), (int) (newColor.z() * 255));
+        Vector3d newColor = colorImage[(int) coordinate2D.y() * (int) m_width + (int) coordinate2D.x()];
+        Vector3i newColorInt = Vector3i((int) (newColor.x() * 255), (int) (newColor.y() * 255), (int) (newColor.z() * 255));
+        colorValues.emplace_back(newColorInt);
     }
     return colorValues;
+}
+
+void InputData::save(const std::string& filename) {
+    std::ofstream os(filename);
+    cereal::JSONOutputArchive archive(os);
+    archive(*this);
+}
+
+InputData InputData::load(const std::string& filename) {
+    std::ifstream is(filename);
+    cereal::JSONInputArchive archive(is);
+    InputData data;
+    archive(data);
+    return data;
+}
+
+std::vector<SingleInputFrame> InputData::m_frames1() const
+{
+    return m_frames;
 }

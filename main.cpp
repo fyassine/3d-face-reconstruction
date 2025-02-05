@@ -26,10 +26,15 @@ using namespace std;
 #define LEO_LOOKING_NORMAL "20250127_200932.bag"
 #define NELI_LOOKING_SERIOUS "20250116_183206.bag"
 #define LEO_CRAZY "20250201_195224.bag"
+#define LEO_VID "20250205_172132.bag"
 
 BaselFaceModel processFace(const std::string& path){
     BaselFaceModel baselFaceModel;
     InputData inputData = InputDataExtractor::extractInputData(path);
+    std::cout << "loading input data..." << std::endl;
+    inputData = InputData::load(dataFolderPath + "input_data.json");
+    std::cout << "done loading input data" << std::endl;
+    std::cout << inputData.m_frames1().size() << "\n" << std::endl;
 
     baselFaceModel.computeTransformationMatrix(&inputData);
 
@@ -55,14 +60,16 @@ BaselFaceModel processFace(const std::string& path){
     auto colorAfterTransformation = baselFaceModel.getColorValues();
     auto mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
-    ModelConverter::convertToPly(verticesAfterTransformation, mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
+    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
+
+    auto inputVertices = inputData.getAllCorrespondences(baselFaceModel.transformVertices(verticesAfterTransformation));
+    ModelConverter::convertToPly(inputVertices, colorAfterTransformation, baselFaceModel.getFaces(), "CorrespondencesBfm.ply");
 
     auto landmarksAfterSparse = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
-
     //TODO: Smth wrong with reg for dense
-    optimizer.optimizeDenseGeometryTerm();
+    /*optimizer.optimizeDenseGeometryTerm();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
@@ -71,14 +78,16 @@ BaselFaceModel processFace(const std::string& path){
     ModelConverter::convertToPly(transformedVerticesDense, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTermsProcrustes.ply");
     auto landmarksAfterDense = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
-
+    mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
+    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
+*/
     return baselFaceModel;
 }
 
 int main(){
 
     //LEOS FACE
-    auto sourceFace = processFace(LEO_LOOKING_NORMAL);
+    auto sourceFace = processFace(LEO_VID);
     /*auto targetFace = processFace(NELI_LOOKING_SERIOUS);
     targetFace.expressionTransfer(&sourceFace);
 

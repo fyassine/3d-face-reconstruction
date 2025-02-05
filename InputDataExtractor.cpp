@@ -3,7 +3,7 @@
 #include "InputDataExtractor.h"
 #include "FacialLandmarks.h"
 
-#define NUMBER_OF_FRAMES 1
+#define NUMBER_OF_FRAMES 5
 
 InputDataExtractor::InputDataExtractor() = default;
 
@@ -53,35 +53,39 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
             }
         }
 
-        int counter = 0;
-        while (NUMBER_OF_FRAMES > counter) {
-            counter++;
-            rs2::frameset unaligned_frames;
-            if (!pipe.poll_for_frames(&unaligned_frames)) {
-                break;
-            }
-            rs2::frameset frameset = align.process(unaligned_frames);
 
-            auto depth = frameset.get_depth_frame();
-            auto color = frameset.get_color_frame();
+        {
+            int counter = 0;
+            while (NUMBER_OF_FRAMES > counter) {
+                counter++;
+                rs2::frameset unaligned_frames = pipe.wait_for_frames();
+                // if (!pipe.poll_for_frames(&unaligned_frames)) {
+                //     break;
+                // }
+                rs2::frameset frameset = align.process(unaligned_frames);
 
-            std::vector<double> depthData(width * height);
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    depthData[i * width + j] = depth.get_distance(j, i);
+                auto depth = frameset.get_depth_frame();
+                auto color = frameset.get_color_frame();
+
+                std::vector<double> depthData(width * height);
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        depthData[i * width + j] = depth.get_distance(j, i);
+                    }
                 }
-            }
 
-            std::vector<Vector3d> rgbData(width * height);
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    uint8_t* color_pixel = (uint8_t*)color.get_data() + (i * color.get_stride_in_bytes()) + j * 3;
-                    rgbData[i * width + j] = Vector3d(color_pixel[0] / 255.0, color_pixel[1] / 255.0, color_pixel[2] / 255.0);
+                std::vector<Vector3d> rgbData(width * height);
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        uint8_t* color_pixel = (uint8_t*)color.get_data() + (i * color.get_stride_in_bytes()) + j * 3;
+                        rgbData[i * width + j] = Vector3d(color_pixel[0] / 255.0, color_pixel[1] / 255.0, color_pixel[2] / 255.0);
+                    }
                 }
+
+                convertVideoFrameToPng(color, "../../Result/color_frame_for_landmark_detection.png");
+                std::vector<Vector3d> landmarks = searchForLandmarks(depthData, extracted_intrinsic_matrix, extracted_extrinsic_matrix);
+                frames.emplace_back(rgbData, depthData, landmarks);
             }
-            convertVideoFrameToPng(color);
-            std::vector<Vector3d> landmarks = searchForLandmarks(depthData, extracted_intrinsic_matrix, extracted_extrinsic_matrix);
-            frames.emplace_back(rgbData, depthData, landmarks);
         }
         return {frames, width, height, extracted_intrinsic_matrix, extracted_extrinsic_matrix, frames[0]};
     } catch (const rs2::error& e) {
@@ -92,7 +96,7 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
     return {frames, 0, 0, Matrix3d::Zero(), Matrix4d::Zero(), frames[0]};
 }
 
-void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame) {
+void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame, std::string name) {
     int width = videoFrame.get_width();
     int height = videoFrame.get_height();
     const uint8_t* data = static_cast<const uint8_t*>(videoFrame.get_data());
@@ -112,7 +116,7 @@ void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame) {
     );
 
     if (bitmap) {
-        std::string outputFileName = "../../../Result/color_frame_for_landmark_detection.png";
+        std::string outputFileName = "../../Result/color_frame_for_landmark_detection.png";
         if (FreeImage_Save(FIF_PNG, bitmap, outputFileName.c_str())) {
             std::cout << "Saved color frame to " << outputFileName << std::endl;
         } else {
@@ -126,7 +130,7 @@ void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame) {
 }
 
 std::vector<Vector3d> InputDataExtractor::searchForLandmarks(std::vector<double> depthValues, const Matrix3d& intrinsics, const Matrix4d& extrinsics) {
-    auto landmarks2D = GetLandmarkVector("../../../Result/color_frame_for_landmark_detection.png", "../../../Data/shape_predictor_68_face_landmarks.dat");
+    auto landmarks2D = GetLandmarkVector("../../Result/color_frame_for_landmark_detection.png", "../../Data/shape_predictor_68_face_landmarks.dat");
     std::vector<Vector3d> landmarks;
     for (int i = 0; i < 68; ++i) {
         Eigen::Vector2d landmark = landmarks2D[i];
