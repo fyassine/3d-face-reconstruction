@@ -76,7 +76,7 @@ void Optimizer::optimizeDenseGeometryTerm() {
     int n = (int) vertices.size();
     auto correspondingPoints = m_inputData->getAllCorrespondences(transformedVertices);
     auto correspondingColors = m_inputData->getCorrespondingColors(transformedVertices);
-    for (int i = 0; i < n; i+=100) {
+    for (int i = 0; i < n; i+=100) { //TODO: Use random subsets instead
         Vector3d targetPoint = correspondingPoints[i];
         Vector3d correspondingColor = Vector3d(correspondingColors[i].x() / 255.0, correspondingColors[i].y() / 255.0, correspondingColors[i].z() / 255.0);
         problem.AddResidualBlock(
@@ -134,6 +134,6 @@ void Optimizer::configureSolver() {
     options.use_nonmonotonic_steps = false; //TODO: Maybe das hier löschen
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = true;
-    options.max_num_iterations = 5;
+    options.max_num_iterations = 100;
     options.num_threads = 12;
 }

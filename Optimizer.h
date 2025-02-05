@@ -9,15 +9,12 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
-//#define SHAPE_REG_WEIGHT_SPARSE 0.002
-//#define EXPRESSION_REG_WEIGHT_SPARSE 0.001
+#define SHAPE_REG_WEIGHT_SPARSE 1
+#define EXPRESSION_REG_WEIGHT_SPARSE 1
 
-#define SHAPE_REG_WEIGHT_SPARSE 0.01
-#define EXPRESSION_REG_WEIGHT_SPARSE 0.01
-
-#define SHAPE_REG_WEIGHT_DENSE 0.03
-#define EXPRESSION_REG_WEIGHT_DENSE 0.005
-#define COLOR_REG_WEIGHT_DENSE 0.07
+#define SHAPE_REG_WEIGHT_DENSE 1
+#define EXPRESSION_REG_WEIGHT_DENSE 1
+#define COLOR_REG_WEIGHT_DENSE 1
 
 class Optimizer {
 public:
@@ -250,7 +247,7 @@ struct ShapeRegularizerCost
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
             //residuals[i] = shape[i] * T(m_shape_weight); //squared values -> l2 norm
-            residuals[i] = (shape[i] / sqrt(m_variance[i])) * m_shape_weight;
+            residuals[i] = pow((shape[i] / sqrt(m_variance[i])), 2) * m_shape_weight;
         }
         return true;
     }
@@ -268,8 +265,7 @@ struct ExpressionRegularizerCost
     bool operator()(T const* expression, T* residuals) const
     {
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; i++) {
-            //residuals[i] = expression[i] * T(m_expression_weight); //TODO: Try to divide by eigenvalue -> var
-            residuals[i] = (expression[i] / sqrt(m_variance[i])) * m_expression_weight;
+            residuals[i] = pow((expression[i] / sqrt(m_variance[i])), 2) * m_expression_weight;
         }
         return true;
     }
@@ -287,8 +283,7 @@ struct ColorRegularizerCost
     bool operator()(T const* color, T* residuals) const
     {
         for (int i = 0; i < NUM_COLOR_PARAMETERS; i++) {
-            //residuals[i] = color[i] * T(m_color_weight);
-            residuals[i] = color[i] / m_variance[i];
+            residuals[i] = pow((color[i] / sqrt(m_variance[i])), 2) * m_color_weight; //color[i] / m_variance[i];
         }
         return true;
     }
