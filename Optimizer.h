@@ -5,6 +5,8 @@
 #include "InputData.h"
 #include <ceres/ceres.h>
 
+#include <utility>
+
 #define NUM_SHAPE_PARAMETERS 199
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
@@ -34,21 +36,21 @@ private:
 struct SparseOptimizationCost {
 public:
     SparseOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d landmark_image, int landmark_bfm_index)
-            : m_baselFaceModel{baselFaceModel}, m_landmark_image{landmark_image}, m_landmark_bfm_index{landmark_bfm_index} {}
+            : m_baselFaceModel{baselFaceModel}, m_landmark_image{std::move(landmark_image)}, m_landmark_bfm_index{landmark_bfm_index} {}
 
     template <typename T>
     bool operator()(const T* const shape,
                     const T* const expression,
                     T* residuals) const {
 
-        auto shapeMean = m_baselFaceModel->getShapeMean();
-        auto expressionMean = m_baselFaceModel->getExpressionMean();
+        auto& shapeMean = m_baselFaceModel->getShapeMean();
+        auto& expressionMean = m_baselFaceModel->getExpressionMean();
 
-        auto shapePcaBasis = m_baselFaceModel->getShapePcaBasis();
-        auto expressionPcaBasis = m_baselFaceModel->getExpressionPcaBasis();
+        auto& shapePcaBasis = m_baselFaceModel->getShapePcaBasis();
+        auto& expressionPcaBasis = m_baselFaceModel->getExpressionPcaBasis();
 
-        auto shapeVariance = m_baselFaceModel->getShapePcaVariance();
-        auto expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
+        auto& shapeVariance = m_baselFaceModel->getShapePcaVariance();
+        auto& expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
 
         auto transformationMatrix = m_baselFaceModel->getTransformation();
 
@@ -59,26 +61,20 @@ public:
                 T(1)
         );
 
+        int vertex_idx = m_landmark_bfm_index * 3;
+
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; ++i) {
-            int vertex_idx = m_landmark_bfm_index * 3;
             T param = T(sqrt(shapeVariance[i])) * shape[i];
-            offset += Eigen::Matrix<T, 4, 1>(
-                    param * T(shapePcaBasis(vertex_idx, i)),
-                    param * T(shapePcaBasis(vertex_idx + 1, i)),
-                    param * T(shapePcaBasis(vertex_idx + 2, i)),
-                    T(0)
-            );
+            offset.x() += param * T(shapePcaBasis(vertex_idx, i));
+            offset.y() += param * T(shapePcaBasis(vertex_idx + 1, i));
+            offset.z() += param * T(shapePcaBasis(vertex_idx + 2, i));
         }
 
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; ++i) {
-            int vertex_idx = m_landmark_bfm_index * 3;
             T param = T(sqrt(expressionVariance[i])) * expression[i];
-            offset += Eigen::Matrix<T, 4, 1>(
-                    param * T(expressionPcaBasis(vertex_idx, i)),
-                    param * T(expressionPcaBasis(vertex_idx + 1, i)),
-                    param * T(expressionPcaBasis(vertex_idx + 2, i)),
-                    T(0)
-            );
+            offset.x() += param * T(expressionPcaBasis(vertex_idx, i));
+            offset.y() += param * T(expressionPcaBasis(vertex_idx + 1, i));
+            offset.z() += param * T(expressionPcaBasis(vertex_idx + 2, i));
         }
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
@@ -100,23 +96,20 @@ private:
 struct DenseOptimizationCost {
 public:
     DenseOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d point_image, int landmark_bfm_index)
-            : m_baselFaceModel{baselFaceModel}, m_point_image{point_image}, m_landmark_bfm_index{landmark_bfm_index} {}
+            : m_baselFaceModel{baselFaceModel}, m_point_image{std::move(point_image)}, m_landmark_bfm_index{landmark_bfm_index} {}
 
     template <typename T>
     bool operator()(const T* const shape,
                     const T* const expression,
                     T* residuals) const {
 
-        auto shapeMean = m_baselFaceModel->getShapeMean();
-        auto expressionMean = m_baselFaceModel->getExpressionMean();
-
-        auto shapePcaBasis = m_baselFaceModel->getShapePcaBasis();
-        auto expressionPcaBasis = m_baselFaceModel->getExpressionPcaBasis();
-
-        auto shapeVariance = m_baselFaceModel->getShapePcaVariance();
-        auto expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
-
-        auto transformationMatrix = m_baselFaceModel->getTransformation();
+        auto& shapeMean = m_baselFaceModel->getShapeMean();
+        auto& expressionMean = m_baselFaceModel->getExpressionMean();
+        auto& shapePcaBasis = m_baselFaceModel->getShapePcaBasis();
+        auto& expressionPcaBasis = m_baselFaceModel->getExpressionPcaBasis();
+        auto& shapeVariance = m_baselFaceModel->getShapePcaVariance();
+        auto& expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
+        auto& transformationMatrix = m_baselFaceModel->getTransformation();
 
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
                 T(shapeMean[m_landmark_bfm_index * 3]) + T(expressionMean[m_landmark_bfm_index * 3]),
@@ -125,27 +118,34 @@ public:
                 T(1)
         );
 
-        for (int i = 0; i < NUM_SHAPE_PARAMETERS; ++i) {
-            int vertex_idx = m_landmark_bfm_index * 3;
+        int vertex_idx = m_landmark_bfm_index * 3;
+
+        Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, 1>> shapeParams(shape, NUM_SHAPE_PARAMETERS);
+        Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, 1>> expressionParams(expression, NUM_EXPRESSION_PARAMETERS);
+        Eigen::Map<const Eigen::VectorXd> shapeVarEigen(shapeVariance.data(), NUM_SHAPE_PARAMETERS);
+        Eigen::Map<const Eigen::VectorXd> exprVarEigen(expressionVariance.data(), NUM_EXPRESSION_PARAMETERS);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> sqrt_shape_var = shapeParams.cwiseProduct(shapeVarEigen.array().sqrt().matrix().template cast<T>());
+        Eigen::Matrix<T, Eigen::Dynamic, 1> sqrt_expr_var = expressionParams.cwiseProduct(exprVarEigen.array().sqrt().matrix().template cast<T>());
+        Eigen::Matrix<T, 3, 1> shape_offset = shapePcaBasis.block(vertex_idx, 0, 3, NUM_SHAPE_PARAMETERS).template cast<T>() * sqrt_shape_var;
+        Eigen::Matrix<T, 3, 1> expr_offset = expressionPcaBasis.block(vertex_idx, 0, 3, NUM_EXPRESSION_PARAMETERS).template cast<T>() * sqrt_expr_var;
+
+        offset.x() += shape_offset.x() + expr_offset.x();
+        offset.y() += shape_offset.y() + expr_offset.y();
+        offset.z() += shape_offset.z() + expr_offset.z();
+
+        /*for (int i = 0; i < NUM_SHAPE_PARAMETERS; ++i) {
             T param = T(sqrt(shapeVariance[i])) * shape[i];
-            offset += Eigen::Matrix<T, 4, 1>(
-                    param * T(shapePcaBasis(vertex_idx, i)),
-                    param * T(shapePcaBasis(vertex_idx + 1, i)),
-                    param * T(shapePcaBasis(vertex_idx + 2, i)),
-                    T(0)
-            );
+            offset.x() += param * T(shapePcaBasis(vertex_idx, i));
+            offset.y() += param * T(shapePcaBasis(vertex_idx + 1, i));
+            offset.z() += param * T(shapePcaBasis(vertex_idx + 2, i));
         }
 
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; ++i) {
-            int vertex_idx = m_landmark_bfm_index * 3;
             T param = T(sqrt(expressionVariance[i])) * expression[i];
-            offset += Eigen::Matrix<T, 4, 1>(
-                    param * T(expressionPcaBasis(vertex_idx, i)),
-                    param * T(expressionPcaBasis(vertex_idx + 1, i)),
-                    param * T(expressionPcaBasis(vertex_idx + 2, i)),
-                    T(0)
-            );
-        }
+            offset.x() += param * T(expressionPcaBasis(vertex_idx, i));
+            offset.y() += param * T(expressionPcaBasis(vertex_idx + 1, i));
+            offset.z() += param * T(expressionPcaBasis(vertex_idx + 2, i));
+        }*/
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 

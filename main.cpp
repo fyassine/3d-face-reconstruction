@@ -26,6 +26,7 @@ using namespace std;
 #define LEO_LOOKING_NORMAL "20250127_200932.bag"
 #define NELI_LOOKING_SERIOUS "20250116_183206.bag"
 #define LEO_CRAZY "20250201_195224.bag"
+#define LEO_LONG "20250205_172132.bag"
 
 BaselFaceModel processFace(const std::string& path){
     BaselFaceModel baselFaceModel;
@@ -82,7 +83,7 @@ BaselFaceModel processFace(const std::string& path){
 int main(){
 
     //LEOS FACE
-    auto sourceFace = processFace(LEO_LOOKING_NORMAL);
+    auto sourceFace = processFace(LEO_LONG);
     /*auto targetFace = processFace(NELI_LOOKING_SERIOUS);
     targetFace.expressionTransfer(&sourceFace);
 

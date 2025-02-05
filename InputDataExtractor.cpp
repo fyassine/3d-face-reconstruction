@@ -80,7 +80,9 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
                 }
             }
 
-            convertVideoFrameToPng(color);
+            convertVideoFrameToPng(color, "../../../Result/color_frame_for_landmark_detection.png");
+            std::string frameName = "../../../Result/VideoFrames/" + std::to_string(counter) + ".png";
+            convertVideoFrameToPng(color, frameName);
             std::vector<Vector3d> landmarks = searchForLandmarks(depthData, extracted_intrinsic_matrix, extracted_extrinsic_matrix);
             frames.emplace_back(rgbData, depthData, landmarks);
         }
@@ -93,7 +95,7 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
     return {frames, 0, 0, Matrix3d::Zero(), Matrix4d::Zero(), frames[0]};
 }
 
-void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame) {
+void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame, std::string name) {
     int width = videoFrame.get_width();
     int height = videoFrame.get_height();
     const uint8_t* data = static_cast<const uint8_t*>(videoFrame.get_data());
@@ -113,7 +115,7 @@ void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame) {
     );
 
     if (bitmap) {
-        std::string outputFileName = "../../../Result/color_frame_for_landmark_detection.png";
+        std::string outputFileName = name; //"../../../Result/color_frame_for_landmark_detection.png";
         if (FreeImage_Save(FIF_PNG, bitmap, outputFileName.c_str())) {
             std::cout << "Saved color frame to " << outputFileName << std::endl;
         } else {
