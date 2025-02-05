@@ -49,15 +49,13 @@ void Optimizer::optimizeSparseTerms() {
     );*/
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
-    ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
             new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
-    );
-    problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
+    ), nullptr, m_baselFaceModel->getShapeParams().data());
 
-    ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
             new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
-    );
-    problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
+    ), nullptr, m_baselFaceModel->getExpressionParams().data());
 
     std::cout << "End of Adding Residual Blocks for Regularization" << std::endl;
 
@@ -95,20 +93,17 @@ void Optimizer::optimizeDenseGeometryTerm() {
                 m_baselFaceModel->getColorParams().data()
         );
     }
-    ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
             new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE, m_baselFaceModel->getShapePcaVariance())
-    );
-    problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
+    ), nullptr, m_baselFaceModel->getShapeParams().data());
 
-    ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
             new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
-    );
-    problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
+    ), nullptr, m_baselFaceModel->getExpressionParams().data());
 
-    ceres::CostFunction* colorCost = new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
             new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
-    );
-    problem.AddResidualBlock(colorCost, nullptr, m_baselFaceModel->getColorParams().data());
+    ), nullptr, m_baselFaceModel->getColorParams().data());
 
     ceres::Solver::Summary summary;
     std::cout << "Dense Optimization initiated." << std::endl;
@@ -129,11 +124,9 @@ void Optimizer::optimize() {
 
 void Optimizer::configureSolver() {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-    options.dense_linear_algebra_library_type = ceres::CUDA;
-    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = false; //TODO: Maybe das hier löschen
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = true;
-    options.max_num_iterations = 100;
-    options.num_threads = 12;
+    options.max_num_iterations = 50;
+    options.num_threads = 8;
 }
