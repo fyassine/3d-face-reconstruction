@@ -53,6 +53,7 @@ public:
 
     void save(const std::string& filename);
     static InputData load(const std::string& filename);
+    std::vector<SingleInputFrame> m_frames1() const;
 
 private:
     int m_current_frame_index = 0;

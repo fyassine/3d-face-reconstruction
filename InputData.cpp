@@ -83,3 +83,8 @@ InputData InputData::load(const std::string& filename) {
     archive(data);
     return data;
 }
+
+std::vector<SingleInputFrame> InputData::m_frames1() const
+{
+    return m_frames;
+}
