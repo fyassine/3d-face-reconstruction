@@ -31,8 +31,10 @@ using namespace std;
 BaselFaceModel processFace(const std::string& path){
     BaselFaceModel baselFaceModel;
     InputData inputData = InputDataExtractor::extractInputData(path);
-    inputData.save(dataFolderPath + "input_data.json");
+    std::cout << "loading input data..." << std::endl;
     inputData = InputData::load(dataFolderPath + "input_data.json");
+    std::cout << "done loading input data" << std::endl;
+    std::cout << inputData.m_frames1().size() << "\n" << std::endl;
 
     baselFaceModel.computeTransformationMatrix(&inputData);
 
@@ -59,7 +61,6 @@ BaselFaceModel processFace(const std::string& path){
     auto mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
     ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
-    //Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), inputData.getMIntrinsicMatrix(), inputData.getMExtrinsicMatrix());
 
     auto inputVertices = inputData.getAllCorrespondences(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(inputVertices, colorAfterTransformation, baselFaceModel.getFaces(), "CorrespondencesBfm.ply");
@@ -68,7 +69,7 @@ BaselFaceModel processFace(const std::string& path){
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
     //TODO: Smth wrong with reg for dense
-    optimizer.optimizeDenseGeometryTerm();
+    /*optimizer.optimizeDenseGeometryTerm();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
@@ -79,7 +80,7 @@ BaselFaceModel processFace(const std::string& path){
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
     mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
-
+*/
     return baselFaceModel;
 }
 
