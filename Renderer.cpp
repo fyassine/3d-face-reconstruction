@@ -1,5 +1,6 @@
 #include "Renderer.h"
 
+Renderer::Renderer() = default;
 Renderer::~Renderer() = default;
 
 void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector<Vector3i>& modelColors, const std::vector<int>& modelFaces, const Matrix3d& intrinsicMatrix, const Matrix4d& extrinsicMatrix) {
@@ -13,6 +14,8 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
             extrinsicMatrix(2,0), extrinsicMatrix(2,1), extrinsicMatrix(2,2));
     cv::Mat t = (cv::Mat_<double>(3,1) << extrinsicMatrix(0,3), extrinsicMatrix(1,3), extrinsicMatrix(2,3));
 
+    std::cout << "0" << std::endl;
+
     std::vector<cv::Point3f> vertices;
     for (const auto& v : modelVertices) {
         vertices.push_back(cv::Point3f(v(0), v(1), v(2)));
@@ -23,13 +26,17 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
         faces.push_back(cv::Vec3i(modelFaces[i], modelFaces[i+1], modelFaces[i+2]));
     }
 
+    std::cout << "1" << std::endl;
+
     std::vector<cv::Scalar> colors;
     for (const auto& color : modelColors) {
-        colors.push_back(cv::Scalar(color(0), color(1), color(2)));  // BGR format in OpenCV, vllt. invertieren?
+        colors.push_back(cv::Scalar(color(2), color(1), color(0)));  // BGR format in OpenCV, vllt. invertieren?
     }
+    std::cout << "2" << std::endl;
+    std::cout << faces.size() << std::endl;
 
     renderModel(image, vertices, faces, intrinsics, R, t, colors);
-
+    std::cout << "3" << std::endl;
     cv::imshow("Rendered Image", image);
     cv::waitKey(0);
 }
@@ -37,22 +44,28 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
 void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &vertices, const std::vector<cv::Vec3i> &faces,
                       const cv::Mat &intrinsicMatrix, const cv::Mat &R, const cv::Mat &t, const std::vector<cv::Scalar> &colors) {
     std::vector<cv::Point2f> projectedPoints;
+    std::cout << "4" << std::endl;
 
     // Project 3D points to 2D
     cv::Mat rvec;
     cv::Rodrigues(R, rvec);  // Convert rotation matrix to vector
     cv::projectPoints(vertices, rvec, t, intrinsicMatrix, cv::Mat(), projectedPoints);
+    std::cout << projectedPoints.size() << std::endl;
+    std::cout << vertices.size() << std::endl;
+    std::cout << "5" << std::endl;
 
     // Draw each face
+    std::cout << "faces.size(): " << faces.size() << std::endl;
+    std::cout << "projectedPoints.size(): " << projectedPoints.size() << std::endl;
+    std::cout << "colors.size(): " << colors.size() << std::endl;
     for (size_t i = 0; i < faces.size(); ++i) {
         cv::Point pts[3];
         for (int j = 0; j < 3; ++j) {
             pts[j] = projectedPoints[faces[i][j]];
         }
-        cv::fillConvexPoly(image, pts, 3, colors[i]);
+        cv::Scalar faceColor = (colors[faces[i][0]] + colors[faces[i][1]] + colors[faces[i][2]]) / 3;
+        cv::fillConvexPoly(image, pts, 3, faceColor);
     }
-}
-
-Renderer::Renderer() {
+    std::cout << "7" << std::endl;
 
 }
