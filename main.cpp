@@ -84,7 +84,7 @@ BaselFaceModel processFace(InputData* inputData){
 
 int main(){
     InputData inputLeo = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
-    InputData inputNeli = InputDataExtractor::extractInputData(LEO_NEUTRAL_BACKGROUND);
+    InputData inputNeli = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
 
     auto sourceFace = processFace(&inputLeo);
     auto targetFace = processFace(&inputNeli);

@@ -6,6 +6,7 @@
 
 class InputData {
 public:
+    InputData();
     InputData(std::vector<SingleInputFrame> frames, int width, int height, Matrix3d intrinsic_matrix,
               Matrix4d extrinsic_matrix, const SingleInputFrame& currentFrame);
 
