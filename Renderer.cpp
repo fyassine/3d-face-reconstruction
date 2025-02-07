@@ -42,30 +42,36 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
 }
 
 void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &vertices, const std::vector<cv::Vec3i> &faces,
-                      const cv::Mat &intrinsicMatrix, const cv::Mat &R, const cv::Mat &t, const std::vector<cv::Scalar> &colors) {
+                           const cv::Mat &intrinsicMatrix, const cv::Mat &R, const cv::Mat &t, const std::vector<cv::Scalar> &colors) {
     std::vector<cv::Point2f> projectedPoints;
-    std::cout << "4" << std::endl;
 
-    // Project 3D points to 2D
     cv::Mat rvec;
-    cv::Rodrigues(R, rvec);  // Convert rotation matrix to vector
+    cv::Rodrigues(R, rvec);
     cv::projectPoints(vertices, rvec, t, intrinsicMatrix, cv::Mat(), projectedPoints);
-    std::cout << projectedPoints.size() << std::endl;
-    std::cout << vertices.size() << std::endl;
-    std::cout << "5" << std::endl;
 
-    // Draw each face
-    std::cout << "faces.size(): " << faces.size() << std::endl;
-    std::cout << "projectedPoints.size(): " << projectedPoints.size() << std::endl;
-    std::cout << "colors.size(): " << colors.size() << std::endl;
+    std::vector<std::pair<double, cv::Vec3i>> facesWithDepth;
     for (size_t i = 0; i < faces.size(); ++i) {
+        double avgDepth = 0.0;
+        for (int j = 0; j < 3; ++j) {
+            const auto& vertex = vertices[faces[i][j]];
+            avgDepth += vertex.z;
+        }
+        avgDepth /= 3.0;
+        facesWithDepth.push_back({avgDepth, faces[i]});
+    }
+
+    std::sort(facesWithDepth.begin(), facesWithDepth.end(),
+              [](const std::pair<double, cv::Vec3i>& a, const std::pair<double, cv::Vec3i>& b) {
+                  return a.first > b.first;
+              });
+
+    for (const auto& faceWithDepth : facesWithDepth) {
+        const auto& face = faceWithDepth.second;
         cv::Point pts[3];
         for (int j = 0; j < 3; ++j) {
-            pts[j] = projectedPoints[faces[i][j]];
+            pts[j] = projectedPoints[face[j]];
         }
-        cv::Scalar faceColor = (colors[faces[i][0]] + colors[faces[i][1]] + colors[faces[i][2]]) / 3;
+        cv::Scalar faceColor = (colors[face[0]] + colors[face[1]] + colors[face[2]]) / 3;
         cv::fillConvexPoly(image, pts, 3, faceColor);
     }
-    std::cout << "7" << std::endl;
-
 }

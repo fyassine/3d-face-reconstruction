@@ -27,8 +27,10 @@ using namespace std;
 #define NELI_LOOKING_SERIOUS "20250116_183206.bag"
 #define LEO_CRAZY "20250201_195224.bag"
 #define LEO_LONG "20250205_172132.bag"
+#define LEO_NEUTRAL_BACKGROUND "20250207_115228.bag"
+#define LEO_EXPRESSIONS "20250207_115412.bag"
 
-BaselFaceModel processFace(const std::string& path, InputData* inputData){
+BaselFaceModel processFace(InputData* inputData){
     BaselFaceModel baselFaceModel;
 
     baselFaceModel.computeTransformationMatrix(inputData);
@@ -81,11 +83,11 @@ BaselFaceModel processFace(const std::string& path, InputData* inputData){
 }
 
 int main(){
-    InputData inputLeo = InputDataExtractor::extractInputData(LEO_CRAZY);
-    InputData inputNeli = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
+    InputData inputLeo = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
+    InputData inputNeli = InputDataExtractor::extractInputData(LEO_NEUTRAL_BACKGROUND);
 
-    auto sourceFace = processFace(LEO_LOOKING_NORMAL, &inputLeo);
-    auto targetFace = processFace(NELI_LOOKING_SERIOUS, &inputNeli);
+    auto sourceFace = processFace(&inputLeo);
+    auto targetFace = processFace(&inputNeli);
     auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
     auto mappedColor = inputNeli.getCorrespondingColors(targetFace.transformVertices(verticesAfterTransformation));
 
@@ -96,6 +98,8 @@ int main(){
     auto colorAfterTransformation = targetFace.getColorValues();
 
     ModelConverter::convertToPly(targetFace.transformVertices(verticesAfterTransformation), colorAfterTransformation, targetFace.getFaces(), "ExpressionTransfer.ply");
+    ModelConverter::convertToPly(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), "ExpressionTransferMappedColor.ply");
+
     Renderer::run(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), inputNeli.getMIntrinsicMatrix(), inputNeli.getMExtrinsicMatrix());
 
     //TODO: Create Renderer
