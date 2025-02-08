@@ -11,9 +11,11 @@ void FaceReconstructor::reconstructFace(BaselFaceModel *baselFaceModel, InputDat
         auto verticesAfterTransformation = baselFaceModel->getVerticesWithoutTransformation();
         auto colorAfterTransformation = baselFaceModel->getColorValues();
         auto mappedColor = inputData->getCorrespondingColors(baselFaceModel->transformVertices(verticesAfterTransformation));
-        Renderer::run(baselFaceModel->transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel->getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), frameInputPath, frameOutputPath);
+        Renderer::run(baselFaceModel->transformVertices(verticesAfterTransformation), colorAfterTransformation, baselFaceModel->getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), frameInputPath, frameOutputPath);
         inputData->processNextFrame();
     }
+
+    Renderer::convertPngsToMp4(path + "ReconstructedFace_Images/", "", 55);
 
     //TODO: Smth wrong with reg for dense
     /*optimizer.optimizeDenseGeometryTerm();

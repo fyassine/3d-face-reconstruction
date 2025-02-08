@@ -70,3 +70,25 @@ void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &verti
         cv::fillConvexPoly(image, pts, 3, faceColor);
     }
 }
+
+void Renderer::convertPngsToMp4(const std::string &inputPath, const std::string &outputPath, int numberOfFrames) {
+    std::string outputDir = "../../../Result/video/";
+
+    // Video Writer setup
+    int frameWidth = 1280;
+    int frameHeight = 720;
+    cv::VideoWriter videoWriter(outputDir + "output.mp4", cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 5, cv::Size(frameWidth, frameHeight));
+
+    if (!videoWriter.isOpened()) {
+        std::cerr << "Could not open the output video file for writing" << std::endl;
+        return;
+    }
+
+    for (int frameIdx = 1; frameIdx < numberOfFrames; ++frameIdx) {  // Example: 100 frames
+        cv::Mat frame = cv::imread(inputPath + std::to_string(frameIdx) + ".png");
+        videoWriter.write(frame);
+    }
+    videoWriter.release();
+    cv::destroyAllWindows();
+}
+
