@@ -3,6 +3,37 @@
 
 #include "SingleInputFrame.h"
 #include <vector>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+#include <Eigen/Dense>
+
+namespace cereal {
+    // Serialization for Eigen::Matrix3d
+    template <class Archive>
+    void serialize(Archive& archive, Eigen::Matrix3d& matrix) {
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                archive(matrix(i, j));
+            }
+        }
+    }
+
+    // Serialization for Eigen::Matrix4d
+    template <class Archive>
+    void serialize(Archive& archive, Eigen::Matrix4d& matrix) {
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                archive(matrix(i, j));
+            }
+        }
+    }
+
+    // Serialization for Eigen::Vector3d
+    template <class Archive>
+    void serialize(Archive& archive, Eigen::Vector3d& vector) {
+        archive(vector.x(), vector.y(), vector.z());
+    }
+}
 
 class InputData {
 public:
@@ -13,12 +44,16 @@ public:
     ~InputData();
     SingleInputFrame* processNextFrame();
     const SingleInputFrame &getMCurrentFrame() const;
-    const Matrix3d &getMIntrinsicMatrix() const;
-    const Matrix4d &getMExtrinsicMatrix() const;
+    const Eigen::Matrix3d &getMIntrinsicMatrix() const;
+    const Eigen::Matrix4d &getMExtrinsicMatrix() const;
 
-    Vector3d getCorrespondingPoint(const Vector3d& bfmVertex);
-    std::vector<Vector3i> getCorrespondingColors(std::vector<Vector3d> vertices);
-    std::vector<Vector3d> getAllCorrespondences(std::vector<Vector3d> vertices);
+    Eigen::Vector3d getCorrespondingPoint(const Eigen::Vector3d& bfmVertex);
+    std::vector<Eigen::Vector3i> getCorrespondingColors(std::vector<Eigen::Vector3d> vertices);
+    std::vector<Eigen::Vector3d> getAllCorrespondences(std::vector<Eigen::Vector3d> vertices);
+
+    void save(const std::string& filename);
+    static InputData load(const std::string& filename);
+    std::vector<SingleInputFrame> m_frames1() const;
 
     const std::vector<SingleInputFrame> &getMFrames() const;
 
@@ -28,8 +63,17 @@ private:
     std::vector<SingleInputFrame> m_frames;
     int m_width;
     int m_height;
-    Matrix3d m_intrinsic_matrix;
-    Matrix4d m_extrinsic_matrix;
+    Eigen::Matrix3d m_intrinsic_matrix;
+    Eigen::Matrix4d m_extrinsic_matrix;
+
+    // Serialization function
+    template<class Archive>
+    void serialize(Archive & archive) {
+        archive(m_current_frame_index, m_currentFrame, m_frames, m_width, m_height, m_intrinsic_matrix, m_extrinsic_matrix);
+    }
+
+    // cereal::access as a friend to allow serialization of private members
+    friend class cereal::access;
 };
 
 #endif //FACE_RECONSTRUCTION_INPUTDATA_H

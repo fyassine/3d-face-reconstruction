@@ -50,15 +50,13 @@ void Optimizer::optimizeSparseTerms() {
     );*/
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
-    ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
             new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
-    );
-    problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
+    ), nullptr, m_baselFaceModel->getShapeParams().data());
 
-    ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
             new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
-    );
-    problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
+    ), nullptr, m_baselFaceModel->getExpressionParams().data());
 
     std::cout << "End of Adding Residual Blocks for Regularization" << std::endl;
 
@@ -125,11 +123,17 @@ void Optimizer::optimizeDenseGeometryTerm() {
                 new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
         );
         problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
+            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
+    ), nullptr, m_baselFaceModel->getExpressionParams().data());
 
         ceres::CostFunction* colorCost = new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
                 new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
         );
         problem.AddResidualBlock(colorCost, nullptr, m_baselFaceModel->getColorParams().data());
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
+            new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
+    ), nullptr, m_baselFaceModel->getColorParams().data());
 
         ceres::Solver::Summary summary;
         std::cout << "Dense Optimization initiated." << std::endl;

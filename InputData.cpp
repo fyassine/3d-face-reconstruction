@@ -12,12 +12,15 @@ InputData::InputData(std::vector<SingleInputFrame> frames, int width, int height
     m_extrinsic_matrix = std::move(extrinsic_matrix);
 }
 
+InputData::InputData() = default;
+
 InputData::~InputData() = default;
 
 SingleInputFrame* InputData::processNextFrame() {
     if(m_current_frame_index >= m_frames.size()){
         return nullptr;
     }
+    m_currentFrame = m_frames[m_current_frame_index];
     m_current_frame_index++;
     m_currentFrame = m_frames[m_current_frame_index];
     return &m_currentFrame;
@@ -69,5 +72,24 @@ std::vector<Vector3i> InputData::getCorrespondingColors(std::vector<Vector3d> ve
 }
 
 const std::vector<SingleInputFrame> &InputData::getMFrames() const {
+    return m_frames;
+}
+
+void InputData::save(const std::string& filename) {
+    std::ofstream os(filename);
+    cereal::JSONOutputArchive archive(os);
+    archive(*this);
+}
+
+InputData InputData::load(const std::string& filename) {
+    std::ifstream is(filename);
+    cereal::JSONInputArchive archive(is);
+    InputData data;
+    archive(data);
+    return data;
+}
+
+std::vector<SingleInputFrame> InputData::m_frames1() const
+{
     return m_frames;
 }

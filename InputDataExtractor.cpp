@@ -53,32 +53,34 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
             }
         }
 
-        int counter = 0;
-        while (NUMBER_OF_FRAMES > counter) {
-            counter++;
-            rs2::frameset unaligned_frames;
-            if (!pipe.poll_for_frames(&unaligned_frames)) {
-                break;
-            }
-            rs2::frameset frameset = align.process(unaligned_frames);
 
-            auto depth = frameset.get_depth_frame();
-            auto color = frameset.get_color_frame();
+        {
+            int counter = 0;
+            while (NUMBER_OF_FRAMES > counter) {
+                counter++;
+                rs2::frameset unaligned_frames = pipe.wait_for_frames();
+                // if (!pipe.poll_for_frames(&unaligned_frames)) {
+                //     break;
+                // }
+                rs2::frameset frameset = align.process(unaligned_frames);
 
-            std::vector<double> depthData(width * height);
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    depthData[i * width + j] = depth.get_distance(j, i);
+                auto depth = frameset.get_depth_frame();
+                auto color = frameset.get_color_frame();
+
+                std::vector<double> depthData(width * height);
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        depthData[i * width + j] = depth.get_distance(j, i);
+                    }
                 }
-            }
 
-            std::vector<Vector3d> rgbData(width * height);
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    uint8_t* color_pixel = (uint8_t*)color.get_data() + (i * color.get_stride_in_bytes()) + j * 3;
-                    rgbData[i * width + j] = Vector3d(color_pixel[0] / 255.0, color_pixel[1] / 255.0, color_pixel[2] / 255.0);
+                std::vector<Vector3d> rgbData(width * height);
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        uint8_t* color_pixel = (uint8_t*)color.get_data() + (i * color.get_stride_in_bytes()) + j * 3;
+                        rgbData[i * width + j] = Vector3d(color_pixel[0] / 255.0, color_pixel[1] / 255.0, color_pixel[2] / 255.0);
+                    }
                 }
-            }
 
             convertVideoFrameToPng(color, "../../../Result/color_frame_for_landmark_detection.png");
             std::string frameName = "../../../Result/VideoFrames/" + std::to_string(counter - 1) + ".png";
