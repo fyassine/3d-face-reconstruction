@@ -3,8 +3,8 @@
 Renderer::Renderer() = default;
 Renderer::~Renderer() = default;
 
-void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector<Vector3i>& modelColors, const std::vector<int>& modelFaces, const Matrix3d& intrinsicMatrix, const Matrix4d& extrinsicMatrix) {
-    cv::Mat image = cv::imread("../../../Result/color_frame_for_landmark_detection.png");
+void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector<Vector3i>& modelColors, const std::vector<int>& modelFaces, const Matrix3d& intrinsicMatrix, const Matrix4d& extrinsicMatrix, const std::string& inputPath, const std::string& outputPath) {
+    cv::Mat image = cv::imread(inputPath);
 
     cv::Mat intrinsics = (cv::Mat_<double>(3,3) << intrinsicMatrix(0,0), intrinsicMatrix(0,1), intrinsicMatrix(0,2),
             intrinsicMatrix(1,0), intrinsicMatrix(1,1), intrinsicMatrix(1,2),
@@ -13,8 +13,6 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
             extrinsicMatrix(1,0), extrinsicMatrix(1,1), extrinsicMatrix(1,2),
             extrinsicMatrix(2,0), extrinsicMatrix(2,1), extrinsicMatrix(2,2));
     cv::Mat t = (cv::Mat_<double>(3,1) << extrinsicMatrix(0,3), extrinsicMatrix(1,3), extrinsicMatrix(2,3));
-
-    std::cout << "0" << std::endl;
 
     std::vector<cv::Point3f> vertices;
     for (const auto& v : modelVertices) {
@@ -26,18 +24,15 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
         faces.push_back(cv::Vec3i(modelFaces[i], modelFaces[i+1], modelFaces[i+2]));
     }
 
-    std::cout << "1" << std::endl;
-
     std::vector<cv::Scalar> colors;
     for (const auto& color : modelColors) {
         colors.push_back(cv::Scalar(color(2), color(1), color(0)));  // BGR format in OpenCV, vllt. invertieren?
     }
-    std::cout << "2" << std::endl;
     std::cout << faces.size() << std::endl;
 
     renderModel(image, vertices, faces, intrinsics, R, t, colors);
-    std::cout << "3" << std::endl;
-    cv::imshow("Rendered Image", image);
+    //cv::imshow("Rendered Image", image);
+    cv::imwrite(outputPath, image);
     cv::waitKey(0);
 }
 

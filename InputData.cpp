@@ -18,8 +18,8 @@ SingleInputFrame* InputData::processNextFrame() {
     if(m_current_frame_index >= m_frames.size()){
         return nullptr;
     }
-    m_currentFrame = m_frames[m_current_frame_index];
     m_current_frame_index++;
+    m_currentFrame = m_frames[m_current_frame_index];
     return &m_currentFrame;
 }
 
@@ -66,4 +66,8 @@ std::vector<Vector3i> InputData::getCorrespondingColors(std::vector<Vector3d> ve
         colorValues.emplace_back(newColorInt);
     }
     return colorValues;
+}
+
+const std::vector<SingleInputFrame> &InputData::getMFrames() const {
+    return m_frames;
 }

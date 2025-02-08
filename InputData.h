@@ -20,6 +20,8 @@ public:
     std::vector<Vector3i> getCorrespondingColors(std::vector<Vector3d> vertices);
     std::vector<Vector3d> getAllCorrespondences(std::vector<Vector3d> vertices);
 
+    const std::vector<SingleInputFrame> &getMFrames() const;
+
 private:
     int m_current_frame_index = 0;
     SingleInputFrame m_currentFrame;

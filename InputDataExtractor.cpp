@@ -3,7 +3,7 @@
 #include "InputDataExtractor.h"
 #include "FacialLandmarks.h"
 
-#define NUMBER_OF_FRAMES 1
+#define NUMBER_OF_FRAMES 10
 
 InputDataExtractor::InputDataExtractor() = default;
 
@@ -81,7 +81,7 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
             }
 
             convertVideoFrameToPng(color, "../../../Result/color_frame_for_landmark_detection.png");
-            std::string frameName = "../../../Result/VideoFrames/" + std::to_string(counter) + ".png";
+            std::string frameName = "../../../Result/VideoFrames/" + std::to_string(counter - 1) + ".png";
             convertVideoFrameToPng(color, frameName);
             std::vector<Vector3d> landmarks = searchForLandmarks(depthData, extracted_intrinsic_matrix, extracted_extrinsic_matrix);
             frames.emplace_back(rgbData, depthData, landmarks);

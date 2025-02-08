@@ -15,6 +15,6 @@ public:
                      const cv::Mat& t,
                      const std::vector<cv::Scalar>& colors);
     static void run(const std::vector<Vector3d> &modelVertices, const std::vector<Vector3i> &modelColors,
-             const std::vector<int> &modelFaces, const Matrix3d &intrinsicMatrix, const Matrix4d &extrinsicMatrix);
+             const std::vector<int> &modelFaces, const Matrix3d &intrinsicMatrix, const Matrix4d &extrinsicMatrix, const std::string& inputPath, const std::string& outputPath);
 };
 

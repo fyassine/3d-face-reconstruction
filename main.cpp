@@ -14,11 +14,12 @@
 #include "ImageExtraction.h"
 #include "BaselFaceModel.h"
 
-#include "Renderer.h"
+//#include "Renderer.h"
 //#include "InputDataExtractor.h"
 #include "InputData.h"
 #include "Optimizer.h"
 #include "ModelConverter.h"
+#include "FaceReconstructor.h"
 
 using namespace Eigen;
 using namespace std;
@@ -83,10 +84,11 @@ BaselFaceModel processFace(InputData* inputData){
 }
 
 int main(){
-    InputData inputLeo = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
-    InputData inputNeli = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
-
-    auto sourceFace = processFace(&inputLeo);
+    InputData inputLeo = InputDataExtractor::extractInputData(LEO_LONG);
+    //InputData inputNeli = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
+    BaselFaceModel inputBaselFaceModel;
+    FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
+    /*auto sourceFace = processFace(&inputLeo);
     auto targetFace = processFace(&inputNeli);
     auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
     auto mappedColor = inputNeli.getCorrespondingColors(targetFace.transformVertices(verticesAfterTransformation));
@@ -101,6 +103,6 @@ int main(){
     ModelConverter::convertToPly(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), "ExpressionTransferMappedColor.ply");
 
     Renderer::run(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), inputNeli.getMIntrinsicMatrix(), inputNeli.getMExtrinsicMatrix());
-
+*/
     //TODO: Create Renderer
 }
