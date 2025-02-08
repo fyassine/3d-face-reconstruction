@@ -3,7 +3,7 @@
 #include "InputDataExtractor.h"
 #include "FacialLandmarks.h"
 
-#define NUMBER_OF_FRAMES 5
+#define NUMBER_OF_FRAMES 1
 
 InputDataExtractor::InputDataExtractor() = default;
 

@@ -68,7 +68,7 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
     //TODO: Smth wrong with reg for dense
-    /*optimizer.optimizeDenseGeometryTerm();
+    optimizer.optimizeDenseGeometryTerm();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
@@ -77,9 +77,9 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(transformedVerticesDense, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTermsProcrustes.ply");
     auto landmarksAfterDense = baselFaceModel.getLandmarks();
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
-    mappedColor = inputData.getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
+    mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
-*/
+
     return baselFaceModel;
 }
 
@@ -87,7 +87,8 @@ int main(){
     InputData inputLeo = InputDataExtractor::extractInputData(LEO_LONG);
     //InputData inputNeli = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
     BaselFaceModel inputBaselFaceModel;
-    FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
+    //FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
+    auto sourceFace = processFace(&inputLeo);
     /*auto sourceFace = processFace(&inputLeo);
     auto targetFace = processFace(&inputNeli);
     auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();

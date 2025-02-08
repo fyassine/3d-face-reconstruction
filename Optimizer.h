@@ -18,6 +18,8 @@
 #define EXPRESSION_REG_WEIGHT_DENSE 1
 #define COLOR_REG_WEIGHT_DENSE 1
 
+#define OUTLIER_THRESHOLD 0.004
+
 class Optimizer {
 public:
     Optimizer(BaselFaceModel* baselFaceModel, InputData* inputData);
