@@ -15,6 +15,7 @@ public:
                      const cv::Mat& t,
                      const std::vector<cv::Scalar>& colors);
     static void convertPngsToMp4(const std::string& inputPath, const std::string& outputPath, int numberOfFrames);
+    static void convertColorToPng(std::vector<Vector3d> colorValues, const std::string& path);
     static void run(const std::vector<Vector3d> &modelVertices, const std::vector<Vector3i> &modelColors,
              const std::vector<int> &modelFaces, const Matrix3d &intrinsicMatrix, const Matrix4d &extrinsicMatrix, const std::string& inputPath, const std::string& outputPath);
 };

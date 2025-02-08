@@ -92,3 +92,25 @@ void Renderer::convertPngsToMp4(const std::string &inputPath, const std::string 
     cv::destroyAllWindows();
 }
 
+void Renderer::convertColorToPng(std::vector<Vector3d> colorValues, const std::string& path) {
+    const int width = 1280;
+    const int height = 720;
+    cv::Mat image(height, width, CV_8UC3);
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int index = y * width + x;
+            const Vector3d& color = colorValues[index];
+
+            // Convert color values to 8-bit unsigned char
+            image.at<cv::Vec3b>(y, x) = cv::Vec3b(
+                    static_cast<uchar>(std::clamp(color(2) * 255.0, 0.0, 255.0)),
+                    static_cast<uchar>(std::clamp(color(1) * 255.0, 0.0, 255.0)),
+                    static_cast<uchar>(std::clamp(color(0) * 255.0, 0.0, 255.0))
+            );
+        }
+    }
+
+    cv::imwrite(path, image);
+}
+
