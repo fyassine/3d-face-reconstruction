@@ -1,9 +1,10 @@
 #include "Renderer.h"
 
+Renderer::Renderer() = default;
 Renderer::~Renderer() = default;
 
-void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector<Vector3i>& modelColors, const std::vector<int>& modelFaces, const Matrix3d& intrinsicMatrix, const Matrix4d& extrinsicMatrix) {
-    cv::Mat image = cv::imread("../../../Result/color_frame_for_landmark_detection.png");
+void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector<Vector3i>& modelColors, const std::vector<int>& modelFaces, const Matrix3d& intrinsicMatrix, const Matrix4d& extrinsicMatrix, const std::string& inputPath, const std::string& outputPath) {
+    cv::Mat image = cv::imread(inputPath);
 
     cv::Mat intrinsics = (cv::Mat_<double>(3,3) << intrinsicMatrix(0,0), intrinsicMatrix(0,1), intrinsicMatrix(0,2),
             intrinsicMatrix(1,0), intrinsicMatrix(1,1), intrinsicMatrix(1,2),
@@ -25,34 +26,69 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
 
     std::vector<cv::Scalar> colors;
     for (const auto& color : modelColors) {
-        colors.push_back(cv::Scalar(color(0), color(1), color(2)));  // BGR format in OpenCV, vllt. invertieren?
+        colors.push_back(cv::Scalar(color(2), color(1), color(0)));  // BGR format in OpenCV, vllt. invertieren?
     }
+    std::cout << faces.size() << std::endl;
 
     renderModel(image, vertices, faces, intrinsics, R, t, colors);
-
-    cv::imshow("Rendered Image", image);
+    //cv::imshow("Rendered Image", image);
+    cv::imwrite(outputPath, image);
     cv::waitKey(0);
 }
 
 void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &vertices, const std::vector<cv::Vec3i> &faces,
-                      const cv::Mat &intrinsicMatrix, const cv::Mat &R, const cv::Mat &t, const std::vector<cv::Scalar> &colors) {
+                           const cv::Mat &intrinsicMatrix, const cv::Mat &R, const cv::Mat &t, const std::vector<cv::Scalar> &colors) {
     std::vector<cv::Point2f> projectedPoints;
 
-    // Project 3D points to 2D
     cv::Mat rvec;
-    cv::Rodrigues(R, rvec);  // Convert rotation matrix to vector
+    cv::Rodrigues(R, rvec);
     cv::projectPoints(vertices, rvec, t, intrinsicMatrix, cv::Mat(), projectedPoints);
 
-    // Draw each face
+    std::vector<std::pair<double, cv::Vec3i>> facesWithDepth;
     for (size_t i = 0; i < faces.size(); ++i) {
+        double avgDepth = 0.0;
+        for (int j = 0; j < 3; ++j) {
+            const auto& vertex = vertices[faces[i][j]];
+            avgDepth += vertex.z;
+        }
+        avgDepth /= 3.0;
+        facesWithDepth.push_back({avgDepth, faces[i]});
+    }
+
+    std::sort(facesWithDepth.begin(), facesWithDepth.end(),
+              [](const std::pair<double, cv::Vec3i>& a, const std::pair<double, cv::Vec3i>& b) {
+                  return a.first > b.first;
+              });
+
+    for (const auto& faceWithDepth : facesWithDepth) {
+        const auto& face = faceWithDepth.second;
         cv::Point pts[3];
         for (int j = 0; j < 3; ++j) {
-            pts[j] = projectedPoints[faces[i][j]];
+            pts[j] = projectedPoints[face[j]];
         }
-        cv::fillConvexPoly(image, pts, 3, colors[i]);
+        cv::Scalar faceColor = (colors[face[0]] + colors[face[1]] + colors[face[2]]) / 3;
+        cv::fillConvexPoly(image, pts, 3, faceColor);
     }
 }
 
-Renderer::Renderer() {
+void Renderer::convertPngsToMp4(const std::string &inputPath, const std::string &outputPath, int numberOfFrames) {
+    std::string outputDir = "../../../Result/video/";
 
+    // Video Writer setup
+    int frameWidth = 1280;
+    int frameHeight = 720;
+    cv::VideoWriter videoWriter(outputDir + "output.mp4", cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 5, cv::Size(frameWidth, frameHeight));
+
+    if (!videoWriter.isOpened()) {
+        std::cerr << "Could not open the output video file for writing" << std::endl;
+        return;
+    }
+
+    for (int frameIdx = 1; frameIdx < numberOfFrames; ++frameIdx) {  // Example: 100 frames
+        cv::Mat frame = cv::imread(inputPath + std::to_string(frameIdx) + ".png");
+        videoWriter.write(frame);
+    }
+    videoWriter.release();
+    cv::destroyAllWindows();
 }
+

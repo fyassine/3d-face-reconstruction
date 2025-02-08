@@ -37,11 +37,11 @@ namespace cereal {
 
 class InputData {
 public:
-    InputData(std::vector<SingleInputFrame> frames, int width, int height, Eigen::Matrix3d intrinsic_matrix,
-              Eigen::Matrix4d extrinsic_matrix, const SingleInputFrame& currentFrame);
+    InputData();
+    InputData(std::vector<SingleInputFrame> frames, int width, int height, Matrix3d intrinsic_matrix,
+              Matrix4d extrinsic_matrix, const SingleInputFrame& currentFrame);
 
     ~InputData();
-    InputData();
     SingleInputFrame* processNextFrame();
     const SingleInputFrame &getMCurrentFrame() const;
     const Eigen::Matrix3d &getMIntrinsicMatrix() const;
@@ -54,6 +54,8 @@ public:
     void save(const std::string& filename);
     static InputData load(const std::string& filename);
     std::vector<SingleInputFrame> m_frames1() const;
+
+    const std::vector<SingleInputFrame> &getMFrames() const;
 
 private:
     int m_current_frame_index = 0;
