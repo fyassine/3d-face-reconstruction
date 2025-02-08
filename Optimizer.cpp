@@ -83,8 +83,8 @@ void Optimizer::optimizeDenseGeometryTerm() {
     std::random_device rd;
     std::mt19937 g(rd());
 
-    int numberOfSamples = 300;
-    int maxIt = 30;
+    int numberOfSamples = 300; //TODO: Pragma
+    int maxIt = 30;            //TODO: Pragma
     int iterationCounter = 0;
     while(iterationCounter < maxIt){
         std::cout << "Iteration: " << iterationCounter << std::endl;
