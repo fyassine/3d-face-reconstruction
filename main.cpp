@@ -86,6 +86,7 @@ BaselFaceModel processFace(InputData* inputData){
 
 int main(){
     InputData inputLeo = InputDataExtractor::extractInputData(LEO_LONG);
+    inputLeo.save("../../../Result/leo_long.json");
     //InputData inputNeli = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
     BaselFaceModel inputBaselFaceModel;
     //FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
