@@ -173,9 +173,9 @@ public:
     bool operator()(const T* const color,
                     T* residuals) const {
 
-        auto colorMean = m_baselFaceModel->getColorMean();
-        auto colorPcaBasis = m_baselFaceModel->getColorPcaBasis();
-        auto colorVariance = m_baselFaceModel->getColorPcaVariance();
+        auto& colorMean = m_baselFaceModel->getColorMean();
+        auto& colorPcaBasis = m_baselFaceModel->getColorPcaBasis();
+        auto& colorVariance = m_baselFaceModel->getColorPcaVariance();
 
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
                 T(colorMean[m_vertex_index * 3]),
