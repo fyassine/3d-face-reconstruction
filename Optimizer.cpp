@@ -1,5 +1,8 @@
 #include "Optimizer.h"
+#include "ModelConverter.h"
 #include <random>
+
+#include "BFMParameters.h"
 
 Optimizer::Optimizer(BaselFaceModel *baselFaceModel, InputData *inputData) {
     m_baselFaceModel = baselFaceModel;
@@ -51,11 +54,11 @@ void Optimizer::optimizeSparseTerms() {
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
+            new ShapeRegularizerCost(m_shapeRegWeightSparse, m_baselFaceModel->getShapePcaVariance())
     ), nullptr, m_baselFaceModel->getShapeParams().data());
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
+            new ExpressionRegularizerCost(m_expressionRegWeightSparse, m_baselFaceModel->getExpressionPcaVariance())
     ), nullptr, m_baselFaceModel->getExpressionParams().data());
 
     std::cout << "End of Adding Residual Blocks for Regularization" << std::endl;
@@ -115,24 +118,24 @@ void Optimizer::optimizeDenseGeometryTerm() {
         }
 
         ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-                new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE, m_baselFaceModel->getShapePcaVariance())
+                new ShapeRegularizerCost(m_shapeRegWeightDense, m_baselFaceModel->getShapePcaVariance())
         );
         problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
 
         ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-                new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
+                new ExpressionRegularizerCost(m_expressionRegWeightDense, m_baselFaceModel->getExpressionPcaVariance())
         );
         problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
+            new ExpressionRegularizerCost(m_expressionRegWeightDense, m_baselFaceModel->getExpressionPcaVariance())
     ), nullptr, m_baselFaceModel->getExpressionParams().data());
 
         ceres::CostFunction* colorCost = new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
-                new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
+                new ColorRegularizerCost(m_colorRegWeightDense, m_baselFaceModel->getColorPcaVariance())
         );
         problem.AddResidualBlock(colorCost, nullptr, m_baselFaceModel->getColorParams().data());
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
-            new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
+            new ColorRegularizerCost(m_colorRegWeightDense, m_baselFaceModel->getColorPcaVariance())
     ), nullptr, m_baselFaceModel->getColorParams().data());
 
         ceres::Solver::Summary summary;
@@ -168,4 +171,107 @@ void Optimizer::configureSolver() {
     options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 100;
     options.num_threads = 12;
+}
+
+void WeightSearch::runSparseWeightTrial(const std::string &bagPath,
+                          double shapeWeight,
+                          double expressionWeight)
+{
+    // (Re)extract input data and create the face model.
+    BaselFaceModel baselFaceModel;
+    //InputData inputData = InputDataExtractor::extractInputData(bagPath);
+    //inputData.save(dataFolderPath + "input_data.json")
+    InputData inputData = InputData::load(dataFolderPath + "input_data.json");
+    baselFaceModel.computeTransformationMatrix(&inputData);
+
+    // Create an optimizer and set the sparse weights.
+    Optimizer optimizer(&baselFaceModel, &inputData);
+    optimizer.setWeights(shapeWeight, expressionWeight,
+                         DEFAULT_SHAPE_REG_WEIGHT_DENSE,   // keep dense weights default
+                         DEFAULT_EXPRESSION_REG_WEIGHT_DENSE,
+                         DEFAULT_COLOR_REG_WEIGHT_DENSE);
+    optimizer.configureSolver();
+
+    // Run only the sparse optimization part.
+    optimizer.optimizeSparseTerms();
+
+    // Retrieve the vertices and corresponding colors.
+    auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
+    auto transformedVertices = baselFaceModel.transformVertices(verticesAfterTransformation);
+    auto mappedColor = inputData.getCorrespondingColors(transformedVertices);
+
+    // (Optional) Apply Laplacian smoothing
+    // laplacianSmooth(verticesAfterTransformation, baselFaceModel.getFaces(), 5, 0.3);
+
+    // Build the output filename
+    std::string fileName = "BfmAfterSparseTermsMappedColor_SR_" +
+                           std::to_string(shapeWeight) + "_ER_" +
+                           std::to_string(expressionWeight) + ".ply";
+
+    // Write the output PLY file.
+    ModelConverter::convertToPly(transformedVertices, mappedColor, baselFaceModel.getFaces(), fileName);
+}
+
+void WeightSearch::runDenseWeightTrial(const std::string &bagPath,
+                         double shapeWeight,
+                         double expressionWeight,
+                         double colorWeight)
+{
+    BaselFaceModel baselFaceModel;
+    InputData inputData = InputDataExtractor::extractInputData(bagPath);
+    baselFaceModel.computeTransformationMatrix(&inputData);
+
+    Optimizer optimizer(&baselFaceModel, &inputData);
+    // Keep the sparse weights at their defaults while setting dense weights.
+    optimizer.setWeights(DEFAULT_SHAPE_REG_WEIGHT_SPARSE, DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE,
+                         shapeWeight, expressionWeight, colorWeight);
+    optimizer.configureSolver();
+
+    optimizer.optimizeSparseTerms();
+    optimizer.optimizeDenseGeometryTerm();
+
+    auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
+    auto transformedVertices = baselFaceModel.transformVertices(verticesAfterTransformation);
+    auto mappedColor = inputData.getCorrespondingColors(transformedVertices);
+
+    std::string fileName = "BfmAfterDenseTermsMappedColor_SD_" +
+                           std::to_string(shapeWeight) + "_ED_" +
+                           std::to_string(expressionWeight) + "_CD_" +
+                           std::to_string(colorWeight) + ".ply";
+
+    ModelConverter::convertToPly(transformedVertices, mappedColor, baselFaceModel.getFaces(), fileName);
+}
+
+void WeightSearch::runSparseWeightTrials(const std::string &bagPath)
+{
+    std::vector<double> testValues = {1e-4, 1e-3, 1e-2, 1e-1, 1, 10, 100, 1000};
+    double defaultValue = 1.0;
+
+    // Vary the shape weight (while keeping expression weight at default).
+    for (double shapeWeight : testValues) {
+        runSparseWeightTrial(bagPath, shapeWeight, defaultValue);
+    }
+    // Vary the expression weight (while keeping shape weight at default).
+    for (double expressionWeight : testValues) {
+        runSparseWeightTrial(bagPath, defaultValue, expressionWeight);
+    }
+}
+
+void WeightSearch::runDenseWeightTrials(const std::string &bagPath)
+{
+    std::vector<double> testValues = {1e-4, 1e-3, 1e-2, 1e-1, 1, 10, 100, 1000};
+    double defaultValue = 1.0;
+
+    // Vary the dense shape weight.
+    for (double shapeWeight : testValues) {
+        runDenseWeightTrial(bagPath, shapeWeight, defaultValue, defaultValue);
+    }
+    // Vary the dense expression weight.
+    for (double expressionWeight : testValues) {
+        runDenseWeightTrial(bagPath, defaultValue, expressionWeight, defaultValue);
+    }
+    // Vary the dense color weight.
+    for (double colorWeight : testValues) {
+        runDenseWeightTrial(bagPath, defaultValue, defaultValue, colorWeight);
+    }
 }

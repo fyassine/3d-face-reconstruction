@@ -11,12 +11,12 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
-#define SHAPE_REG_WEIGHT_SPARSE 1
-#define EXPRESSION_REG_WEIGHT_SPARSE 1
+#define DEFAULT_SHAPE_REG_WEIGHT_SPARSE 100
+#define DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE 10
 
-#define SHAPE_REG_WEIGHT_DENSE 1
-#define EXPRESSION_REG_WEIGHT_DENSE 1
-#define COLOR_REG_WEIGHT_DENSE 1
+#define DEFAULT_SHAPE_REG_WEIGHT_DENSE 100
+#define DEFAULT_EXPRESSION_REG_WEIGHT_DENSE 10
+#define DEFAULT_COLOR_REG_WEIGHT_DENSE 1
 
 #define OUTLIER_THRESHOLD 0.004
 
@@ -29,10 +29,31 @@ public:
     void optimizeDenseColorTerm();
     void optimize();
     void configureSolver();
+
+    // NEW: A method to set the weights at runtime.
+    void setWeights(double shapeSparse,
+                    double expressionSparse,
+                    double shapeDense,
+                    double expressionDense,
+                    double colorDense)
+    {
+        m_shapeRegWeightSparse = shapeSparse;
+        m_expressionRegWeightSparse = expressionSparse;
+        m_shapeRegWeightDense = shapeDense;
+        m_expressionRegWeightDense = expressionDense;
+        m_colorRegWeightDense = colorDense;
+    }
+
 private:
     BaselFaceModel* m_baselFaceModel;
     InputData* m_inputData;
     ceres::Solver::Options options;
+
+    double m_shapeRegWeightSparse = DEFAULT_SHAPE_REG_WEIGHT_SPARSE;
+    double m_expressionRegWeightSparse = DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE;
+    double m_shapeRegWeightDense = DEFAULT_SHAPE_REG_WEIGHT_DENSE;
+    double m_expressionRegWeightDense = DEFAULT_EXPRESSION_REG_WEIGHT_DENSE;
+    double m_colorRegWeightDense = DEFAULT_COLOR_REG_WEIGHT_DENSE;
 };
 
 struct SparseOptimizationCost {
@@ -293,6 +314,20 @@ struct ColorRegularizerCost
 private:
     double m_color_weight;
     std::vector<double> m_variance;
+};
+
+struct WeightSearch
+{
+public:
+    static void runSparseWeightTrials(const std::string &bagPath);
+    static void runDenseWeightTrials(const std::string &bagPath);
+    static void runSparseWeightTrial(const std::string &bagPath,
+                      double shapeWeight,
+                      double expressionWeight);
+    static void runDenseWeightTrial(const std::string &bagPath,
+                             double shapeWeight,
+                             double expressionWeight,
+                             double colorWeight);
 };
 
 
