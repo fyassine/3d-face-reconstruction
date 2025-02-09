@@ -102,6 +102,25 @@ std::vector<Vector3i> BaselFaceModel::getColorValues() {
         newColorValue.x() = (int) ((colorMean[i] + modifiedColor[i]) * 255);
         newColorValue.y() = (int) ((colorMean[i + 1] + modifiedColor[i + 1]) * 255);
         newColorValue.z() = (int) ((colorMean[i + 2] + modifiedColor[i + 2]) * 255);
+
+        if(newColorValue.x() < 0){
+            newColorValue.x() = 0;
+        }else if(newColorValue.x() > 255){
+            newColorValue.x() = 255;
+        }
+
+        if(newColorValue.y() < 0){
+            newColorValue.y() = 0;
+        }else if(newColorValue.y() > 255){
+            newColorValue.y() = 255;
+        }
+
+        if(newColorValue.z() < 0){
+            newColorValue.z() = 0;
+        }else if(newColorValue.z() > 255){
+            newColorValue.z() = 255;
+        }
+
         colorValues.emplace_back(newColorValue);
     }
     return colorValues;

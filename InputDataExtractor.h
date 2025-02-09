@@ -15,7 +15,7 @@ public:
     static Vector2d convert3Dto2D(const Eigen::Vector3d& point, const Eigen::Matrix3d& depthIntrinsics, const Eigen::Matrix4d& extrinsics);
 private:
     static std::vector<Vector3d> searchForLandmarks(std::vector<double> depthValues, const Matrix3d& intrinsics, const Matrix4d& extrinsics);
-    static void convertVideoFrameToPng(rs2::video_frame videoFrame);
+    static void convertVideoFrameToPng(rs2::video_frame videoFrame, std::string name);
 };
 
 

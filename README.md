@@ -19,3 +19,10 @@ add_definitions(-DDATA_FOLDER_PATH=\"${DATA_FOLDER_PATH}\")
 set(RESULT_FOLDER_PATH "../../Result/")
 add_definitions(-DRESULT_FOLDER_PATH=\"${RESULT_FOLDER_PATH}\")
 ```
+
+You have to compile cereal under Libs/
+Inside CMake just add the following:
+```cmake
+include_directories(${LIBRARY_DIR}/cereal/include)
+```
+

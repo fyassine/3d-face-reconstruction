@@ -1,82 +1,116 @@
 #include "Renderer.h"
 
-Renderer::Renderer(int width, int height) : width(width), height(height), window(nullptr) {
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        exit(-1);
+Renderer::Renderer() = default;
+Renderer::~Renderer() = default;
+
+void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector<Vector3i>& modelColors, const std::vector<int>& modelFaces, const Matrix3d& intrinsicMatrix, const Matrix4d& extrinsicMatrix, const std::string& inputPath, const std::string& outputPath) {
+    cv::Mat image = cv::imread(inputPath);
+
+    cv::Mat intrinsics = (cv::Mat_<double>(3,3) << intrinsicMatrix(0,0), intrinsicMatrix(0,1), intrinsicMatrix(0,2),
+            intrinsicMatrix(1,0), intrinsicMatrix(1,1), intrinsicMatrix(1,2),
+            intrinsicMatrix(2,0), intrinsicMatrix(2,1), intrinsicMatrix(2,2));
+    cv::Mat R = (cv::Mat_<double>(3,3) << extrinsicMatrix(0,0), extrinsicMatrix(0,1), extrinsicMatrix(0,2),
+            extrinsicMatrix(1,0), extrinsicMatrix(1,1), extrinsicMatrix(1,2),
+            extrinsicMatrix(2,0), extrinsicMatrix(2,1), extrinsicMatrix(2,2));
+    cv::Mat t = (cv::Mat_<double>(3,1) << extrinsicMatrix(0,3), extrinsicMatrix(1,3), extrinsicMatrix(2,3));
+
+    std::vector<cv::Point3f> vertices;
+    for (const auto& v : modelVertices) {
+        vertices.push_back(cv::Point3f(v(0), v(1), v(2)));
     }
 
-    window = glfwCreateWindow(width, height, "Rendered Face", nullptr, nullptr);
-    if (!window) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        exit(-1);
-    }
-    glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
-        exit(-1);
+    std::vector<cv::Vec3i> faces;
+    for (size_t i = 0; i < modelFaces.size(); i += 3) {
+        faces.push_back(cv::Vec3i(modelFaces[i], modelFaces[i+1], modelFaces[i+2]));
     }
 
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color to black
+    std::vector<cv::Scalar> colors;
+    for (const auto& color : modelColors) {
+        colors.push_back(cv::Scalar(color(2), color(1), color(0)));  // BGR format in OpenCV, vllt. invertieren?
+    }
+    std::cout << faces.size() << std::endl;
+
+    renderModel(image, vertices, faces, intrinsics, R, t, colors);
+    //cv::imshow("Rendered Image", image);
+    cv::imwrite(outputPath, image);
+    cv::waitKey(0);
 }
 
-Renderer::~Renderer() {
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
+void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &vertices, const std::vector<cv::Vec3i> &faces,
+                           const cv::Mat &intrinsicMatrix, const cv::Mat &R, const cv::Mat &t, const std::vector<cv::Scalar> &colors) {
+    std::vector<cv::Point2f> projectedPoints;
 
-void Renderer::setupCamera(const Eigen::Matrix3f& intrinsics) {
-    this->intrinsics = intrinsics;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    cv::Mat rvec;
+    cv::Rodrigues(R, rvec);
+    cv::projectPoints(vertices, rvec, t, intrinsicMatrix, cv::Mat(), projectedPoints);
 
-    float fx = intrinsics(0, 0);
-    float fy = intrinsics(1, 1);
-    float cx = intrinsics(0, 2);
-    float cy = intrinsics(1, 2);
-
-    float left = -cx / fx;
-    float right = ((float) width - cx) / fx;
-    float bottom = -(cy - (float) height) / fy;
-    float top = cy / fy;
-    float near = 0.1f, far = 100.0f;
-
-    float aspectRatio = (float) width / (float) height;
-    if (aspectRatio > 1.0f) {
-        bottom /= aspectRatio;
-        top /= aspectRatio;
-    } else {
-        left *= aspectRatio;
-        right *= aspectRatio;
+    std::vector<std::pair<double, cv::Vec3i>> facesWithDepth;
+    for (size_t i = 0; i < faces.size(); ++i) {
+        double avgDepth = 0.0;
+        for (int j = 0; j < 3; ++j) {
+            const auto& vertex = vertices[faces[i][j]];
+            avgDepth += vertex.z;
+        }
+        avgDepth /= 3.0;
+        facesWithDepth.push_back({avgDepth, faces[i]});
     }
 
-    glFrustum(left, right, bottom, top, near, far);
-    glMatrixMode(GL_MODELVIEW);
-}
+    std::sort(facesWithDepth.begin(), facesWithDepth.end(),
+              [](const std::pair<double, cv::Vec3i>& a, const std::pair<double, cv::Vec3i>& b) {
+                  return a.first > b.first;
+              });
 
-void Renderer::renderModel(const std::vector<Eigen::Vector3f>& vertices, const std::vector<Face>& faces) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-
-    glBegin(GL_TRIANGLES);
-    for (const auto& face : faces) {
-        glColor3f(1.0f, 0.0f, 0.0f); // Set color to red
-        glVertex3f(vertices[face.v1].x(), vertices[face.v1].y(), vertices[face.v1].z());
-        glColor3f(0.0f, 1.0f, 0.0f); // Set color to green
-        glVertex3f(vertices[face.v2].x(), vertices[face.v2].y(), vertices[face.v2].z());
-        glColor3f(0.0f, 0.0f, 1.0f); // Set color to blue
-        glVertex3f(vertices[face.v3].x(), vertices[face.v3].y(), vertices[face.v3].z());
-    }
-    glEnd();
-}
-
-void Renderer::run(const std::vector<Eigen::Vector3f>& vertices, const std::vector<Face>& faces) {
-    while (!glfwWindowShouldClose(window)) {
-        renderModel(vertices, faces);
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+    for (const auto& faceWithDepth : facesWithDepth) {
+        const auto& face = faceWithDepth.second;
+        cv::Point pts[3];
+        for (int j = 0; j < 3; ++j) {
+            pts[j] = projectedPoints[face[j]];
+        }
+        cv::Scalar faceColor = (colors[face[0]] + colors[face[1]] + colors[face[2]]) / 3;
+        cv::fillConvexPoly(image, pts, 3, faceColor);
     }
 }
+
+void Renderer::convertPngsToMp4(const std::string &inputPath, const std::string &outputPath, int numberOfFrames) {
+    std::string outputDir = "../../../Result/video/";
+
+    // Video Writer setup
+    int frameWidth = 1280;
+    int frameHeight = 720;
+    cv::VideoWriter videoWriter(outputDir + "output.mp4", cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 5, cv::Size(frameWidth, frameHeight));
+
+    if (!videoWriter.isOpened()) {
+        std::cerr << "Could not open the output video file for writing" << std::endl;
+        return;
+    }
+
+    for (int frameIdx = 1; frameIdx < numberOfFrames; ++frameIdx) {  // Example: 100 frames
+        cv::Mat frame = cv::imread(inputPath + std::to_string(frameIdx) + ".png");
+        videoWriter.write(frame);
+    }
+    videoWriter.release();
+    cv::destroyAllWindows();
+}
+
+void Renderer::convertColorToPng(std::vector<Vector3d> colorValues, const std::string& path) {
+    const int width = 1280;
+    const int height = 720;
+    cv::Mat image(height, width, CV_8UC3);
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int index = y * width + x;
+            const Vector3d& color = colorValues[index];
+
+            // Convert color values to 8-bit unsigned char
+            image.at<cv::Vec3b>(y, x) = cv::Vec3b(
+                    static_cast<uchar>(std::clamp(color(2) * 255.0, 0.0, 255.0)),
+                    static_cast<uchar>(std::clamp(color(1) * 255.0, 0.0, 255.0)),
+                    static_cast<uchar>(std::clamp(color(0) * 255.0, 0.0, 255.0))
+            );
+        }
+    }
+
+    cv::imwrite(path, image);
+}
+
