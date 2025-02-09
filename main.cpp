@@ -109,5 +109,10 @@ int main(){
 
     Renderer::run(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), inputNeli.getMIntrinsicMatrix(), inputNeli.getMExtrinsicMatrix());
 */
-    //TODO: Create Renderer
+    WeightSearch::runSparseWeightTrials(LEO_VID);
+    //WeightSearch::runSparseWeightTrial(LEO_VID, 1, 1);
+    //WeightSearch::runSparseWeightTrial(LEO_VID, 100, 10);
+    //WeightSearch::runDenseWeightTrials(dataFolderPath + LEO_VID);
+
+    return 0;
 }
