@@ -18,7 +18,7 @@
 #define EXPRESSION_REG_WEIGHT_DENSE 1
 #define COLOR_REG_WEIGHT_DENSE 1
 
-#define OUTLIER_THRESHOLD 0.004
+#define OUTLIER_THRESHOLD 0.015 //0.01//0.004
 
 class Optimizer {
 public:
@@ -54,7 +54,7 @@ public:
         auto& shapeVariance = m_baselFaceModel->getShapePcaVariance();
         auto& expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
 
-        auto transformationMatrix = m_baselFaceModel->getTransformation();
+        auto& transformationMatrix = m_baselFaceModel->getTransformation();
 
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
                 T(shapeMean[m_landmark_bfm_index * 3]) + T(expressionMean[m_landmark_bfm_index * 3]),
@@ -81,9 +81,15 @@ public:
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        residuals[0] = transformedVertex.x() - T(m_landmark_image.x());
+        /*residuals[0] = transformedVertex.x() - T(m_landmark_image.x());
         residuals[1] = transformedVertex.y() - T(m_landmark_image.y());
-        residuals[2] = transformedVertex.z() - T(m_landmark_image.z());
+        residuals[2] = transformedVertex.z() - T(m_landmark_image.z());*/
+
+        residuals[0] = sqrt(
+                pow(transformedVertex.x() - T(m_landmark_image.x()), 2) +
+                pow(transformedVertex.y() - T(m_landmark_image.y()), 2) +
+                pow(transformedVertex.z() - T(m_landmark_image.z()), 2)
+        );
 
         return true;
     }
@@ -151,9 +157,16 @@ public:
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        residuals[0] = transformedVertex.x() - T(m_point_image.x()); //TODO: l2 norm
+        /*residuals[0] = transformedVertex.x() - T(m_point_image.x()); //TODO: l2 norm
         residuals[1] = transformedVertex.y() - T(m_point_image.y()); //compute cos between two normals; 1- cos
-        residuals[2] = transformedVertex.z() - T(m_point_image.z());
+        residuals[2] = transformedVertex.z() - T(m_point_image.z());*/
+
+        residuals[0] = sqrt(
+                pow(transformedVertex.x() - T(m_point_image.x()), 2) +
+                pow(transformedVertex.y() - T(m_point_image.y()), 2) +
+                pow(transformedVertex.z() - T(m_point_image.z()), 2)
+        );
+        //TODO: point-to-point, point-to-plane
 
         return true;
     }
@@ -195,9 +208,15 @@ public:
             );
         }
 
-        residuals[0] = offset.x() - T(m_color_image.x()); //l2 norm
+        /*residuals[0] = offset.x() - T(m_color_image.x()); //l2 norm
         residuals[1] = offset.y() - T(m_color_image.y()); //compute cos between two normals; 1 - cos
-        residuals[2] = offset.z() - T(m_color_image.z());
+        residuals[2] = offset.z() - T(m_color_image.z());*/
+
+        residuals[0] = sqrt(
+                pow(offset.x() - T(m_color_image.x()), 2) +
+                pow(offset.y() - T(m_color_image.y()), 2) +
+                pow(offset.z() - T(m_color_image.z()), 2)
+        );
 
         return true;
     }

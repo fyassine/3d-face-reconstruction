@@ -85,14 +85,15 @@ BaselFaceModel processFace(InputData* inputData){
 }
 
 int main(){
-    InputData inputSource = InputDataExtractor::extractInputData(LEO_LONG);
-    InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
-    BaselFaceModel sourceBaselFaceModel;
-    BaselFaceModel targetBaselFaceModel;
+    InputData inputSource = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
+    //InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
+    //BaselFaceModel sourceBaselFaceModel;
+    //BaselFaceModel targetBaselFaceModel;
 
-    FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);
+    //FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);
+
     //FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
-    //auto sourceFace = processFace(&inputLeo);
+    auto sourceFace = processFace(&inputSource);
     /*auto sourceFace = processFace(&inputLeo);
     auto targetFace = processFace(&inputNeli);
     auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();

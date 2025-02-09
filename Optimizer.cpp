@@ -21,7 +21,7 @@ void Optimizer::optimizeSparseTerms() {
     for (int i = 18; i < n; ++i) {
         if(landmarks_input_data[i].x() == -1) continue;
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<SparseOptimizationCost, 3, 199, 100>(
+                new ceres::AutoDiffCostFunction<SparseOptimizationCost, 1, 199, 100>(
                         new SparseOptimizationCost(m_baselFaceModel, landmarks_input_data[i], landmark_indices_bfm[i])
                 ),
                 nullptr,
@@ -41,13 +41,6 @@ void Optimizer::optimizeSparseTerms() {
         expression_std_dev[i] = std::sqrt(m_baselFaceModel->getExpressionPcaVariance()[i]);
     }
 
-    /*problem.AddResidualBlock(
-            new ceres::AutoDiffCostFunction<GeometryRegularizationCost, 2, 199, 100>(
-                    new GeometryRegularizationCost(identity_std_dev, expression_std_dev)),
-            nullptr,
-            m_baselFaceModel->getShapeParams().data(),
-            m_baselFaceModel->getExpressionParams().data()
-    );*/
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
@@ -98,7 +91,7 @@ void Optimizer::optimizeDenseGeometryTerm() {
             }
             Vector3d correspondingColor = Vector3d(correspondingColors[idx].x() / 255.0, correspondingColors[idx].y() / 255.0, correspondingColors[idx].z() / 255.0);
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 3, 199, 100>(
+                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 1, 199, 100>(
                             new DenseOptimizationCost(m_baselFaceModel, targetPoint, idx)
                     ),
                     nullptr,
@@ -106,7 +99,7 @@ void Optimizer::optimizeDenseGeometryTerm() {
                     m_baselFaceModel->getExpressionParams().data()
             );
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 3, 199>(
+                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 1, 199>(
                             new ColorOptimizationCost(m_baselFaceModel, correspondingColor, idx)
                     ),
                     nullptr,
@@ -163,9 +156,9 @@ void Optimizer::configureSolver() {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.dense_linear_algebra_library_type = ceres::CUDA;
     options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
-    options.use_nonmonotonic_steps = false; //TODO: Maybe das hier löschen
+    options.use_nonmonotonic_steps = true; //TODO: Maybe das hier löschen
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = true;
-    options.max_num_iterations = 100;
-    options.num_threads = 12;
+    options.max_num_iterations = 50;
+    options.num_threads = 24;
 }
