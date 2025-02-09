@@ -26,7 +26,7 @@ public:
     std::vector<Vector3i> getColorValues();
 
     std::vector<Vector3d> getLandmarks();
-    static std::vector<Vector3d> getNormals(); //TODO
+    std::vector<Vector3d> getNormals(); //TODO
 
     [[nodiscard]] const std::vector<double> &getColorMean() const;
     [[nodiscard]] const MatrixXd &getColorPcaBasis() const;

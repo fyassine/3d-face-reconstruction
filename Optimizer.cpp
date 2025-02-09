@@ -1,4 +1,5 @@
 #include "Optimizer.h"
+#include "Illumination.h"
 #include <random>
 
 Optimizer::Optimizer(BaselFaceModel *baselFaceModel, InputData *inputData) {
@@ -77,6 +78,10 @@ void Optimizer::optimizeDenseTerms() {
     int numberOfSamples = 300; //TODO: Pragma
     int maxIt = 30;            //TODO: Pragma
     int iterationCounter = 0;
+    
+    // Illumination
+    Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_39652.rps");
+    
     while(iterationCounter < maxIt){
         std::cout << "Iteration: " << iterationCounter << std::endl;
         int outliers = 0;
@@ -100,7 +105,7 @@ void Optimizer::optimizeDenseTerms() {
             );
             problem.AddResidualBlock(
                     new ceres::AutoDiffCostFunction<ColorOptimizationCost, 1, 199>(
-                            new ColorOptimizationCost(m_baselFaceModel, correspondingColor, idx)
+                            new ColorOptimizationCost(m_baselFaceModel, correspondingColor, shCoefficients, idx)
                     ),
                     nullptr,
                     m_baselFaceModel->getColorParams().data()
