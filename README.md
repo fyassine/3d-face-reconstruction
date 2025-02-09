@@ -26,3 +26,15 @@ Inside CMake just add the following:
 include_directories(${LIBRARY_DIR}/cereal/include)
 ```
 
+File Structure:
+```
+root/
+├── 3DSMC-Face-Reconstruction/
+├── Data/
+└── Result/
+    ├── Expression_Transfer_Video/
+    ├── Expression_Frames_Reconstructed/
+    ├── Source_Frames_Reconstructed/
+    ├── Source_Frames/
+    ├── Target_Frames/
+```
