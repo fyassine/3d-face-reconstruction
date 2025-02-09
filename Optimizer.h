@@ -25,9 +25,7 @@ public:
     Optimizer(BaselFaceModel* baselFaceModel, InputData* inputData);
     ~Optimizer();
     void optimizeSparseTerms();
-    void optimizeDenseGeometryTerm();
-    void optimizeDenseColorTerm();
-    void optimize();
+    void optimizeDenseTerms();
     void configureSolver();
 private:
     BaselFaceModel* m_baselFaceModel;
@@ -81,10 +79,6 @@ public:
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        /*residuals[0] = transformedVertex.x() - T(m_landmark_image.x());
-        residuals[1] = transformedVertex.y() - T(m_landmark_image.y());
-        residuals[2] = transformedVertex.z() - T(m_landmark_image.z());*/
-
         residuals[0] = sqrt(
                 pow(transformedVertex.x() - T(m_landmark_image.x()), 2) +
                 pow(transformedVertex.y() - T(m_landmark_image.y()), 2) +
@@ -100,7 +94,6 @@ private:
     int m_landmark_bfm_index;
 };
 
-//TODO: Set weights so that all are on same scale
 struct DenseOptimizationCost {
 public:
     DenseOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d point_image, int landmark_bfm_index)
@@ -128,38 +121,20 @@ public:
 
         int vertex_idx = m_landmark_bfm_index * 3;
 
-        Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, 1>> shapeParams(shape, NUM_SHAPE_PARAMETERS);
-        Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, 1>> expressionParams(expression, NUM_EXPRESSION_PARAMETERS);
-        Eigen::Map<const Eigen::VectorXd> shapeVarEigen(shapeVariance.data(), NUM_SHAPE_PARAMETERS);
-        Eigen::Map<const Eigen::VectorXd> exprVarEigen(expressionVariance.data(), NUM_EXPRESSION_PARAMETERS);
-        Eigen::Matrix<T, Eigen::Dynamic, 1> sqrt_shape_var = shapeParams.cwiseProduct(shapeVarEigen.array().sqrt().matrix().template cast<T>());
-        Eigen::Matrix<T, Eigen::Dynamic, 1> sqrt_expr_var = expressionParams.cwiseProduct(exprVarEigen.array().sqrt().matrix().template cast<T>());
-        Eigen::Matrix<T, 3, 1> shape_offset = shapePcaBasis.block(vertex_idx, 0, 3, NUM_SHAPE_PARAMETERS).template cast<T>() * sqrt_shape_var;
-        Eigen::Matrix<T, 3, 1> expr_offset = expressionPcaBasis.block(vertex_idx, 0, 3, NUM_EXPRESSION_PARAMETERS).template cast<T>() * sqrt_expr_var;
+        Map<const Matrix<T, Dynamic, 1>> shapeParams(shape, NUM_SHAPE_PARAMETERS);
+        Map<const Matrix<T, Dynamic, 1>> expressionParams(expression, NUM_EXPRESSION_PARAMETERS);
+        Map<const VectorXd> shapeVarEigen(shapeVariance.data(), NUM_SHAPE_PARAMETERS);
+        Map<const VectorXd> exprVarEigen(expressionVariance.data(), NUM_EXPRESSION_PARAMETERS);
+        Matrix<T, Dynamic, 1> sqrt_shape_var = shapeParams.cwiseProduct(shapeVarEigen.array().sqrt().matrix().template cast<T>());
+        Matrix<T, Dynamic, 1> sqrt_expr_var = expressionParams.cwiseProduct(exprVarEigen.array().sqrt().matrix().template cast<T>());
+        Matrix<T, 3, 1> shape_offset = shapePcaBasis.block(vertex_idx, 0, 3, NUM_SHAPE_PARAMETERS).template cast<T>() * sqrt_shape_var;
+        Matrix<T, 3, 1> expr_offset = expressionPcaBasis.block(vertex_idx, 0, 3, NUM_EXPRESSION_PARAMETERS).template cast<T>() * sqrt_expr_var;
 
         offset.x() += shape_offset.x() + expr_offset.x();
         offset.y() += shape_offset.y() + expr_offset.y();
         offset.z() += shape_offset.z() + expr_offset.z();
 
-        /*for (int i = 0; i < NUM_SHAPE_PARAMETERS; ++i) {
-            T param = T(sqrt(shapeVariance[i])) * shape[i];
-            offset.x() += param * T(shapePcaBasis(vertex_idx, i));
-            offset.y() += param * T(shapePcaBasis(vertex_idx + 1, i));
-            offset.z() += param * T(shapePcaBasis(vertex_idx + 2, i));
-        }
-
-        for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; ++i) {
-            T param = T(sqrt(expressionVariance[i])) * expression[i];
-            offset.x() += param * T(expressionPcaBasis(vertex_idx, i));
-            offset.y() += param * T(expressionPcaBasis(vertex_idx + 1, i));
-            offset.z() += param * T(expressionPcaBasis(vertex_idx + 2, i));
-        }*/
-
-        Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
-
-        /*residuals[0] = transformedVertex.x() - T(m_point_image.x()); //TODO: l2 norm
-        residuals[1] = transformedVertex.y() - T(m_point_image.y()); //compute cos between two normals; 1- cos
-        residuals[2] = transformedVertex.z() - T(m_point_image.z());*/
+        Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
         residuals[0] = sqrt(
                 pow(transformedVertex.x() - T(m_point_image.x()), 2) +
@@ -208,10 +183,6 @@ public:
             );
         }
 
-        /*residuals[0] = offset.x() - T(m_color_image.x()); //l2 norm
-        residuals[1] = offset.y() - T(m_color_image.y()); //compute cos between two normals; 1 - cos
-        residuals[2] = offset.z() - T(m_color_image.z());*/
-
         residuals[0] = sqrt(
                 pow(offset.x() - T(m_color_image.x()), 2) +
                 pow(offset.y() - T(m_color_image.y()), 2) +
@@ -227,38 +198,6 @@ private:
     int m_vertex_index;
 };
 
-struct GeometryRegularizationCost {
-    template <typename T>
-    bool operator()(const T* const shape,
-                    const T* const expression,
-                    T* residual) const {
-        T reg_energy_geometry = T(0);
-        T reg_energy_expression = T(0);
-
-        for (int i = 0; i < num_identity_params; ++i) {
-            reg_energy_geometry += pow(shape[i] / T(identity_std_dev[i]), 2);
-        }
-        for (int i = 0; i < num_expression_params; ++i) {
-            reg_energy_expression += pow(expression[i] / T(expression_std_dev[i]), 2);
-        }
-
-        residual[0] = reg_energy_geometry;
-        residual[1] = reg_energy_expression;
-        return true;
-    }
-
-    GeometryRegularizationCost(const std::vector<double>& id_std,
-                               const std::vector<double>& exp_std)
-            : identity_std_dev(id_std)
-            , expression_std_dev(exp_std) {}
-
-    const std::vector<double> identity_std_dev;
-    const std::vector<double> expression_std_dev;
-
-    static constexpr int num_identity_params = 199;
-    static constexpr int num_expression_params = 100;
-};
-
 struct ShapeRegularizerCost
 {
     ShapeRegularizerCost(double shapeWeight, std::vector<double> variance) : m_shape_weight(shapeWeight), m_variance(variance) {}
@@ -267,7 +206,6 @@ struct ShapeRegularizerCost
     bool operator()(T const* shape, T* residuals) const
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
-            //residuals[i] = shape[i] * T(m_shape_weight); //squared values -> l2 norm
             residuals[i] = pow((shape[i] / sqrt(m_variance[i])), 2) * m_shape_weight;
         }
         return true;

@@ -60,7 +60,7 @@ void Optimizer::optimizeSparseTerms() {
     std::cout << "Sparse Optimization finished." << std::endl;
 }
 
-void Optimizer::optimizeDenseGeometryTerm() {
+void Optimizer::optimizeDenseTerms() {
     ceres::Problem problem;
 
     auto vertices = m_baselFaceModel->getVerticesWithoutTransformation();
@@ -140,16 +140,6 @@ void Optimizer::optimizeDenseGeometryTerm() {
         iterationCounter++;
     }
     std::cout << "Dense Optimization finished." << std::endl;
-}
-
-void Optimizer::optimizeDenseColorTerm() {
-
-}
-
-void Optimizer::optimize() {
-    optimizeSparseTerms();
-    optimizeDenseGeometryTerm();
-    optimizeDenseColorTerm();
 }
 
 void Optimizer::configureSolver() {

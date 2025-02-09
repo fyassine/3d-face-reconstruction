@@ -21,37 +21,31 @@ public:
     void initializeParameters();
     void computeTransformationMatrix(InputData* inputData);
 
-    std::vector<Vector3d> getTransformedVertices();
     std::vector<Vector3d> getVerticesWithoutTransformation();
     std::vector<Vector3d> transformVertices(const std::vector<Vector3d>& vertices);
-    Vector3d getVertex(int vertexId);
     std::vector<Vector3i> getColorValues();
 
     std::vector<Vector3d> getLandmarks();
-    std::vector<Vector3d> getNormals();
+    static std::vector<Vector3d> getNormals(); //TODO
 
-    void expressionTransfer(BaselFaceModel* baselFaceModel);
-
-    const std::vector<double> &getColorMean() const;
-    const MatrixXd &getColorPcaBasis() const;
-    const std::vector<double> &getColorPcaVariance() const;
-    const std::vector<double> &getShapeMean() const;
-    const MatrixXd &getShapePcaBasis() const;
-    const std::vector<double> &getShapePcaVariance() const;
-    const std::vector<double> &getExpressionMean() const;
-    const MatrixXd &getExpressionPcaBasis() const;
-    const std::vector<double> &getExpressionPcaVariance() const;
+    [[nodiscard]] const std::vector<double> &getColorMean() const;
+    [[nodiscard]] const MatrixXd &getColorPcaBasis() const;
+    [[nodiscard]] const std::vector<double> &getColorPcaVariance() const;
+    [[nodiscard]] const std::vector<double> &getShapeMean() const;
+    [[nodiscard]] const MatrixXd &getShapePcaBasis() const;
+    [[nodiscard]] const std::vector<double> &getShapePcaVariance() const;
+    [[nodiscard]] const std::vector<double> &getExpressionMean() const;
+    [[nodiscard]] const MatrixXd &getExpressionPcaBasis() const;
+    [[nodiscard]] const std::vector<double> &getExpressionPcaVariance() const;
     VectorXd &getColorParams();
     VectorXd &getShapeParams();
     VectorXd &getExpressionParams();
-    const Matrix4d &getTransformation() const;
-    const std::vector<int> &getLandmarkIndices() const;
-
-    const std::vector<int> &getFaces() const;
+    [[nodiscard]] const Matrix4d &getTransformation() const;
+    [[nodiscard]] const std::vector<int> &getLandmarkIndices() const;
+    [[nodiscard]] const std::vector<int> &getFaces() const;
 
 private:
     Matrix4d transformation;
-    //TODO: really here?!
     std::vector<int> landmark_indices;
     std::vector<int> faces;
 

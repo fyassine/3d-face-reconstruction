@@ -8,7 +8,7 @@ void FaceReconstructor::reconstructFace(BaselFaceModel *baselFaceModel, InputDat
         baselFaceModel->computeTransformationMatrix(inputData);
         Optimizer optimizer(baselFaceModel, inputData);
         optimizer.optimizeSparseTerms();
-        optimizer.optimizeDenseGeometryTerm();
+        optimizer.optimizeDenseTerms();
         auto verticesAfterTransformation = baselFaceModel->getVerticesWithoutTransformation();
         auto colorAfterTransformation = baselFaceModel->getColorValues();
         auto mappedColor = inputData->getCorrespondingColors(baselFaceModel->transformVertices(verticesAfterTransformation));
@@ -41,11 +41,11 @@ void FaceReconstructor::expressionTransfer(BaselFaceModel *sourceFaceModel, Base
         //Optimization
         Optimizer optimizerSource(sourceFaceModel, sourceData);
         optimizerSource.optimizeSparseTerms();
-        optimizerSource.optimizeDenseGeometryTerm();
+        optimizerSource.optimizeDenseTerms();
 
         Optimizer optimizerTarget(targetFaceModel, targetData);
         optimizerTarget.optimizeSparseTerms();
-        optimizerTarget.optimizeDenseGeometryTerm();
+        optimizerTarget.optimizeDenseTerms();
 
         //Store source model frames
         auto sourceVertices = sourceFaceModel->transformVertices(sourceFaceModel->getVerticesWithoutTransformation());

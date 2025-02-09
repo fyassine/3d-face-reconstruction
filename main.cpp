@@ -69,7 +69,7 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
     //TODO: Smth wrong with reg for dense
-    optimizer.optimizeDenseGeometryTerm();
+    optimizer.optimizeDenseTerms();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);

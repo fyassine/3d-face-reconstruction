@@ -19,12 +19,6 @@ std::vector<Vector3d> BaselFaceModel::getLandmarks() {
     return landmarks;
 }
 
-Vector3d BaselFaceModel::getVertex(int vertexId) {
-    std::vector<Vector3d> landmarks;
-    auto vertices = getVerticesWithoutTransformation();
-    return vertices[vertexId];
-}
-
 void BaselFaceModel::setupLandmarkIndices() {
     landmark_indices = FileReader::readIntFromTxt(LANDMARKS_FILE_PATH);
 }
@@ -63,10 +57,6 @@ void BaselFaceModel::computeTransformationMatrix(InputData* inputData) {
     std::vector<Vector3d> target(landmarks_image.begin() + 18, landmarks_image.end());
 
     transformation = aligner.estimatePose(source, target);
-}
-
-std::vector<Vector3d> BaselFaceModel::getTransformedVertices() {
-    return std::vector<Vector3d>();
 }
 
 std::vector<Vector3d> BaselFaceModel::getVerticesWithoutTransformation() {
@@ -128,6 +118,7 @@ std::vector<Vector3i> BaselFaceModel::getColorValues() {
 
 std::vector<Vector3d> BaselFaceModel::getNormals() {
     return std::vector<Vector3d>();
+    //TODO
 }
 
 const std::vector<double> &BaselFaceModel::getColorMean() const {
@@ -192,14 +183,10 @@ const std::vector<int> &BaselFaceModel::getFaces() const {
 
 std::vector<Vector3d> BaselFaceModel::transformVertices(const std::vector<Vector3d>& vertices) {
     std::vector<Vector3d> transformedVertices;
-    for (int i = 0; i < vertices.size(); ++i) {
-        Vector4d oldVertex(vertices[i].x(), vertices[i].y(), vertices[i].z(), 1.0);
+    for (const auto & v : vertices) {
+        Vector4d oldVertex(v.x(), v.y(), v.z(), 1.0);
         Vector4d newVertex = transformation * oldVertex;
         transformedVertices.emplace_back(newVertex.x(), newVertex.y(), newVertex.z());
     }
     return transformedVertices;
-}
-
-void BaselFaceModel::expressionTransfer(BaselFaceModel *baselFaceModel) {
-    expressionParams = baselFaceModel->getExpressionParams();
 }
