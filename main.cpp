@@ -2,16 +2,9 @@
 #include <fstream>
 
 #include "Eigen.h"
-#include "VirtualSensor.h"
-#include "SimpleMesh.h"
-#include "PointCloud.h"
 
 #include "FacialLandmarks.h"
-#include "Optimization.h"
-#include "Rendering.h"
-#include "BFMParameters.h"
 #include "ProcrustesAligner.h"
-#include "ImageExtraction.h"
 #include "BaselFaceModel.h"
 
 //#include "Renderer.h"
