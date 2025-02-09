@@ -154,27 +154,30 @@ private:
 
 struct ColorOptimizationCost {
 public:
-    ColorOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d colorImage, int vertexIndex)
-            : m_baselFaceModel{baselFaceModel}, m_color_image{colorImage}, m_vertex_index{vertexIndex} {}
-
+    ColorOptimizationCost(BaselFaceModel* baselFaceModel,
+                          Vector3d colorImage,
+                          const Eigen::Matrix<double, 9, 3>& shCoefficients,
+                          int vertexIndex)
+    : m_baselFaceModel{baselFaceModel}, m_color_image{colorImage}, m_shCoefficients{shCoefficients}, m_vertex_index{vertexIndex} {}
+    
     template <typename T>
     bool operator()(const T* const color,
                     T* residuals) const {
-
+        
         auto& colorMean = m_baselFaceModel->getColorMean();
         auto& colorPcaBasis = m_baselFaceModel->getColorPcaBasis();
         auto& colorVariance = m_baselFaceModel->getColorPcaVariance();
-
+        
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
-                T(colorMean[m_vertex_index * 3]),
-                T(colorMean[m_vertex_index * 3 + 1]),
-                T(colorMean[m_vertex_index * 3 + 2]),
-                T(1)
-        );
-
+                                                               T(m_baselFaceModel->getColorMean()[m_vertex_index * 3]),
+                                                               T(m_baselFaceModel->getColorMean()[m_vertex_index * 3 + 1]),
+                                                               T(m_baselFaceModel->getColorMean()[m_vertex_index * 3 + 2]),
+                                                               T(1)
+                                                               );
+        
         for (int i = 0; i < NUM_COLOR_PARAMETERS; ++i) {
             int vertex_idx = m_vertex_index * 3;
-            T param = T(sqrt(colorVariance[i])) * color[i];
+            T param = T(sqrt(m_baselFaceModel->getColorPcaVariance()[i])) * color[i];
             offset += Eigen::Matrix<T, 4, 1>(
                     param * T(colorPcaBasis(vertex_idx, i)),
                     param * T(colorPcaBasis(vertex_idx + 1, i)),
@@ -182,20 +185,50 @@ public:
                     T(0)
             );
         }
+        
+        
+       // Get normal for this vertex
+       Eigen::Matrix<T, 3, 1> normal = m_baselFaceModel->getNormals()[m_vertex_index].template cast<T>();
+       
+       // Compute SH basis
+       T shBasis[9];
+       // Compute SH basis functions up to the second order (9 terms)
+       shBasis[0] = T(0.28209479);
+       shBasis[1] = T(0.48860251) * normal.y();
+       shBasis[2] = T(0.48860251) * normal.z();
+       shBasis[3] = T(0.48860251) * normal.x();
+       shBasis[4] = T(1.09254843) * normal.x() * normal.y();
+       shBasis[5] = T(1.09254843) * normal.y() * normal.z();
+       shBasis[6] = T(0.31539157) * (T(3) * normal.z() * normal.z() - T(1));
+       shBasis[7] = T(1.09254843) * normal.x() * normal.z();
+       shBasis[8] = T(0.54627421) * (normal.x() * normal.x() - normal.y() * normal.y());
+       
+       // Apply SH lighting
+       Eigen::Matrix<T, 3, 1> shLighting = Eigen::Matrix<T, 3, 1>::Zero();
+       for (int i = 0; i < 9; ++i) {
+           shLighting(0) += shBasis[i] * T(m_shCoefficients(i, 0));  // Red
+           shLighting(1) += shBasis[i] * T(m_shCoefficients(i, 1));  // Green
+           shLighting(2) += shBasis[i] * T(m_shCoefficients(i, 2));  // Blue
+       }
+       
+       // Apply SH illumination to color
+       Eigen::Matrix<T, 3, 1> shadedColor = offset.template head<3>().cwiseProduct(shLighting);
+       
 
         residuals[0] = sqrt(
-                pow(offset.x() - T(m_color_image.x()), 2) +
-                pow(offset.y() - T(m_color_image.y()), 2) +
-                pow(offset.z() - T(m_color_image.z()), 2)
-        );
-
+                            pow(shadedColor.x() - T(m_color_image.x()), 2) +
+                            pow(shadedColor.y() - T(m_color_image.y()), 2) +
+                            pow(shadedColor.z() - T(m_color_image.z()), 2)
+                            );
+        
         return true;
     }
-
+    
 private:
     BaselFaceModel* m_baselFaceModel;
     Vector3d m_color_image;
     int m_vertex_index;
+    Eigen::Matrix<double, 9, 3> m_shCoefficients;
 };
 
 struct ShapeRegularizerCost
