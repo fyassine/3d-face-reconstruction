@@ -81,7 +81,7 @@ void Optimizer::optimizeDenseTerms() {
     int iterationCounter = 0;
     
     // Illumination
-    Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_52356.rps");
+    Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_39738.rps");
 
     auto* loss_function = new ceres::CauchyLoss(1.0);
 

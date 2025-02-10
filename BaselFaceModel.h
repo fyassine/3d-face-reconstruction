@@ -68,6 +68,7 @@ private:
     VectorXd colorParams;
     VectorXd shapeParams;
     VectorXd expressionParams;
+    VectorXd illuminationParams;
 };
 
 
