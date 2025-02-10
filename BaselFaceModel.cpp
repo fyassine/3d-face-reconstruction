@@ -116,45 +116,10 @@ std::vector<Vector3i> BaselFaceModel::getColorValues() {
     return colorValues;
 }
 
-std::vector<Vector3d> BaselFaceModel::getNormals() {
-    // Get the list of vertices (assuming getVerticesWithoutTransformation gives us the vertices)
-    const std::vector<Vector3d>& vertices = getVerticesWithoutTransformation();
-
-    // Vector to store the normals for each vertex
-    std::vector<Vector3d> normals(vertices.size(), Vector3d(0.0, 0.0, 0.0));
-
-    // Iterate over faces to compute the normals
-    for (size_t i = 0; i < faces.size(); i += 3) {
-        // Fetch the indices of the three vertices of the face
-        int v0_index = faces[i];
-        int v1_index = faces[i + 1];
-        int v2_index = faces[i + 2];
-
-        // Get the positions of the vertices of the triangle
-        const Vector3d& v0 = vertices[v0_index];
-        const Vector3d& v1 = vertices[v1_index];
-        const Vector3d& v2 = vertices[v2_index];
-
-        // Compute the two edge vectors
-        Vector3d edge1 = v1 - v0;
-        Vector3d edge2 = v2 - v0;
-
-        // Compute the normal for the face using the cross product
-        Vector3d faceNormal = edge1.cross(edge2).normalized();
-
-        // Accumulate the normals for each vertex
-        normals[v0_index] += faceNormal;
-        normals[v1_index] += faceNormal;
-        normals[v2_index] += faceNormal;
-    }
-
-    // Normalize the normals for each vertex
-    for (auto& normal : normals) {
-        normal.normalize();
-    }
-
+const std::vector<Vector3d> &BaselFaceModel::getNormals() const {
     return normals;
 }
+
 
 const std::vector<double> &BaselFaceModel::getColorMean() const {
     return colorMean;
@@ -225,3 +190,43 @@ std::vector<Vector3d> BaselFaceModel::transformVertices(const std::vector<Vector
     }
     return transformedVertices;
 }
+
+void BaselFaceModel::updateNormals() {
+    // Get the list of vertices (assuming getVerticesWithoutTransformation gives us the vertices)
+    const std::vector<Vector3d>& vertices = getVerticesWithoutTransformation();
+
+    // Vector to store the normals for each vertex
+    std::vector<Vector3d> newNormals(vertices.size(), Vector3d(0.0, 0.0, 0.0));
+
+    // Iterate over faces to compute the normals
+    for (size_t i = 0; i < faces.size(); i += 3) {
+        // Fetch the indices of the three vertices of the face
+        int v0_index = faces[i];
+        int v1_index = faces[i + 1];
+        int v2_index = faces[i + 2];
+
+        // Get the positions of the vertices of the triangle
+        const Vector3d& v0 = vertices[v0_index];
+        const Vector3d& v1 = vertices[v1_index];
+        const Vector3d& v2 = vertices[v2_index];
+
+        // Compute the two edge vectors
+        Vector3d edge1 = v1 - v0;
+        Vector3d edge2 = v2 - v0;
+
+        // Compute the normal for the face using the cross product
+        Vector3d faceNormal = edge1.cross(edge2).normalized();
+
+        // Accumulate the normals for each vertex
+        newNormals[v0_index] += faceNormal;
+        newNormals[v1_index] += faceNormal;
+        newNormals[v2_index] += faceNormal;
+    }
+
+    // Normalize the normals for each vertex
+    for (auto& normal : newNormals) {
+        normal.normalize();
+    }
+    normals = newNormals;
+}
+

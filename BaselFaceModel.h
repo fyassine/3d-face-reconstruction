@@ -26,7 +26,9 @@ public:
     std::vector<Vector3i> getColorValues();
 
     std::vector<Vector3d> getLandmarks();
-    std::vector<Vector3d> getNormals(); //TODO
+    [[nodiscard]] const std::vector<Vector3d> &getNormals() const; //TODO
+
+    void updateNormals();
 
     [[nodiscard]] const std::vector<double> &getColorMean() const;
     [[nodiscard]] const MatrixXd &getColorPcaBasis() const;
@@ -46,6 +48,8 @@ public:
 
 private:
     Matrix4d transformation;
+    std::vector<Vector3d> normals;
+
     std::vector<int> landmark_indices;
     std::vector<int> faces;
 

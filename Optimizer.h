@@ -158,7 +158,7 @@ public:
                           Vector3d colorImage,
                           const Eigen::Matrix<double, 9, 3>& shCoefficients,
                           int vertexIndex)
-    : m_baselFaceModel{baselFaceModel}, m_color_image{colorImage}, m_shCoefficients{shCoefficients}, m_vertex_index{vertexIndex} {}
+    : m_baselFaceModel{baselFaceModel}, m_color_image{std::move(colorImage)}, m_shCoefficients{shCoefficients}, m_vertex_index{vertexIndex} {}
     
     template <typename T>
     bool operator()(const T* const color,
@@ -167,30 +167,28 @@ public:
         auto& colorMean = m_baselFaceModel->getColorMean();
         auto& colorPcaBasis = m_baselFaceModel->getColorPcaBasis();
         auto& colorVariance = m_baselFaceModel->getColorPcaVariance();
-        
+        auto& normals = m_baselFaceModel->getNormals();
+        int vertex_idx = m_vertex_index * 3;
+
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
-                                                               T(m_baselFaceModel->getColorMean()[m_vertex_index * 3]),
-                                                               T(m_baselFaceModel->getColorMean()[m_vertex_index * 3 + 1]),
-                                                               T(m_baselFaceModel->getColorMean()[m_vertex_index * 3 + 2]),
+                                                               T(colorMean[m_vertex_index * 3]),
+                                                               T(colorMean[m_vertex_index * 3 + 1]),
+                                                               T(colorMean[m_vertex_index * 3 + 2]),
                                                                T(1)
                                                                );
         
         for (int i = 0; i < NUM_COLOR_PARAMETERS; ++i) {
-            int vertex_idx = m_vertex_index * 3;
-            T param = T(sqrt(m_baselFaceModel->getColorPcaVariance()[i])) * color[i];
-            offset += Eigen::Matrix<T, 4, 1>(
-                    param * T(colorPcaBasis(vertex_idx, i)),
-                    param * T(colorPcaBasis(vertex_idx + 1, i)),
-                    param * T(colorPcaBasis(vertex_idx + 2, i)),
-                    T(0)
-            );
+            T param = T(sqrt(colorVariance[i])) * color[i];
+            offset.x() += param * T(colorPcaBasis(vertex_idx, i));
+            offset.y() += param * T(colorPcaBasis(vertex_idx + 1, i));
+            offset.z() += param * T(colorPcaBasis(vertex_idx + 2, i));
         }
         
-        
+
        // Get normal for this vertex
-       Eigen::Matrix<T, 3, 1> normal = m_baselFaceModel->getNormals()[m_vertex_index].template cast<T>();
-       
-       // Compute SH basis
+       //Eigen::Matrix<T, 3, 1> normal = m_baselFaceModel->getNormals()[m_vertex_index].template cast<T>();
+       Eigen::Matrix<T, 3, 1> normal = normals[m_vertex_index].template cast<T>();
+        // Compute SH basis
        T shBasis[9];
        // Compute SH basis functions up to the second order (9 terms)
        shBasis[0] = T(0.28209479);
@@ -213,13 +211,19 @@ public:
        
        // Apply SH illumination to color
        Eigen::Matrix<T, 3, 1> shadedColor = offset.template head<3>().cwiseProduct(shLighting);
-       
+
 
         residuals[0] = sqrt(
                             pow(shadedColor.x() - T(m_color_image.x()), 2) +
                             pow(shadedColor.y() - T(m_color_image.y()), 2) +
                             pow(shadedColor.z() - T(m_color_image.z()), 2)
                             );
+
+        /*residuals[0] = sqrt(
+                pow(offset.x() - T(m_color_image.x()), 2) +
+                pow(offset.y() - T(m_color_image.y()), 2) +
+                pow(offset.z() - T(m_color_image.z()), 2)
+        );*/
         
         return true;
     }
