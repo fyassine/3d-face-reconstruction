@@ -156,12 +156,12 @@ struct ColorOptimizationCost {
 public:
     ColorOptimizationCost(BaselFaceModel* baselFaceModel,
                           Vector3d colorImage,
-                          const Eigen::Matrix<double, 9, 3>& shCoefficients,
                           int vertexIndex)
-    : m_baselFaceModel{baselFaceModel}, m_color_image{std::move(colorImage)}, m_shCoefficients{shCoefficients}, m_vertex_index{vertexIndex} {}
+    : m_baselFaceModel{baselFaceModel}, m_color_image{std::move(colorImage)}, m_vertex_index{vertexIndex} {}
     
     template <typename T>
     bool operator()(const T* const color,
+                    const T* const illumination,
                     T* residuals) const {
         
         auto& colorMean = m_baselFaceModel->getColorMean();
@@ -203,10 +203,10 @@ public:
        
        // Apply SH lighting
        Eigen::Matrix<T, 3, 1> shLighting = Eigen::Matrix<T, 3, 1>::Zero();
-       for (int i = 0; i < 9; ++i) {
-           shLighting(0) += shBasis[i] * T(m_shCoefficients(i, 0));  // Red
-           shLighting(1) += shBasis[i] * T(m_shCoefficients(i, 1));  // Green
-           shLighting(2) += shBasis[i] * T(m_shCoefficients(i, 2));  // Blue
+       for (int i = 0; i < 27; i+=3) {
+           shLighting(0) += shBasis[i / 3] * T(illumination[i]);  // Red
+           shLighting(1) += shBasis[i / 3] * T(illumination[i + 1]);  // Green
+           shLighting(2) += shBasis[i / 3] * T(illumination[i + 2]);  // Blue
        }
        
        // Apply SH illumination to color
@@ -232,7 +232,6 @@ private:
     BaselFaceModel* m_baselFaceModel;
     Vector3d m_color_image;
     int m_vertex_index;
-    Eigen::Matrix<double, 9, 3> m_shCoefficients;
 };
 
 struct ShapeRegularizerCost

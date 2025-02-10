@@ -81,8 +81,10 @@ void Optimizer::optimizeDenseTerms() {
     int iterationCounter = 0;
     
     // Illumination
-    Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_39738.rps");
-
+    //Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_39738.rps");
+    double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     auto* loss_function = new ceres::CauchyLoss(1.0);
 
     //TODO: watch out with the references! Not sure that works
@@ -115,11 +117,12 @@ void Optimizer::optimizeDenseTerms() {
                     expressionParams.data()
             );
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 1, 199>(
-                            new ColorOptimizationCost(m_baselFaceModel, correspondingColor, shCoefficients, idx)
+                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 1, 199, 27>(
+                            new ColorOptimizationCost(m_baselFaceModel, correspondingColor, idx)
                     ),
                     loss_function,
-                    colorParams.data()
+                    colorParams.data(),
+                    shCoefficients
             );
         }
 
@@ -137,7 +140,7 @@ void Optimizer::optimizeDenseTerms() {
 
         ceres::Solver::Summary summary;
         std::cout << "Dense Optimization initiated." << std::endl;
-        options.max_num_iterations = 15;
+        options.max_num_iterations = 30;
         ceres::Solve(options, &problem, &summary);
         //std::cout << summary.BriefReport() << std::endl;
         std::cout << "Outliers: " << outliers << std::endl;
@@ -157,7 +160,7 @@ void Optimizer::configureSolver() {
     options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = false; //TODO: Maybe das hier löschen
     options.linear_solver_type = ceres::DENSE_QR;
-    options.minimizer_progress_to_stdout = false; //TODO: Change back to true
+    options.minimizer_progress_to_stdout = true; //TODO: Change back to true
     options.max_num_iterations = 50;
     options.num_threads = 20;
 }
