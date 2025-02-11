@@ -77,15 +77,15 @@ void Optimizer::optimizeDenseTerms() {
     std::random_device rd;
     std::mt19937 g(rd());
 
-    int numberOfSamples = 1000;
-    int maxIt = 10;
+    int numberOfSamples = 100;
+    int maxIt = 20;
     int iterationCounter = 0;
     
     // Illumination
-    Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_52356.rps");
-    /*double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    //Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_52356.rps");
+    double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                  1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};*/
+                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     //auto* loss_function = new ceres::CauchyLoss(1.0);
 
     //TODO: watch out with the references! Not sure that works
@@ -125,7 +125,7 @@ void Optimizer::optimizeDenseTerms() {
                     ),
                     nullptr,
                     colorParams.data(),
-                    shCoefficients.data()
+                    shCoefficients
             );
         }
 
@@ -161,7 +161,7 @@ void Optimizer::configureSolver() {
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.dense_linear_algebra_library_type = ceres::CUDA;
     options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
-    options.use_nonmonotonic_steps = false; //TODO: Maybe das hier löschen
+    options.use_nonmonotonic_steps = true; //TODO: Maybe das hier löschen
     options.linear_solver_type = ceres::DENSE_QR;
     options.minimizer_progress_to_stdout = true; //TODO: Change back to true
     options.max_num_iterations = 50;
