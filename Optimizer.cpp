@@ -20,13 +20,15 @@ void Optimizer::optimizeSparseTerms() {
     std::cout << "Adding Residual Blocks for Sparse Optimization" << std::endl;
     auto *shape = &m_baselFaceModel->getShapeParams();
     auto *expression = &m_baselFaceModel->getExpressionParams();
+    auto* loss_function = new ceres::CauchyLoss(1.0);
+
     for (int i = 18; i < n; ++i) {
         if(landmarks_input_data[i].x() == -1) continue;
         problem.AddResidualBlock(
                 new ceres::AutoDiffCostFunction<SparseOptimizationCost, 1, 199, 100>(
                         new SparseOptimizationCost(m_baselFaceModel, landmarks_input_data[i], landmark_indices_bfm[i])
                 ),
-                nullptr,
+                loss_function,
                 shape->data(),
                 expression->data()
                 );
@@ -47,11 +49,11 @@ void Optimizer::optimizeSparseTerms() {
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
             new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
-    ), nullptr, m_baselFaceModel->getShapeParams().data());
+    ), loss_function, m_baselFaceModel->getShapeParams().data());
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
             new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
-    ), nullptr, m_baselFaceModel->getExpressionParams().data());
+    ), loss_function, m_baselFaceModel->getExpressionParams().data());
 
     std::cout << "End of Adding Residual Blocks for Regularization" << std::endl;
 
@@ -63,7 +65,6 @@ void Optimizer::optimizeSparseTerms() {
 }
 
 void Optimizer::optimizeDenseTerms() {
-    ceres::Problem problem;
 
     auto vertices = m_baselFaceModel->getVerticesWithoutTransformation();
     auto transformedVertices = m_baselFaceModel->transformVertices(vertices);
@@ -76,16 +77,16 @@ void Optimizer::optimizeDenseTerms() {
     std::random_device rd;
     std::mt19937 g(rd());
 
-    int numberOfSamples = 300; //TODO: Pragma
-    int maxIt = 30;             //TODO: Pragma
+    int numberOfSamples = 1000;
+    int maxIt = 10;
     int iterationCounter = 0;
     
     // Illumination
-    //Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_39738.rps");
-    double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_52356.rps");
+    /*double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                  1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    auto* loss_function = new ceres::CauchyLoss(1.0);
+                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};*/
+    //auto* loss_function = new ceres::CauchyLoss(1.0);
 
     //TODO: watch out with the references! Not sure that works
     auto& expressionParams = m_baselFaceModel->getExpressionParams();
@@ -96,6 +97,8 @@ void Optimizer::optimizeDenseTerms() {
     m_baselFaceModel->updateNormals();
 
     while(iterationCounter < maxIt){
+        ceres::Problem problem;
+
         std::cout << "Iteration: " << iterationCounter << std::endl;
         int outliers = 0;
         std::shuffle(indices.begin(), indices.end(), g);
@@ -112,7 +115,7 @@ void Optimizer::optimizeDenseTerms() {
                     new ceres::AutoDiffCostFunction<DenseOptimizationCost, 1, 199, 100>(
                             new DenseOptimizationCost(m_baselFaceModel, targetPoint, idx)
                     ),
-                    loss_function,
+                    nullptr,
                     shapeParams.data(),
                     expressionParams.data()
             );
@@ -120,29 +123,29 @@ void Optimizer::optimizeDenseTerms() {
                     new ceres::AutoDiffCostFunction<ColorOptimizationCost, 1, 199, 27>(
                             new ColorOptimizationCost(m_baselFaceModel, correspondingColor, idx)
                     ),
-                    loss_function,
+                    nullptr,
                     colorParams.data(),
-                    shCoefficients
+                    shCoefficients.data()
             );
         }
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
                 new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE, m_baselFaceModel->getShapePcaVariance())
-        ), loss_function, shapeParams.data());
+        ), nullptr, shapeParams.data());
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
                 new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
-        ), loss_function, expressionParams.data());
+        ), nullptr, expressionParams.data());
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
                 new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
-        ), loss_function, colorParams.data());
+        ), nullptr, colorParams.data());
 
         ceres::Solver::Summary summary;
         std::cout << "Dense Optimization initiated." << std::endl;
-        options.max_num_iterations = 30;
+        options.max_num_iterations = 5;
         ceres::Solve(options, &problem, &summary);
-        //std::cout << summary.BriefReport() << std::endl;
+        std::cout << summary.BriefReport() << std::endl;
         std::cout << "Outliers: " << outliers << std::endl;
         if(summary.termination_type == ceres::CONVERGENCE){
             break;
@@ -163,4 +166,8 @@ void Optimizer::configureSolver() {
     options.minimizer_progress_to_stdout = true; //TODO: Change back to true
     options.max_num_iterations = 50;
     options.num_threads = 20;
+
+    options.initial_trust_region_radius = 1e-2;  // Instead of default ~1e4
+    options.min_trust_region_radius = 1e-6;     // Allow finer updates
+    options.max_trust_region_radius = 10.0;
 }
