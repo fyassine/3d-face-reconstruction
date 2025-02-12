@@ -79,7 +79,7 @@ public:
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        residuals[0] = sqrt(
+        residuals[0] = sqrt( //TODO: wrong order?!
                 pow(transformedVertex.x() - T(m_landmark_image.x()), 2) +
                 pow(transformedVertex.y() - T(m_landmark_image.y()), 2) +
                 pow(transformedVertex.z() - T(m_landmark_image.z()), 2)
@@ -141,6 +141,10 @@ public:
                 pow(transformedVertex.y() - T(m_point_image.y()), 2) +
                 pow(transformedVertex.z() - T(m_point_image.z()), 2)
         );
+
+        //residuals[0] = sqrt(pow(transformedVertex.x() - T(m_point_image.x()), 2));
+        //residuals[1] = sqrt(pow(transformedVertex.y() - T(m_point_image.y()), 2));
+        //residuals[2] = sqrt(pow(transformedVertex.z() - T(m_point_image.z()), 2));
         //TODO: point-to-point, point-to-plane
 
         return true;

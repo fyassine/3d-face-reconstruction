@@ -80,7 +80,7 @@ void Optimizer::optimizeDenseTerms() {
     int numberOfSamples = 100;
     int maxIt = 20;
     int iterationCounter = 0;
-    
+
     // Illumination
     //Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_52356.rps");
     double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -112,21 +112,21 @@ void Optimizer::optimizeDenseTerms() {
             }
             Vector3d correspondingColor = Vector3d(correspondingColors[idx].x() / 255.0, correspondingColors[idx].y() / 255.0, correspondingColors[idx].z() / 255.0);
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 1, 199, 100>(
+                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 3, 199, 100>(
                             new DenseOptimizationCost(m_baselFaceModel, targetPoint, idx)
                     ),
                     nullptr,
                     shapeParams.data(),
                     expressionParams.data()
             );
-            problem.AddResidualBlock(
+            /*problem.AddResidualBlock(
                     new ceres::AutoDiffCostFunction<ColorOptimizationCost, 1, 199, 27>(
                             new ColorOptimizationCost(m_baselFaceModel, correspondingColor, idx)
                     ),
                     nullptr,
                     colorParams.data(),
                     shCoefficients
-            );
+            );*/
         }
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
@@ -137,9 +137,9 @@ void Optimizer::optimizeDenseTerms() {
                 new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
         ), nullptr, expressionParams.data());
 
-        problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
+        /*problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
                 new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
-        ), nullptr, colorParams.data());
+        ), nullptr, colorParams.data());*/
 
         ceres::Solver::Summary summary;
         std::cout << "Dense Optimization initiated." << std::endl;
@@ -162,11 +162,10 @@ void Optimizer::configureSolver() {
     options.dense_linear_algebra_library_type = ceres::CUDA;
     options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = true; //TODO: Maybe das hier löschen
-    options.linear_solver_type = ceres::DENSE_QR;
+    options.linear_solver_type = ceres::DENSE_QR; //sparse solver für sparse verwenden?
     options.minimizer_progress_to_stdout = true; //TODO: Change back to true
     options.max_num_iterations = 50;
     options.num_threads = 20;
-
     options.initial_trust_region_radius = 1e-2;  // Instead of default ~1e4
     options.min_trust_region_radius = 1e-6;     // Allow finer updates
     options.max_trust_region_radius = 10.0;
