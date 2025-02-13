@@ -112,7 +112,7 @@ void Optimizer::optimizeDenseTerms() {
             }
             Vector3d correspondingColor = Vector3d(correspondingColors[idx].x() / 255.0, correspondingColors[idx].y() / 255.0, correspondingColors[idx].z() / 255.0);
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 6, 199, 100>(
+                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 4, 199, 100>(
                             new DenseOptimizationCost(m_baselFaceModel, targetPoint, idx)
                     ),
                     nullptr,

@@ -139,9 +139,14 @@ public:
         residuals[1] = transformedVertex.y() - T(m_point_image.y());
         residuals[2] = transformedVertex.z() - T(m_point_image.z());
 
-        residuals[3] = (transformedVertex.x() - T(m_point_image.x())) * T(normal.x());
-        residuals[4] = (transformedVertex.y() - T(m_point_image.y())) * T(normal.y());
-        residuals[5] = (transformedVertex.z() - T(m_point_image.z())) * T(normal.z());
+        //residuals[3] = (transformedVertex.x() - T(m_point_image.x())) * T(normal.x());
+        //residuals[4] = (transformedVertex.y() - T(m_point_image.y())) * T(normal.y());
+        //residuals[5] = (transformedVertex.z() - T(m_point_image.z())) * T(normal.z());
+
+        residuals[3] = Matrix<T, 3, 1>(transformedVertex.x() - T(m_point_image.x()),
+                                      transformedVertex.y() - T(m_point_image.y()),
+                                      transformedVertex.z() - T(m_point_image.z())).dot(normal.cast<T>());
+
         //TODO: point-to-point, point-to-plane
 
         return true;
