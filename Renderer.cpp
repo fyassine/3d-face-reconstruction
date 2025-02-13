@@ -77,7 +77,7 @@ void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &verti
 }
 
 void Renderer::convertPngsToMp4(const std::string &inputPath, const std::string &outputPath, int numberOfFrames) {
-    std::string outputDir = "../../Result/video/";
+    std::string outputDir = "../../../Result/video/";
 
     // Video Writer setup
     int frameWidth = 1280;
