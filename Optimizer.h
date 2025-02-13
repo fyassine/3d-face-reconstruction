@@ -109,6 +109,7 @@ public:
         auto& shapeVariance = m_baselFaceModel->getShapePcaVariance();
         auto& expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
         auto& transformationMatrix = m_baselFaceModel->getTransformation();
+        auto normal = m_baselFaceModel->getNormals()[m_landmark_bfm_index];
 
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
                 T(shapeMean[m_landmark_bfm_index * 3]) + T(expressionMean[m_landmark_bfm_index * 3]),
@@ -137,6 +138,10 @@ public:
         residuals[0] = transformedVertex.x() - T(m_point_image.x());
         residuals[1] = transformedVertex.y() - T(m_point_image.y());
         residuals[2] = transformedVertex.z() - T(m_point_image.z());
+
+        residuals[3] = (transformedVertex.x() - T(m_point_image.x())) * T(normal.x());
+        residuals[4] = (transformedVertex.y() - T(m_point_image.y())) * T(normal.y());
+        residuals[5] = (transformedVertex.z() - T(m_point_image.z())) * T(normal.z());
         //TODO: point-to-point, point-to-plane
 
         return true;

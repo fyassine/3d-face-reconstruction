@@ -76,8 +76,8 @@ void Optimizer::optimizeDenseTerms() {
     std::iota(indices.begin(), indices.end(), 0);
     std::random_device rd;
     std::mt19937 g(rd());
-    int numberOfVerticesPerSample = 500;
-    int maxNumberOfSamples = 15;
+    int numberOfVerticesPerSample = n;
+    int maxNumberOfSamples = 5;
     int iterationCounter = 0;
 
     // Illumination
@@ -92,15 +92,16 @@ void Optimizer::optimizeDenseTerms() {
     auto& colorParams = m_baselFaceModel->getColorParams();
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    m_baselFaceModel->updateNormals();
 
     //maybe keep sample from the last iteration to already have some fitting vertices?
     while(iterationCounter < maxNumberOfSamples){
         ceres::Problem problem;
+        m_baselFaceModel->updateNormals();
 
         std::cout << "Iteration: " << iterationCounter << std::endl;
         int outliers = 0;
         std::shuffle(indices.begin(), indices.end(), g);
+        std::cout << "RANDOM: " << indices[0] << std::endl;
         for (int i = 0; i < numberOfVerticesPerSample; i+=1) {
             int idx = indices[i];
             Vector3d targetPoint = correspondingPoints[idx];
@@ -111,7 +112,7 @@ void Optimizer::optimizeDenseTerms() {
             }
             Vector3d correspondingColor = Vector3d(correspondingColors[idx].x() / 255.0, correspondingColors[idx].y() / 255.0, correspondingColors[idx].z() / 255.0);
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 3, 199, 100>(
+                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 6, 199, 100>(
                             new DenseOptimizationCost(m_baselFaceModel, targetPoint, idx)
                     ),
                     nullptr,
@@ -142,7 +143,7 @@ void Optimizer::optimizeDenseTerms() {
 
         ceres::Solver::Summary summary;
         std::cout << "Dense Optimization initiated." << std::endl;
-        options.max_num_iterations = 10;
+        options.max_num_iterations = 3;
         ceres::Solve(options, &problem, &summary);
         std::cout << summary.BriefReport() << std::endl;
         std::cout << "Outliers: " << outliers << std::endl;
