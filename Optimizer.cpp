@@ -1,5 +1,6 @@
 #include "Optimizer.h"
 #include "Illumination.h"
+#include "ModelConverter.h"
 #include <random>
 #include <chrono>
 
@@ -176,4 +177,107 @@ void Optimizer::configureSolver() {
     options.num_threads = 16;
     options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 100;
+}
+
+void WeightSearch::runSparseWeightTrial(const std::string &bagPath,
+                          double shapeWeight,
+                          double expressionWeight)
+{
+    // (Re)extract input data and create the face model.
+    BaselFaceModel baselFaceModel;
+    //InputData inputData = InputDataExtractor::extractInputData(bagPath);
+    //inputData.save(dataFolderPath + "input_data.json")
+    InputData inputData = InputData::load(dataFolderPath + "input_data.json");
+    baselFaceModel.computeTransformationMatrix(&inputData);
+
+    // Create an optimizer and set the sparse weights.
+    Optimizer optimizer(&baselFaceModel, &inputData);
+    optimizer.setWeights(shapeWeight, expressionWeight,
+                         DEFAULT_SHAPE_REG_WEIGHT_DENSE,   // keep dense weights default
+                         DEFAULT_EXPRESSION_REG_WEIGHT_DENSE,
+                         DEFAULT_COLOR_REG_WEIGHT_DENSE);
+    optimizer.configureSolver();
+
+    // Run only the sparse optimization part.
+    optimizer.optimizeSparseTerms();
+
+    // Retrieve the vertices and corresponding colors.
+    auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
+    auto transformedVertices = baselFaceModel.transformVertices(verticesAfterTransformation);
+    auto mappedColor = inputData.getCorrespondingColors(transformedVertices);
+
+    // (Optional) Apply Laplacian smoothing
+    // laplacianSmooth(verticesAfterTransformation, baselFaceModel.getFaces(), 5, 0.3);
+
+    // Build the output filename
+    std::string fileName = "BfmAfterSparseTermsMappedColor_SR_" +
+                           std::to_string(shapeWeight) + "_ER_" +
+                           std::to_string(expressionWeight) + ".ply";
+
+    // Write the output PLY file.
+    ModelConverter::convertToPly(transformedVertices, mappedColor, baselFaceModel.getFaces(), fileName);
+}
+
+void WeightSearch::runDenseWeightTrial(const std::string &bagPath,
+                         double shapeWeight,
+                         double expressionWeight,
+                         double colorWeight)
+{
+    BaselFaceModel baselFaceModel;
+    InputData inputData = InputDataExtractor::extractInputData(bagPath);
+    baselFaceModel.computeTransformationMatrix(&inputData);
+
+    Optimizer optimizer(&baselFaceModel, &inputData);
+    // Keep the sparse weights at their defaults while setting dense weights.
+    optimizer.setWeights(DEFAULT_SHAPE_REG_WEIGHT_SPARSE, DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE,
+                         shapeWeight, expressionWeight, colorWeight);
+    optimizer.configureSolver();
+
+    optimizer.optimizeSparseTerms();
+    optimizer.optimizeDenseGeometryTerm();
+
+    auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
+    auto transformedVertices = baselFaceModel.transformVertices(verticesAfterTransformation);
+    auto mappedColor = inputData.getCorrespondingColors(transformedVertices);
+
+    std::string fileName = "BfmAfterDenseTermsMappedColor_SD_" +
+                           std::to_string(shapeWeight) + "_ED_" +
+                           std::to_string(expressionWeight) + "_CD_" +
+                           std::to_string(colorWeight) + ".ply";
+
+    ModelConverter::convertToPly(transformedVertices, mappedColor, baselFaceModel.getFaces(), fileName);
+}
+
+void WeightSearch::runSparseWeightTrials(const std::string &bagPath)
+{
+    std::vector<double> testValues = {1e-4, 1e-3, 1e-2, 1e-1, 1, 10, 100, 1000};
+    double defaultValue = 1.0;
+
+    // Vary the shape weight (while keeping expression weight at default).
+    for (double shapeWeight : testValues) {
+        runSparseWeightTrial(bagPath, shapeWeight, defaultValue);
+    }
+    // Vary the expression weight (while keeping shape weight at default).
+    for (double expressionWeight : testValues) {
+        runSparseWeightTrial(bagPath, defaultValue, expressionWeight);
+    }
+}
+
+void WeightSearch::runDenseWeightTrials(const std::string &bagPath)
+{
+    std::vector<double> testValues = {1e-4, 1e-3, 1e-2, 1e-1, 1, 10, 100, 1000};
+    double defaultValue = 1.0;
+
+    // Vary the dense shape weight.
+    for (double shapeWeight : testValues) {
+        runDenseWeightTrial(bagPath, shapeWeight, defaultValue, defaultValue);
+    }
+    // Vary the dense expression weight.
+    for (double expressionWeight : testValues) {
+        runDenseWeightTrial(bagPath, defaultValue, expressionWeight, defaultValue);
+    }
+    // Vary the dense color weight.
+    for (double colorWeight : testValues) {
+        runDenseWeightTrial(bagPath, defaultValue, defaultValue, colorWeight);
+    }
 }

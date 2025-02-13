@@ -27,10 +27,31 @@ public:
     void optimizeSparseTerms();
     void optimizeDenseTerms();
     void configureSolver();
+
+    // NEW: A method to set the weights at runtime.
+    void setWeights(double shapeSparse,
+                    double expressionSparse,
+                    double shapeDense,
+                    double expressionDense,
+                    double colorDense)
+    {
+        m_shapeRegWeightSparse = shapeSparse;
+        m_expressionRegWeightSparse = expressionSparse;
+        m_shapeRegWeightDense = shapeDense;
+        m_expressionRegWeightDense = expressionDense;
+        m_colorRegWeightDense = colorDense;
+    }
+
 private:
     BaselFaceModel* m_baselFaceModel;
     InputData* m_inputData;
     ceres::Solver::Options options;
+
+    double m_shapeRegWeightSparse = DEFAULT_SHAPE_REG_WEIGHT_SPARSE;
+    double m_expressionRegWeightSparse = DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE;
+    double m_shapeRegWeightDense = DEFAULT_SHAPE_REG_WEIGHT_DENSE;
+    double m_expressionRegWeightDense = DEFAULT_EXPRESSION_REG_WEIGHT_DENSE;
+    double m_colorRegWeightDense = DEFAULT_COLOR_REG_WEIGHT_DENSE;
 };
 
 struct SparseOptimizationCost {
@@ -164,12 +185,12 @@ public:
                           Vector3d colorImage,
                           int vertexIndex)
     : m_baselFaceModel{baselFaceModel}, m_color_image{std::move(colorImage)}, m_vertex_index{vertexIndex} {}
-    
+
     template <typename T>
     bool operator()(const T* const color,
                     const T* const illumination,
                     T* residuals) const {
-        
+
         auto& colorMean = m_baselFaceModel->getColorMean();
         auto& colorPcaBasis = m_baselFaceModel->getColorPcaBasis();
         auto& colorVariance = m_baselFaceModel->getColorPcaVariance();
@@ -182,14 +203,14 @@ public:
                                                                T(colorMean[m_vertex_index * 3 + 2]),
                                                                T(1)
                                                                );
-        
+
         for (int i = 0; i < NUM_COLOR_PARAMETERS; ++i) {
             T param = T(sqrt(colorVariance[i])) * color[i];
             offset.x() += param * T(colorPcaBasis(vertex_idx, i));
             offset.y() += param * T(colorPcaBasis(vertex_idx + 1, i));
             offset.z() += param * T(colorPcaBasis(vertex_idx + 2, i));
         }
-        
+
 
        // Get normal for this vertex
        //Eigen::Matrix<T, 3, 1> normal = m_baselFaceModel->getNormals()[m_vertex_index].template cast<T>();
@@ -206,7 +227,7 @@ public:
        shBasis[6] = T(0.31539157) * (T(3) * normal.z() * normal.z() - T(1));
        shBasis[7] = T(1.09254843) * normal.x() * normal.z();
        shBasis[8] = T(0.54627421) * (normal.x() * normal.x() - normal.y() * normal.y());
-       
+
        // Apply SH lighting
        Eigen::Matrix<T, 3, 1> shLighting = Eigen::Matrix<T, 3, 1>::Zero();
        for (int i = 0; i < 27; i+=3) {
@@ -214,17 +235,17 @@ public:
            shLighting(1) += shBasis[i / 3] * T(illumination[i + 1]);  // Green
            shLighting(2) += shBasis[i / 3] * T(illumination[i + 2]);  // Blue
        }
-       
+
        // Apply SH illumination to color
        Eigen::Matrix<T, 3, 1> shadedColor = offset.template head<3>().cwiseProduct(shLighting);
 
         residuals[0] = offset.x() - T(m_color_image.x());
         residuals[1] = offset.y() - T(m_color_image.y());
         residuals[2] = offset.z() - T(m_color_image.z());
-        
+
         return true;
     }
-    
+
 private:
     BaselFaceModel* m_baselFaceModel;
     Vector3d m_color_image;
@@ -283,6 +304,20 @@ struct ColorRegularizerCost
 private:
     double m_color_weight;
     std::vector<double> m_variance;
+};
+
+struct WeightSearch
+{
+public:
+    static void runSparseWeightTrials(const std::string &bagPath);
+    static void runDenseWeightTrials(const std::string &bagPath);
+    static void runSparseWeightTrial(const std::string &bagPath,
+                      double shapeWeight,
+                      double expressionWeight);
+    static void runDenseWeightTrial(const std::string &bagPath,
+                             double shapeWeight,
+                             double expressionWeight,
+                             double colorWeight);
 };
 
 
