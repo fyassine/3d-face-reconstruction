@@ -20,8 +20,8 @@ SingleInputFrame* InputData::processNextFrame() {
     if (m_current_frame_index >= m_frames.size()) {
         return nullptr;
     }
-    m_currentFrame = m_frames[m_current_frame_index];
     m_current_frame_index++;
+    m_currentFrame = m_frames[m_current_frame_index];
     return &m_currentFrame;
 }
 

@@ -11,14 +11,21 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
-#define SHAPE_REG_WEIGHT_SPARSE 0.05
-#define EXPRESSION_REG_WEIGHT_SPARSE 0.05
+/*#define SHAPE_REG_WEIGHT_SPARSE 0.1
+#define EXPRESSION_REG_WEIGHT_SPARSE 0.075
 
 #define SHAPE_REG_WEIGHT_DENSE 0.05
-#define EXPRESSION_REG_WEIGHT_DENSE 0.05
-#define COLOR_REG_WEIGHT_DENSE 0.05
+#define EXPRESSION_REG_WEIGHT_DENSE 0.025
+#define COLOR_REG_WEIGHT_DENSE 1.0*/
 
-#define OUTLIER_THRESHOLD 0.015 //0.01//0.004
+#define SHAPE_REG_WEIGHT_SPARSE 0.1
+#define EXPRESSION_REG_WEIGHT_SPARSE 0.08
+
+#define SHAPE_REG_WEIGHT_DENSE 0.1
+#define EXPRESSION_REG_WEIGHT_DENSE 0.08
+#define COLOR_REG_WEIGHT_DENSE 0.0007
+
+#define OUTLIER_THRESHOLD 0.015
 
 class Optimizer {
 public:
@@ -260,7 +267,8 @@ struct ShapeRegularizerCost
     bool operator()(T const* shape, T* residuals) const
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
-            residuals[i] = (shape[i] / sqrt(m_variance[i])) * m_shape_weight;
+            //residuals[i] = (shape[i] / sqrt(m_variance[i])) * m_shape_weight;
+            residuals[i] = shape[i] * T(sqrt(m_shape_weight));
         }
         return true;
     }
@@ -278,7 +286,8 @@ struct ExpressionRegularizerCost
     bool operator()(T const* expression, T* residuals) const
     {
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; i++) {
-            residuals[i] = (expression[i] / sqrt(m_variance[i])) * m_expression_weight;
+            //residuals[i] = (expression[i] / sqrt(m_variance[i])) * m_expression_weight;
+            residuals[i] = expression[i] * T(sqrt(m_expression_weight));
         }
         return true;
     }
@@ -296,7 +305,8 @@ struct ColorRegularizerCost
     bool operator()(T const* color, T* residuals) const
     {
         for (int i = 0; i < NUM_COLOR_PARAMETERS; i++) {
-            residuals[i] = (color[i] / sqrt(m_variance[i])) * m_color_weight;
+            //residuals[i] = (color[i] / sqrt(m_variance[i])) * m_color_weight;
+            residuals[i] = color[i] * T(sqrt(m_color_weight));
         }
         return true;
     }

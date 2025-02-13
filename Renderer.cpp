@@ -115,7 +115,7 @@ void Renderer::convertColorToPng(std::vector<Vector3d> colorValues, const std::s
             );
         }
     }
-
+    std::cout << "Saved to" << path << std::endl;
     cv::imwrite(path, image);
 }
 

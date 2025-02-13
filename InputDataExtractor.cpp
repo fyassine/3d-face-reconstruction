@@ -59,9 +59,9 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
             while (NUMBER_OF_FRAMES > counter) {
                 counter++;
                 rs2::frameset unaligned_frames = pipe.wait_for_frames();
-                // if (!pipe.poll_for_frames(&unaligned_frames)) {
+                //if (!pipe.poll_for_frames(&unaligned_frames)) {
                 //     break;
-                // }
+                //}
                 rs2::frameset frameset = align.process(unaligned_frames);
 
                 auto depth = frameset.get_depth_frame();

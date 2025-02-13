@@ -73,8 +73,11 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
     mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
+    std::cout << "HELLO" << std::endl;
+
     Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), colorAfterTransformation, baselFaceModel.getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), "../../../Result/Source_Frames/0.png", "../../../Result/RenderedFace.png");
 
+    std::cout << "END" << std::endl;
     return baselFaceModel;
 }
 
@@ -104,7 +107,7 @@ int main(){
 
     Renderer::run(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), inputNeli.getMIntrinsicMatrix(), inputNeli.getMExtrinsicMatrix());
 */
-    WeightSearch::runSparseWeightTrials(LEO_VID);
+    //WeightSearch::runSparseWeightTrials(LEO_VID);
     //WeightSearch::runSparseWeightTrial(LEO_VID, 1, 1);
     //WeightSearch::runSparseWeightTrial(LEO_VID, 100, 10);
     //WeightSearch::runDenseWeightTrials(dataFolderPath + LEO_VID);
