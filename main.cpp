@@ -2,16 +2,9 @@
 #include <fstream>
 
 #include "Eigen.h"
-#include "VirtualSensor.h"
-#include "SimpleMesh.h"
-#include "PointCloud.h"
 
 #include "FacialLandmarks.h"
-#include "Optimization.h"
-#include "Rendering.h"
-#include "BFMParameters.h"
 #include "ProcrustesAligner.h"
-#include "ImageExtraction.h"
 #include "BaselFaceModel.h"
 
 //#include "Renderer.h"
@@ -69,7 +62,7 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
     //TODO: Smth wrong with reg for dense
-    optimizer.optimizeDenseGeometryTerm();
+    optimizer.optimizeDenseTerms();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
@@ -80,19 +73,21 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
     mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
+    Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), colorAfterTransformation, baselFaceModel.getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), "../../../Result/Source_Frames/0.png", "../../../Result/RenderedFace.png");
 
     return baselFaceModel;
 }
 
 int main(){
-    InputData inputSource = InputDataExtractor::extractInputData(LEO_LONG);
-    InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
-    BaselFaceModel sourceBaselFaceModel;
-    BaselFaceModel targetBaselFaceModel;
+    InputData inputSource = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
+    //InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
+    //BaselFaceModel sourceBaselFaceModel;
+    //BaselFaceModel targetBaselFaceModel;
 
-    FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);
+    //FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);
+
     //FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
-    //auto sourceFace = processFace(&inputLeo);
+    auto sourceFace = processFace(&inputSource);
     /*auto sourceFace = processFace(&inputLeo);
     auto targetFace = processFace(&inputNeli);
     auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();

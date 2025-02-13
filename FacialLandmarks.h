@@ -23,7 +23,6 @@
  *
  * @return dlib::full_object_detection The detected landmarks for the first face found in the image.
  */
-//TODO: Include depth?!
 static dlib::full_object_detection GetLandmarks(const std::string& imagePath, const std::string& shapePredictorPath) {
     auto frontal_face_detector = dlib::get_frontal_face_detector();
     dlib::shape_predictor shape_predictor;
@@ -75,7 +74,7 @@ static dlib::rgb_pixel GetLandmarkColor(int i) {
             return range.second;
         }
     }
-    return dlib::rgb_pixel(0, 0, 0);
+    return {0, 0, 0};
 }
 
 /**

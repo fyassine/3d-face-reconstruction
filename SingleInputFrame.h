@@ -8,11 +8,11 @@
 class SingleInputFrame {
 public:
     SingleInputFrame(std::vector<Vector3d> rgbData, std::vector<double> depthData, std::vector<Vector3d> landmarks);
-    SingleInputFrame() = default; // constructor used inside deserialization
+    SingleInputFrame() = default;
     ~SingleInputFrame();
-    const std::vector<Vector3d> &getMLandmarks() const;
-    const std::vector<Vector3d> &getMRgbData() const;
-    const std::vector<double> &getMDepthData() const;
+    [[nodiscard]] const std::vector<Vector3d> &getMLandmarks() const;
+    [[nodiscard]] const std::vector<Vector3d> &getMRgbData() const;
+    [[nodiscard]] const std::vector<double> &getMDepthData() const;
 
 private:
     std::vector<Vector3d> m_rgb_data;

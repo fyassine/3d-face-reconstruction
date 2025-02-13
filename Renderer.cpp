@@ -31,8 +31,13 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
     std::cout << faces.size() << std::endl;
 
     renderModel(image, vertices, faces, intrinsics, R, t, colors);
-    //cv::imshow("Rendered Image", image);
-    cv::imwrite(outputPath, image);
+    
+    // Apply smoothing to the reconstructed face
+    cv::Mat smoothedImage;
+    cv::bilateralFilter(image, smoothedImage, 9, 75, 75);  // (d=9, sigmaColor=75, sigmaSpace=75)
+
+    // Save the filtered image
+    cv::imwrite(outputPath, smoothedImage);
     cv::waitKey(0);
 }
 

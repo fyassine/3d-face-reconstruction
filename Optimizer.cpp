@@ -1,8 +1,8 @@
 #include "Optimizer.h"
+#include "Illumination.h"
 #include "ModelConverter.h"
 #include <random>
-
-#include "BFMParameters.h"
+#include <chrono>
 
 Optimizer::Optimizer(BaselFaceModel *baselFaceModel, InputData *inputData) {
     m_baselFaceModel = baselFaceModel;
@@ -21,6 +21,8 @@ void Optimizer::optimizeSparseTerms() {
     std::cout << "Adding Residual Blocks for Sparse Optimization" << std::endl;
     auto *shape = &m_baselFaceModel->getShapeParams();
     auto *expression = &m_baselFaceModel->getExpressionParams();
+    auto* loss_function = new ceres::CauchyLoss(1.0);
+
     for (int i = 18; i < n; ++i) {
         if(landmarks_input_data[i].x() == -1) continue;
         problem.AddResidualBlock(
@@ -44,22 +46,15 @@ void Optimizer::optimizeSparseTerms() {
         expression_std_dev[i] = std::sqrt(m_baselFaceModel->getExpressionPcaVariance()[i]);
     }
 
-    /*problem.AddResidualBlock(
-            new ceres::AutoDiffCostFunction<GeometryRegularizationCost, 2, 199, 100>(
-                    new GeometryRegularizationCost(identity_std_dev, expression_std_dev)),
-            nullptr,
-            m_baselFaceModel->getShapeParams().data(),
-            m_baselFaceModel->getExpressionParams().data()
-    );*/
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-            new ShapeRegularizerCost(m_shapeRegWeightSparse, m_baselFaceModel->getShapePcaVariance())
-    ), nullptr, m_baselFaceModel->getShapeParams().data());
+            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
+    ), loss_function, m_baselFaceModel->getShapeParams().data());
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(m_expressionRegWeightSparse, m_baselFaceModel->getExpressionPcaVariance())
-    ), nullptr, m_baselFaceModel->getExpressionParams().data());
+            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
+    ), loss_function, m_baselFaceModel->getExpressionParams().data());
 
     std::cout << "End of Adding Residual Blocks for Regularization" << std::endl;
 
@@ -70,8 +65,7 @@ void Optimizer::optimizeSparseTerms() {
     std::cout << "Sparse Optimization finished." << std::endl;
 }
 
-void Optimizer::optimizeDenseGeometryTerm() {
-    ceres::Problem problem;
+void Optimizer::optimizeDenseTerms() {
 
     auto vertices = m_baselFaceModel->getVerticesWithoutTransformation();
     auto transformedVertices = m_baselFaceModel->transformVertices(vertices);
@@ -83,15 +77,33 @@ void Optimizer::optimizeDenseGeometryTerm() {
     std::iota(indices.begin(), indices.end(), 0);
     std::random_device rd;
     std::mt19937 g(rd());
-
-    int numberOfSamples = 300; //TODO: Pragma
-    int maxIt = 30;            //TODO: Pragma
+    int numberOfVerticesPerSample = n;
+    int maxNumberOfSamples = 5;
     int iterationCounter = 0;
-    while(iterationCounter < maxIt){
+
+    // Illumination
+    //Eigen::Matrix<double, 9, 3> shCoefficients = Illumination::loadSHCoefficients("../../../Data/face_52356.rps");
+    double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+    //TODO: watch out with the references! Not sure that works
+    auto& expressionParams = m_baselFaceModel->getExpressionParams();
+    auto& shapeParams = m_baselFaceModel->getShapeParams();
+    auto& colorParams = m_baselFaceModel->getColorParams();
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    //maybe keep sample from the last iteration to already have some fitting vertices?
+    while(iterationCounter < maxNumberOfSamples){
+        ceres::Problem problem;
+        m_baselFaceModel->updateNormals();
+
         std::cout << "Iteration: " << iterationCounter << std::endl;
         int outliers = 0;
         std::shuffle(indices.begin(), indices.end(), g);
-        for (int i = 0; i < numberOfSamples; i+=1) {
+        std::cout << "RANDOM: " << indices[0] << std::endl;
+        for (int i = 0; i < numberOfVerticesPerSample; i+=1) {
             int idx = indices[i];
             Vector3d targetPoint = correspondingPoints[idx];
             auto distance = abs(transformedVertices[idx].z() - targetPoint.z());
@@ -101,46 +113,38 @@ void Optimizer::optimizeDenseGeometryTerm() {
             }
             Vector3d correspondingColor = Vector3d(correspondingColors[idx].x() / 255.0, correspondingColors[idx].y() / 255.0, correspondingColors[idx].z() / 255.0);
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 3, 199, 100>(
+                    new ceres::AutoDiffCostFunction<DenseOptimizationCost, 4, 199, 100>(
                             new DenseOptimizationCost(m_baselFaceModel, targetPoint, idx)
                     ),
                     nullptr,
-                    m_baselFaceModel->getShapeParams().data(),
-                    m_baselFaceModel->getExpressionParams().data()
+                    shapeParams.data(),
+                    expressionParams.data()
             );
             problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 3, 199>(
+                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 3, 199, 27>(
                             new ColorOptimizationCost(m_baselFaceModel, correspondingColor, idx)
                     ),
                     nullptr,
-                    m_baselFaceModel->getColorParams().data()
+                    colorParams.data(),
+                    shCoefficients
             );
         }
 
-        ceres::CostFunction* shapeCost = new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-                new ShapeRegularizerCost(m_shapeRegWeightDense, m_baselFaceModel->getShapePcaVariance())
-        );
-        problem.AddResidualBlock(shapeCost, nullptr, m_baselFaceModel->getShapeParams().data());
+        problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
+                new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE, m_baselFaceModel->getShapePcaVariance())
+        ), nullptr, shapeParams.data());
 
-        ceres::CostFunction* expressionCost = new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-                new ExpressionRegularizerCost(m_expressionRegWeightDense, m_baselFaceModel->getExpressionPcaVariance())
-        );
-        problem.AddResidualBlock(expressionCost, nullptr, m_baselFaceModel->getExpressionParams().data());
-    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(m_expressionRegWeightDense, m_baselFaceModel->getExpressionPcaVariance())
-    ), nullptr, m_baselFaceModel->getExpressionParams().data());
+        problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
+                new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
+        ), nullptr, expressionParams.data());
 
-        ceres::CostFunction* colorCost = new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
-                new ColorRegularizerCost(m_colorRegWeightDense, m_baselFaceModel->getColorPcaVariance())
-        );
-        problem.AddResidualBlock(colorCost, nullptr, m_baselFaceModel->getColorParams().data());
-    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
-            new ColorRegularizerCost(m_colorRegWeightDense, m_baselFaceModel->getColorPcaVariance())
-    ), nullptr, m_baselFaceModel->getColorParams().data());
+        problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
+                new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
+        ), nullptr, colorParams.data());
 
         ceres::Solver::Summary summary;
         std::cout << "Dense Optimization initiated." << std::endl;
-        options.max_num_iterations = 15;
+        options.max_num_iterations = 3;
         ceres::Solve(options, &problem, &summary);
         std::cout << summary.BriefReport() << std::endl;
         std::cout << "Outliers: " << outliers << std::endl;
@@ -149,28 +153,30 @@ void Optimizer::optimizeDenseGeometryTerm() {
         }
         iterationCounter++;
     }
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time Dense Optimization (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) /1000000.0  <<std::endl;
     std::cout << "Dense Optimization finished." << std::endl;
 }
 
-void Optimizer::optimizeDenseColorTerm() {
-
-}
-
-void Optimizer::optimize() {
-    optimizeSparseTerms();
-    optimizeDenseGeometryTerm();
-    optimizeDenseColorTerm();
-}
-
 void Optimizer::configureSolver() {
-    options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+    /*options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.dense_linear_algebra_library_type = ceres::CUDA;
     options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
-    options.use_nonmonotonic_steps = false; //TODO: Maybe das hier löschen
+    options.use_nonmonotonic_steps = true; //TODO: Maybe das hier löschen
+    options.linear_solver_type = ceres::DENSE_QR; //sparse solver für sparse verwenden?
+    options.minimizer_progress_to_stdout = true; //TODO: Change back to true
+    options.max_num_iterations = 50;
+    options.num_threads = 20;
+    options.initial_trust_region_radius = 1e-2;  // Instead of default ~1e4
+    options.min_trust_region_radius = 1e-6;     // Allow finer updates
+    options.max_trust_region_radius = 10.0;*/
+
+    options.dense_linear_algebra_library_type = ceres::CUDA;
+    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.linear_solver_type = ceres::DENSE_QR;
+    options.num_threads = 16;
     options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 100;
-    options.num_threads = 12;
 }
 
 void WeightSearch::runSparseWeightTrial(const std::string &bagPath,
@@ -181,15 +187,15 @@ void WeightSearch::runSparseWeightTrial(const std::string &bagPath,
     BaselFaceModel baselFaceModel;
     //InputData inputData = InputDataExtractor::extractInputData(bagPath);
     //inputData.save(dataFolderPath + "input_data.json")
-    InputData inputData = InputData::load(dataFolderPath + "input_data.json");
+    InputData inputData = InputData::load("../../../Data/input_data.json");
     baselFaceModel.computeTransformationMatrix(&inputData);
 
     // Create an optimizer and set the sparse weights.
     Optimizer optimizer(&baselFaceModel, &inputData);
     optimizer.setWeights(shapeWeight, expressionWeight,
-                         DEFAULT_SHAPE_REG_WEIGHT_DENSE,   // keep dense weights default
-                         DEFAULT_EXPRESSION_REG_WEIGHT_DENSE,
-                         DEFAULT_COLOR_REG_WEIGHT_DENSE);
+                         SHAPE_REG_WEIGHT_DENSE,   // keep dense weights default
+                         EXPRESSION_REG_WEIGHT_DENSE,
+                         COLOR_REG_WEIGHT_DENSE);
     optimizer.configureSolver();
 
     // Run only the sparse optimization part.
@@ -223,12 +229,12 @@ void WeightSearch::runDenseWeightTrial(const std::string &bagPath,
 
     Optimizer optimizer(&baselFaceModel, &inputData);
     // Keep the sparse weights at their defaults while setting dense weights.
-    optimizer.setWeights(DEFAULT_SHAPE_REG_WEIGHT_SPARSE, DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE,
+    optimizer.setWeights(SHAPE_REG_WEIGHT_SPARSE, EXPRESSION_REG_WEIGHT_SPARSE,
                          shapeWeight, expressionWeight, colorWeight);
     optimizer.configureSolver();
 
     optimizer.optimizeSparseTerms();
-    optimizer.optimizeDenseGeometryTerm();
+    optimizer.optimizeDenseTerms();
 
     auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVertices = baselFaceModel.transformVertices(verticesAfterTransformation);

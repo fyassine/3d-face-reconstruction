@@ -11,23 +11,21 @@
 #define NUM_EXPRESSION_PARAMETERS 100
 #define NUM_COLOR_PARAMETERS 199
 
-#define DEFAULT_SHAPE_REG_WEIGHT_SPARSE 100
-#define DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE 10
+#define SHAPE_REG_WEIGHT_SPARSE 0.05
+#define EXPRESSION_REG_WEIGHT_SPARSE 0.05
 
-#define DEFAULT_SHAPE_REG_WEIGHT_DENSE 100
-#define DEFAULT_EXPRESSION_REG_WEIGHT_DENSE 10
-#define DEFAULT_COLOR_REG_WEIGHT_DENSE 1
+#define SHAPE_REG_WEIGHT_DENSE 0.05
+#define EXPRESSION_REG_WEIGHT_DENSE 0.05
+#define COLOR_REG_WEIGHT_DENSE 0.05
 
-#define OUTLIER_THRESHOLD 0.004
+#define OUTLIER_THRESHOLD 0.015 //0.01//0.004
 
 class Optimizer {
 public:
     Optimizer(BaselFaceModel* baselFaceModel, InputData* inputData);
     ~Optimizer();
     void optimizeSparseTerms();
-    void optimizeDenseGeometryTerm();
-    void optimizeDenseColorTerm();
-    void optimize();
+    void optimizeDenseTerms();
     void configureSolver();
 
     // NEW: A method to set the weights at runtime.
@@ -49,11 +47,11 @@ private:
     InputData* m_inputData;
     ceres::Solver::Options options;
 
-    double m_shapeRegWeightSparse = DEFAULT_SHAPE_REG_WEIGHT_SPARSE;
-    double m_expressionRegWeightSparse = DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE;
-    double m_shapeRegWeightDense = DEFAULT_SHAPE_REG_WEIGHT_DENSE;
-    double m_expressionRegWeightDense = DEFAULT_EXPRESSION_REG_WEIGHT_DENSE;
-    double m_colorRegWeightDense = DEFAULT_COLOR_REG_WEIGHT_DENSE;
+    double m_shapeRegWeightSparse = SHAPE_REG_WEIGHT_SPARSE;
+    double m_expressionRegWeightSparse = EXPRESSION_REG_WEIGHT_SPARSE;
+    double m_shapeRegWeightDense = SHAPE_REG_WEIGHT_DENSE;
+    double m_expressionRegWeightDense = EXPRESSION_REG_WEIGHT_DENSE;
+    double m_colorRegWeightDense = COLOR_REG_WEIGHT_DENSE;
 };
 
 struct SparseOptimizationCost {
@@ -75,7 +73,7 @@ public:
         auto& shapeVariance = m_baselFaceModel->getShapePcaVariance();
         auto& expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
 
-        auto transformationMatrix = m_baselFaceModel->getTransformation();
+        auto& transformationMatrix = m_baselFaceModel->getTransformation();
 
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
                 T(shapeMean[m_landmark_bfm_index * 3]) + T(expressionMean[m_landmark_bfm_index * 3]),
@@ -115,7 +113,6 @@ private:
     int m_landmark_bfm_index;
 };
 
-//TODO: Set weights so that all are on same scale
 struct DenseOptimizationCost {
 public:
     DenseOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d point_image, int landmark_bfm_index)
@@ -133,6 +130,7 @@ public:
         auto& shapeVariance = m_baselFaceModel->getShapePcaVariance();
         auto& expressionVariance = m_baselFaceModel->getExpressionPcaVariance();
         auto& transformationMatrix = m_baselFaceModel->getTransformation();
+        auto normal = m_baselFaceModel->getNormals()[m_landmark_bfm_index];
 
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
                 T(shapeMean[m_landmark_bfm_index * 3]) + T(expressionMean[m_landmark_bfm_index * 3]),
@@ -143,38 +141,34 @@ public:
 
         int vertex_idx = m_landmark_bfm_index * 3;
 
-        Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, 1>> shapeParams(shape, NUM_SHAPE_PARAMETERS);
-        Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, 1>> expressionParams(expression, NUM_EXPRESSION_PARAMETERS);
-        Eigen::Map<const Eigen::VectorXd> shapeVarEigen(shapeVariance.data(), NUM_SHAPE_PARAMETERS);
-        Eigen::Map<const Eigen::VectorXd> exprVarEigen(expressionVariance.data(), NUM_EXPRESSION_PARAMETERS);
-        Eigen::Matrix<T, Eigen::Dynamic, 1> sqrt_shape_var = shapeParams.cwiseProduct(shapeVarEigen.array().sqrt().matrix().template cast<T>());
-        Eigen::Matrix<T, Eigen::Dynamic, 1> sqrt_expr_var = expressionParams.cwiseProduct(exprVarEigen.array().sqrt().matrix().template cast<T>());
-        Eigen::Matrix<T, 3, 1> shape_offset = shapePcaBasis.block(vertex_idx, 0, 3, NUM_SHAPE_PARAMETERS).template cast<T>() * sqrt_shape_var;
-        Eigen::Matrix<T, 3, 1> expr_offset = expressionPcaBasis.block(vertex_idx, 0, 3, NUM_EXPRESSION_PARAMETERS).template cast<T>() * sqrt_expr_var;
+        Map<const Matrix<T, Dynamic, 1>> shapeParams(shape, NUM_SHAPE_PARAMETERS);
+        Map<const Matrix<T, Dynamic, 1>> expressionParams(expression, NUM_EXPRESSION_PARAMETERS);
+        Map<const VectorXd> shapeVarEigen(shapeVariance.data(), NUM_SHAPE_PARAMETERS);
+        Map<const VectorXd> exprVarEigen(expressionVariance.data(), NUM_EXPRESSION_PARAMETERS);
+        Matrix<T, Dynamic, 1> sqrt_shape_var = shapeParams.cwiseProduct(shapeVarEigen.array().sqrt().matrix().template cast<T>());
+        Matrix<T, Dynamic, 1> sqrt_expr_var = expressionParams.cwiseProduct(exprVarEigen.array().sqrt().matrix().template cast<T>());
+        Matrix<T, 3, 1> shape_offset = shapePcaBasis.block(vertex_idx, 0, 3, NUM_SHAPE_PARAMETERS).template cast<T>() * sqrt_shape_var;
+        Matrix<T, 3, 1> expr_offset = expressionPcaBasis.block(vertex_idx, 0, 3, NUM_EXPRESSION_PARAMETERS).template cast<T>() * sqrt_expr_var;
 
         offset.x() += shape_offset.x() + expr_offset.x();
         offset.y() += shape_offset.y() + expr_offset.y();
         offset.z() += shape_offset.z() + expr_offset.z();
 
-        /*for (int i = 0; i < NUM_SHAPE_PARAMETERS; ++i) {
-            T param = T(sqrt(shapeVariance[i])) * shape[i];
-            offset.x() += param * T(shapePcaBasis(vertex_idx, i));
-            offset.y() += param * T(shapePcaBasis(vertex_idx + 1, i));
-            offset.z() += param * T(shapePcaBasis(vertex_idx + 2, i));
-        }
+        Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; ++i) {
-            T param = T(sqrt(expressionVariance[i])) * expression[i];
-            offset.x() += param * T(expressionPcaBasis(vertex_idx, i));
-            offset.y() += param * T(expressionPcaBasis(vertex_idx + 1, i));
-            offset.z() += param * T(expressionPcaBasis(vertex_idx + 2, i));
-        }*/
-
-        Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
-
-        residuals[0] = transformedVertex.x() - T(m_point_image.x()); //TODO: l2 norm
-        residuals[1] = transformedVertex.y() - T(m_point_image.y()); //compute cos between two normals; 1- cos
+        residuals[0] = transformedVertex.x() - T(m_point_image.x());
+        residuals[1] = transformedVertex.y() - T(m_point_image.y());
         residuals[2] = transformedVertex.z() - T(m_point_image.z());
+
+        //residuals[3] = (transformedVertex.x() - T(m_point_image.x())) * T(normal.x());
+        //residuals[4] = (transformedVertex.y() - T(m_point_image.y())) * T(normal.y());
+        //residuals[5] = (transformedVertex.z() - T(m_point_image.z())) * T(normal.z());
+
+        residuals[3] = Matrix<T, 3, 1>(transformedVertex.x() - T(m_point_image.x()),
+                                      transformedVertex.y() - T(m_point_image.y()),
+                                      transformedVertex.z() - T(m_point_image.z())).dot(normal.cast<T>());
+
+        //TODO: point-to-point, point-to-plane
 
         return true;
     }
@@ -187,37 +181,66 @@ private:
 
 struct ColorOptimizationCost {
 public:
-    ColorOptimizationCost(BaselFaceModel* baselFaceModel, Vector3d colorImage, int vertexIndex)
-            : m_baselFaceModel{baselFaceModel}, m_color_image{colorImage}, m_vertex_index{vertexIndex} {}
+    ColorOptimizationCost(BaselFaceModel* baselFaceModel,
+                          Vector3d colorImage,
+                          int vertexIndex)
+    : m_baselFaceModel{baselFaceModel}, m_color_image{std::move(colorImage)}, m_vertex_index{vertexIndex} {}
 
     template <typename T>
     bool operator()(const T* const color,
+                    const T* const illumination,
                     T* residuals) const {
 
         auto& colorMean = m_baselFaceModel->getColorMean();
         auto& colorPcaBasis = m_baselFaceModel->getColorPcaBasis();
         auto& colorVariance = m_baselFaceModel->getColorPcaVariance();
+        auto& normals = m_baselFaceModel->getNormals();
+        int vertex_idx = m_vertex_index * 3;
 
         Eigen::Matrix<T, 4, 1> offset = Eigen::Matrix<T, 4, 1>(
-                T(colorMean[m_vertex_index * 3]),
-                T(colorMean[m_vertex_index * 3 + 1]),
-                T(colorMean[m_vertex_index * 3 + 2]),
-                T(1)
-        );
+                                                               T(colorMean[m_vertex_index * 3]),
+                                                               T(colorMean[m_vertex_index * 3 + 1]),
+                                                               T(colorMean[m_vertex_index * 3 + 2]),
+                                                               T(1)
+                                                               );
 
         for (int i = 0; i < NUM_COLOR_PARAMETERS; ++i) {
-            int vertex_idx = m_vertex_index * 3;
             T param = T(sqrt(colorVariance[i])) * color[i];
-            offset += Eigen::Matrix<T, 4, 1>(
-                    param * T(colorPcaBasis(vertex_idx, i)),
-                    param * T(colorPcaBasis(vertex_idx + 1, i)),
-                    param * T(colorPcaBasis(vertex_idx + 2, i)),
-                    T(0)
-            );
+            offset.x() += param * T(colorPcaBasis(vertex_idx, i));
+            offset.y() += param * T(colorPcaBasis(vertex_idx + 1, i));
+            offset.z() += param * T(colorPcaBasis(vertex_idx + 2, i));
         }
 
-        residuals[0] = offset.x() - T(m_color_image.x()); //l2 norm
-        residuals[1] = offset.y() - T(m_color_image.y()); //compute cos between two normals; 1 - cos
+
+       // Get normal for this vertex
+       //Eigen::Matrix<T, 3, 1> normal = m_baselFaceModel->getNormals()[m_vertex_index].template cast<T>();
+       Eigen::Matrix<T, 3, 1> normal = normals[m_vertex_index].template cast<T>();
+        // Compute SH basis
+       T shBasis[9];
+       // Compute SH basis functions up to the second order (9 terms)
+       shBasis[0] = T(0.28209479);
+       shBasis[1] = T(0.48860251) * normal.y();
+       shBasis[2] = T(0.48860251) * normal.z();
+       shBasis[3] = T(0.48860251) * normal.x();
+       shBasis[4] = T(1.09254843) * normal.x() * normal.y();
+       shBasis[5] = T(1.09254843) * normal.y() * normal.z();
+       shBasis[6] = T(0.31539157) * (T(3) * normal.z() * normal.z() - T(1));
+       shBasis[7] = T(1.09254843) * normal.x() * normal.z();
+       shBasis[8] = T(0.54627421) * (normal.x() * normal.x() - normal.y() * normal.y());
+
+       // Apply SH lighting
+       Eigen::Matrix<T, 3, 1> shLighting = Eigen::Matrix<T, 3, 1>::Zero();
+       for (int i = 0; i < 27; i+=3) {
+           shLighting(0) += shBasis[i / 3] * T(illumination[i]);  // Red
+           shLighting(1) += shBasis[i / 3] * T(illumination[i + 1]);  // Green
+           shLighting(2) += shBasis[i / 3] * T(illumination[i + 2]);  // Blue
+       }
+
+       // Apply SH illumination to color
+       Eigen::Matrix<T, 3, 1> shadedColor = offset.template head<3>().cwiseProduct(shLighting);
+
+        residuals[0] = offset.x() - T(m_color_image.x());
+        residuals[1] = offset.y() - T(m_color_image.y());
         residuals[2] = offset.z() - T(m_color_image.z());
 
         return true;
@@ -229,38 +252,6 @@ private:
     int m_vertex_index;
 };
 
-struct GeometryRegularizationCost {
-    template <typename T>
-    bool operator()(const T* const shape,
-                    const T* const expression,
-                    T* residual) const {
-        T reg_energy_geometry = T(0);
-        T reg_energy_expression = T(0);
-
-        for (int i = 0; i < num_identity_params; ++i) {
-            reg_energy_geometry += pow(shape[i] / T(identity_std_dev[i]), 2);
-        }
-        for (int i = 0; i < num_expression_params; ++i) {
-            reg_energy_expression += pow(expression[i] / T(expression_std_dev[i]), 2);
-        }
-
-        residual[0] = reg_energy_geometry;
-        residual[1] = reg_energy_expression;
-        return true;
-    }
-
-    GeometryRegularizationCost(const std::vector<double>& id_std,
-                               const std::vector<double>& exp_std)
-            : identity_std_dev(id_std)
-            , expression_std_dev(exp_std) {}
-
-    const std::vector<double> identity_std_dev;
-    const std::vector<double> expression_std_dev;
-
-    static constexpr int num_identity_params = 199;
-    static constexpr int num_expression_params = 100;
-};
-
 struct ShapeRegularizerCost
 {
     ShapeRegularizerCost(double shapeWeight, std::vector<double> variance) : m_shape_weight(shapeWeight), m_variance(variance) {}
@@ -269,8 +260,7 @@ struct ShapeRegularizerCost
     bool operator()(T const* shape, T* residuals) const
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
-            //residuals[i] = shape[i] * T(m_shape_weight); //squared values -> l2 norm
-            residuals[i] = pow((shape[i] / sqrt(m_variance[i])), 2) * m_shape_weight;
+            residuals[i] = (shape[i] / sqrt(m_variance[i])) * m_shape_weight;
         }
         return true;
     }
@@ -288,7 +278,7 @@ struct ExpressionRegularizerCost
     bool operator()(T const* expression, T* residuals) const
     {
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; i++) {
-            residuals[i] = pow((expression[i] / sqrt(m_variance[i])), 2) * m_expression_weight;
+            residuals[i] = (expression[i] / sqrt(m_variance[i])) * m_expression_weight;
         }
         return true;
     }
@@ -300,13 +290,13 @@ private:
 
 struct ColorRegularizerCost
 {
-    ColorRegularizerCost(double colorWeight, std::vector<double> variance) : m_color_weight(colorWeight), m_variance(variance) {}
+    ColorRegularizerCost(double colorWeight, std::vector<double> variance) : m_color_weight(colorWeight), m_variance(std::move(variance)) {}
 
     template<typename T>
     bool operator()(T const* color, T* residuals) const
     {
         for (int i = 0; i < NUM_COLOR_PARAMETERS; i++) {
-            residuals[i] = pow((color[i] / sqrt(m_variance[i])), 2) * m_color_weight; //color[i] / m_variance[i];
+            residuals[i] = (color[i] / sqrt(m_variance[i])) * m_color_weight;
         }
         return true;
     }

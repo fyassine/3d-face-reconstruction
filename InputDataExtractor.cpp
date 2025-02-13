@@ -3,7 +3,7 @@
 #include "InputDataExtractor.h"
 #include "FacialLandmarks.h"
 
-#define NUMBER_OF_FRAMES 3
+#define NUMBER_OF_FRAMES 1
 
 InputDataExtractor::InputDataExtractor() = default;
 
@@ -77,14 +77,12 @@ InputData InputDataExtractor::extractInputData(const std::string& path) {
                 std::vector<Vector3d> rgbData(width * height);
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
-                        uint8_t *color_pixel = (uint8_t *) color.get_data() + (i * color.get_stride_in_bytes()) + j * 3;
-                        rgbData[i * width + j] = Vector3d(color_pixel[0] / 255.0, color_pixel[1] / 255.0,
-                                                          color_pixel[2] / 255.0);
+                        uint8_t* color_pixel = (uint8_t*)color.get_data() + (i * color.get_stride_in_bytes()) + j * 3;
+                        rgbData[i * width + j] = Vector3d(color_pixel[0] / 255.0, color_pixel[1] / 255.0, color_pixel[2] / 255.0);
                     }
                 }
+
                 convertVideoFrameToPng(color, "../../../Result/color_frame_for_landmark_detection.png");
-                std::string frameName = "../../../Result/VideoFrames/" + std::to_string(counter - 1) + ".png";
-                convertVideoFrameToPng(color, frameName);
                 std::vector<Vector3d> landmarks = searchForLandmarks(depthData, extracted_intrinsic_matrix, extracted_extrinsic_matrix);
                 frames.emplace_back(rgbData, depthData, landmarks);
             }
@@ -118,7 +116,7 @@ void InputDataExtractor::convertVideoFrameToPng(rs2::video_frame videoFrame, std
     );
 
     if (bitmap) {
-        std::string outputFileName = name; //"../../../Result/color_frame_for_landmark_detection.png";
+        std::string outputFileName = "../../../Result/color_frame_for_landmark_detection.png";
         if (FreeImage_Save(FIF_PNG, bitmap, outputFileName.c_str())) {
             std::cout << "Saved color frame to " << outputFileName << std::endl;
         } else {
