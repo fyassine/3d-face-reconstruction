@@ -76,9 +76,8 @@ void Optimizer::optimizeDenseTerms() {
     std::iota(indices.begin(), indices.end(), 0);
     std::random_device rd;
     std::mt19937 g(rd());
-
-    int numberOfSamples = n;
-    int maxIt = 20;
+    int numberOfVerticesPerSample = 500;
+    int maxNumberOfSamples = 15;
     int iterationCounter = 0;
 
     // Illumination
@@ -96,13 +95,13 @@ void Optimizer::optimizeDenseTerms() {
     m_baselFaceModel->updateNormals();
 
     //maybe keep sample from the last iteration to already have some fitting vertices?
-    while(iterationCounter < maxIt){
+    while(iterationCounter < maxNumberOfSamples){
         ceres::Problem problem;
 
         std::cout << "Iteration: " << iterationCounter << std::endl;
         int outliers = 0;
         std::shuffle(indices.begin(), indices.end(), g);
-        for (int i = 0; i < numberOfSamples; i+=1) {
+        for (int i = 0; i < numberOfVerticesPerSample; i+=1) {
             int idx = indices[i];
             Vector3d targetPoint = correspondingPoints[idx];
             auto distance = abs(transformedVertices[idx].z() - targetPoint.z());
