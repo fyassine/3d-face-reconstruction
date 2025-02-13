@@ -187,15 +187,15 @@ void WeightSearch::runSparseWeightTrial(const std::string &bagPath,
     BaselFaceModel baselFaceModel;
     //InputData inputData = InputDataExtractor::extractInputData(bagPath);
     //inputData.save(dataFolderPath + "input_data.json")
-    InputData inputData = InputData::load(dataFolderPath + "input_data.json");
+    InputData inputData = InputData::load("../../../Data/input_data.json");
     baselFaceModel.computeTransformationMatrix(&inputData);
 
     // Create an optimizer and set the sparse weights.
     Optimizer optimizer(&baselFaceModel, &inputData);
     optimizer.setWeights(shapeWeight, expressionWeight,
-                         DEFAULT_SHAPE_REG_WEIGHT_DENSE,   // keep dense weights default
-                         DEFAULT_EXPRESSION_REG_WEIGHT_DENSE,
-                         DEFAULT_COLOR_REG_WEIGHT_DENSE);
+                         SHAPE_REG_WEIGHT_DENSE,   // keep dense weights default
+                         EXPRESSION_REG_WEIGHT_DENSE,
+                         COLOR_REG_WEIGHT_DENSE);
     optimizer.configureSolver();
 
     // Run only the sparse optimization part.
@@ -229,12 +229,12 @@ void WeightSearch::runDenseWeightTrial(const std::string &bagPath,
 
     Optimizer optimizer(&baselFaceModel, &inputData);
     // Keep the sparse weights at their defaults while setting dense weights.
-    optimizer.setWeights(DEFAULT_SHAPE_REG_WEIGHT_SPARSE, DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE,
+    optimizer.setWeights(SHAPE_REG_WEIGHT_SPARSE, EXPRESSION_REG_WEIGHT_SPARSE,
                          shapeWeight, expressionWeight, colorWeight);
     optimizer.configureSolver();
 
     optimizer.optimizeSparseTerms();
-    optimizer.optimizeDenseGeometryTerm();
+    optimizer.optimizeDenseTerms();
 
     auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVertices = baselFaceModel.transformVertices(verticesAfterTransformation);

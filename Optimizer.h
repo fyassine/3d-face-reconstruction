@@ -47,11 +47,11 @@ private:
     InputData* m_inputData;
     ceres::Solver::Options options;
 
-    double m_shapeRegWeightSparse = DEFAULT_SHAPE_REG_WEIGHT_SPARSE;
-    double m_expressionRegWeightSparse = DEFAULT_EXPRESSION_REG_WEIGHT_SPARSE;
-    double m_shapeRegWeightDense = DEFAULT_SHAPE_REG_WEIGHT_DENSE;
-    double m_expressionRegWeightDense = DEFAULT_EXPRESSION_REG_WEIGHT_DENSE;
-    double m_colorRegWeightDense = DEFAULT_COLOR_REG_WEIGHT_DENSE;
+    double m_shapeRegWeightSparse = SHAPE_REG_WEIGHT_SPARSE;
+    double m_expressionRegWeightSparse = EXPRESSION_REG_WEIGHT_SPARSE;
+    double m_shapeRegWeightDense = SHAPE_REG_WEIGHT_DENSE;
+    double m_expressionRegWeightDense = EXPRESSION_REG_WEIGHT_DENSE;
+    double m_colorRegWeightDense = COLOR_REG_WEIGHT_DENSE;
 };
 
 struct SparseOptimizationCost {
