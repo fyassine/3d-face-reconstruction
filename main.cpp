@@ -79,9 +79,9 @@ BaselFaceModel processFace(InputData* inputData){
 }
 
 int main(){
-    InputData inputSource = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
+    InputData inputSource = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
     //InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
-    BaselFaceModel sourceBaselFaceModel;
+    //BaselFaceModel sourceBaselFaceModel;
     //BaselFaceModel targetBaselFaceModel;
 
     //FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);

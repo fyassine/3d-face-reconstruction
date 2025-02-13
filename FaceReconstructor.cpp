@@ -71,5 +71,5 @@ void FaceReconstructor::expressionTransfer(BaselFaceModel *sourceFaceModel, Base
     }
 
     //Save final video
-    Renderer::convertPngsToMp4(resultFolderPath + "Expression_Transfer_Frames/", "Expression_Transfer_Video/", n - 1);
+    Renderer::convertPngsToMp4(resultFolderPath + "Expression_Frames_Reconstructed/", "Expression_Transfer_Video/", n - 1);
 }
