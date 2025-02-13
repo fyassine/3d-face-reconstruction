@@ -31,7 +31,13 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
     std::cout << faces.size() << std::endl;
 
     renderModel(image, vertices, faces, intrinsics, R, t, colors);
-    cv::imwrite(outputPath, image);
+    
+    // Apply smoothing to the reconstructed face
+    cv::Mat smoothedImage;
+    cv::bilateralFilter(image, smoothedImage, 9, 75, 75);  // (d=9, sigmaColor=75, sigmaSpace=75)
+
+    // Save the filtered image
+    cv::imwrite(outputPath, smoothedImage);
     cv::waitKey(0);
 }
 
@@ -71,7 +77,7 @@ void Renderer::renderModel(cv::Mat &image, const std::vector<cv::Point3f> &verti
 }
 
 void Renderer::convertPngsToMp4(const std::string &inputPath, const std::string &outputPath, int numberOfFrames) {
-    std::string outputDir = "../../../Result/video/";
+    std::string outputDir = "../../Result/video/";
 
     // Video Writer setup
     int frameWidth = 1280;
