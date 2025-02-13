@@ -31,7 +31,6 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
     std::cout << faces.size() << std::endl;
 
     renderModel(image, vertices, faces, intrinsics, R, t, colors);
-    //cv::imshow("Rendered Image", image);
     cv::imwrite(outputPath, image);
     cv::waitKey(0);
 }

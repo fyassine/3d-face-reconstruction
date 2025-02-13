@@ -25,10 +25,10 @@ void Optimizer::optimizeSparseTerms() {
     for (int i = 18; i < n; ++i) {
         if(landmarks_input_data[i].x() == -1) continue;
         problem.AddResidualBlock(
-                new ceres::AutoDiffCostFunction<SparseOptimizationCost, 1, 199, 100>(
+                new ceres::AutoDiffCostFunction<SparseOptimizationCost, 3, 199, 100>(
                         new SparseOptimizationCost(m_baselFaceModel, landmarks_input_data[i], landmark_indices_bfm[i])
                 ),
-                loss_function,
+                nullptr,
                 shape->data(),
                 expression->data()
                 );
@@ -158,7 +158,7 @@ void Optimizer::optimizeDenseTerms() {
 }
 
 void Optimizer::configureSolver() {
-    options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+    /*options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.dense_linear_algebra_library_type = ceres::CUDA;
     options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
     options.use_nonmonotonic_steps = true; //TODO: Maybe das hier löschen
@@ -168,5 +168,12 @@ void Optimizer::configureSolver() {
     options.num_threads = 20;
     options.initial_trust_region_radius = 1e-2;  // Instead of default ~1e4
     options.min_trust_region_radius = 1e-6;     // Allow finer updates
-    options.max_trust_region_radius = 10.0;
+    options.max_trust_region_radius = 10.0;*/
+
+    options.dense_linear_algebra_library_type = ceres::CUDA;
+    options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
+    options.linear_solver_type = ceres::DENSE_QR;
+    options.num_threads = 16;
+    options.minimizer_progress_to_stdout = true;
+    options.max_num_iterations = 100;
 }

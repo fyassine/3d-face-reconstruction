@@ -62,7 +62,7 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
 
     //TODO: Smth wrong with reg for dense
-/*    optimizer.optimizeDenseTerms();
+    optimizer.optimizeDenseTerms();
 
     verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
     auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
@@ -73,7 +73,7 @@ BaselFaceModel processFace(InputData* inputData){
     ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
     mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
     ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
-*/
+
     return baselFaceModel;
 }
 

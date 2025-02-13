@@ -79,11 +79,9 @@ public:
 
         Eigen::Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        residuals[0] = sqrt( //TODO: wrong order?!
-                pow(transformedVertex.x() - T(m_landmark_image.x()), 2) +
-                pow(transformedVertex.y() - T(m_landmark_image.y()), 2) +
-                pow(transformedVertex.z() - T(m_landmark_image.z()), 2)
-        );
+        residuals[0] = transformedVertex.x() - T(m_landmark_image.x());
+        residuals[1] = transformedVertex.y() - T(m_landmark_image.y());
+        residuals[2] = transformedVertex.z() - T(m_landmark_image.z());
 
         return true;
     }
@@ -136,15 +134,9 @@ public:
 
         Matrix<T, 4, 1> transformedVertex = transformationMatrix.cast<T>() * offset;
 
-        residuals[0] = sqrt(
-                pow(transformedVertex.x() - T(m_point_image.x()), 2) +
-                pow(transformedVertex.y() - T(m_point_image.y()), 2) +
-                pow(transformedVertex.z() - T(m_point_image.z()), 2)
-        );
-
-        //residuals[0] = sqrt(pow(transformedVertex.x() - T(m_point_image.x()), 2));
-        //residuals[1] = sqrt(pow(transformedVertex.y() - T(m_point_image.y()), 2));
-        //residuals[2] = sqrt(pow(transformedVertex.z() - T(m_point_image.z()), 2));
+        residuals[0] = transformedVertex.x() - T(m_point_image.x());
+        residuals[1] = transformedVertex.y() - T(m_point_image.y());
+        residuals[2] = transformedVertex.z() - T(m_point_image.z());
         //TODO: point-to-point, point-to-plane
 
         return true;
@@ -246,7 +238,8 @@ struct ShapeRegularizerCost
     bool operator()(T const* shape, T* residuals) const
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
-            residuals[i] = pow((shape[i] / sqrt(m_variance[i])), 2) * m_shape_weight;
+            //residuals[i] = pow((shape[i] / sqrt(m_variance[i])), 2) * m_shape_weight;
+            residuals[i] = (shape[i] / sqrt(m_variance[i])) * m_shape_weight;
         }
         return true;
     }
@@ -264,7 +257,8 @@ struct ExpressionRegularizerCost
     bool operator()(T const* expression, T* residuals) const
     {
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; i++) {
-            residuals[i] = pow((expression[i] / sqrt(m_variance[i])), 2) * m_expression_weight;
+            //residuals[i] = pow((expression[i] / sqrt(m_variance[i])), 2) * m_expression_weight;
+            residuals[i] = (expression[i] / sqrt(m_variance[i])) * m_expression_weight;
         }
         return true;
     }
