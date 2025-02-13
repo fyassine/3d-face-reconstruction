@@ -208,18 +208,9 @@ public:
        // Apply SH illumination to color
        Eigen::Matrix<T, 3, 1> shadedColor = offset.template head<3>().cwiseProduct(shLighting);
 
-
-        residuals[0] = sqrt(
-                            pow(shadedColor.x() - T(m_color_image.x()), 2) +
-                            pow(shadedColor.y() - T(m_color_image.y()), 2) +
-                            pow(shadedColor.z() - T(m_color_image.z()), 2)
-                            );
-
-        /*residuals[0] = sqrt(
-                pow(offset.x() - T(m_color_image.x()), 2) +
-                pow(offset.y() - T(m_color_image.y()), 2) +
-                pow(offset.z() - T(m_color_image.z()), 2)
-        );*/
+        residuals[0] = offset.x() - T(m_color_image.x());
+        residuals[1] = offset.y() - T(m_color_image.y());
+        residuals[2] = offset.z() - T(m_color_image.z());
         
         return true;
     }
@@ -238,7 +229,6 @@ struct ShapeRegularizerCost
     bool operator()(T const* shape, T* residuals) const
     {
         for (int i = 0; i < NUM_SHAPE_PARAMETERS; i++) {
-            //residuals[i] = pow((shape[i] / sqrt(m_variance[i])), 2) * m_shape_weight;
             residuals[i] = (shape[i] / sqrt(m_variance[i])) * m_shape_weight;
         }
         return true;
@@ -257,7 +247,6 @@ struct ExpressionRegularizerCost
     bool operator()(T const* expression, T* residuals) const
     {
         for (int i = 0; i < NUM_EXPRESSION_PARAMETERS; i++) {
-            //residuals[i] = pow((expression[i] / sqrt(m_variance[i])), 2) * m_expression_weight;
             residuals[i] = (expression[i] / sqrt(m_variance[i])) * m_expression_weight;
         }
         return true;
@@ -270,13 +259,13 @@ private:
 
 struct ColorRegularizerCost
 {
-    ColorRegularizerCost(double colorWeight, std::vector<double> variance) : m_color_weight(colorWeight), m_variance(variance) {}
+    ColorRegularizerCost(double colorWeight, std::vector<double> variance) : m_color_weight(colorWeight), m_variance(std::move(variance)) {}
 
     template<typename T>
     bool operator()(T const* color, T* residuals) const
     {
         for (int i = 0; i < NUM_COLOR_PARAMETERS; i++) {
-            residuals[i] = pow((color[i] / sqrt(m_variance[i])), 2) * m_color_weight; //color[i] / m_variance[i];
+            residuals[i] = (color[i] / sqrt(m_variance[i])) * m_color_weight;
         }
         return true;
     }

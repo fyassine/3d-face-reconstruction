@@ -77,7 +77,7 @@ void Optimizer::optimizeDenseTerms() {
     std::random_device rd;
     std::mt19937 g(rd());
 
-    int numberOfSamples = 100;
+    int numberOfSamples = n;
     int maxIt = 20;
     int iterationCounter = 0;
 
@@ -86,7 +86,6 @@ void Optimizer::optimizeDenseTerms() {
     double shCoefficients[27] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                  1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                  1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    //auto* loss_function = new ceres::CauchyLoss(1.0);
 
     //TODO: watch out with the references! Not sure that works
     auto& expressionParams = m_baselFaceModel->getExpressionParams();
@@ -96,6 +95,7 @@ void Optimizer::optimizeDenseTerms() {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     m_baselFaceModel->updateNormals();
 
+    //maybe keep sample from the last iteration to already have some fitting vertices?
     while(iterationCounter < maxIt){
         ceres::Problem problem;
 
@@ -119,14 +119,14 @@ void Optimizer::optimizeDenseTerms() {
                     shapeParams.data(),
                     expressionParams.data()
             );
-            /*problem.AddResidualBlock(
-                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 1, 199, 27>(
+            problem.AddResidualBlock(
+                    new ceres::AutoDiffCostFunction<ColorOptimizationCost, 3, 199, 27>(
                             new ColorOptimizationCost(m_baselFaceModel, correspondingColor, idx)
                     ),
                     nullptr,
                     colorParams.data(),
                     shCoefficients
-            );*/
+            );
         }
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
@@ -137,13 +137,13 @@ void Optimizer::optimizeDenseTerms() {
                 new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
         ), nullptr, expressionParams.data());
 
-        /*problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
+        problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
                 new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
-        ), nullptr, colorParams.data());*/
+        ), nullptr, colorParams.data());
 
         ceres::Solver::Summary summary;
         std::cout << "Dense Optimization initiated." << std::endl;
-        options.max_num_iterations = 5;
+        options.max_num_iterations = 10;
         ceres::Solve(options, &problem, &summary);
         std::cout << summary.BriefReport() << std::endl;
         std::cout << "Outliers: " << outliers << std::endl;
