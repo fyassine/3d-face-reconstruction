@@ -50,14 +50,16 @@ void FaceReconstructor::expressionTransfer(BaselFaceModel *sourceFaceModel, Base
         //Store source model frames
         auto sourceVertices = sourceFaceModel->transformVertices(sourceFaceModel->getVerticesWithoutTransformation());
         auto sourceColorMap = sourceData->getCorrespondingColors(sourceVertices);
+        auto sourceColor = sourceFaceModel->getColorValues();
         auto sourceFaces = sourceFaceModel->getFaces();
-        Renderer::run(sourceVertices, sourceColorMap, sourceFaces, sourceData->getMIntrinsicMatrix(), sourceData->getMExtrinsicMatrix(), sourceFramesInputPath, sourceFramesOutputPath);
+        Renderer::run(sourceVertices, sourceColor, sourceFaces, sourceData->getMIntrinsicMatrix(), sourceData->getMExtrinsicMatrix(), sourceFramesInputPath, sourceFramesOutputPath);
 
         //Store target model frames
         auto targetVertices = targetFaceModel->transformVertices(targetFaceModel->getVerticesWithoutTransformation());
         auto targetColorMap = targetData->getCorrespondingColors(targetVertices);
+        auto targetColor = targetFaceModel->getColorValues();
         auto targetFaces = targetFaceModel->getFaces();
-        Renderer::run(targetVertices, targetColorMap, targetFaces, targetData->getMIntrinsicMatrix(), targetData->getMExtrinsicMatrix(), targetFramesInputPath, targetFramesOutputPath);
+        Renderer::run(targetVertices, targetColor, targetFaces, targetData->getMIntrinsicMatrix(), targetData->getMExtrinsicMatrix(), targetFramesInputPath, targetFramesOutputPath);
 
         //Store expression transfer frames
         targetFaceModel->getExpressionParams() = sourceFaceModel->getExpressionParams();
