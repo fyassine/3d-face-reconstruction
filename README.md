@@ -56,3 +56,5 @@ root/
     ├── Source_Frames_Reconstructed/ // <- All frames after reconstruction
     ├── Source_Frames_Reconstructed_Texture/ // <- All frames after reconstruction with texture
 ```
+Use this link to get the .bag-files/input_data for your Data folder:
+https://syncandshare.lrz.de/getlink/fi7jFFfLVfxm4nhPFeisqN/
