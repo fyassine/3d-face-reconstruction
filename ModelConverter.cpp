@@ -104,3 +104,42 @@ void ModelConverter::convertImageToPly(const std::vector<double>& depth, const s
     }
     outFile.close();
 }
+
+void ModelConverter::generateGeometricErrorModel(BaselFaceModel *bfm, InputData *inputData, const std::string& path) {
+    auto vertices = bfm->transformVertices(bfm->getVerticesWithoutTransformation());
+    auto correspondences = inputData->getAllCorrespondences(vertices);
+    std::vector<Vector3i> colorValues;
+    const float maxDistance = 0.005f;
+    float distanceSum = 0;
+    for (int i = 0; i < vertices.size(); ++i) {
+        float distance = (vertices[i] - correspondences[i]).norm();
+        distanceSum += distance;
+        float t = std::clamp(distance / maxDistance, 0.0f, 1.0f);
+        int r, g, b;
+
+        // If t < 0.5, interpolate between red (255, 0, 0) and green (0, 255, 0)
+        if (t < 0.5f) {
+            b = static_cast<int>(255 * (1 - 2 * t));  // Red decreases from 255 to 0
+            g = static_cast<int>(255 * (2 * t));      // Green increases from 0 to 255
+            r = 0;                                    // No blue
+        }
+            // If t >= 0.5, interpolate between green (0, 255, 0) and blue (0, 0, 255)
+        else {
+            b = 0;                                    // No red
+            g = static_cast<int>(255 * (2 - 2 * t));  // Green decreases from 255 to 0
+            r = static_cast<int>(255 * (2 * t - 1));  // Blue increases from 0 to 255
+        }
+
+        colorValues.emplace_back(r, g, b);
+    }
+    std::cout << "GeometricDistance (Mean): " << distanceSum / vertices.size() << std::endl;
+    convertToPly(vertices, colorValues, bfm->getFaces(), path);
+    //TODO: print mean and std deviations
+}
+
+void ModelConverter::convertBFMToPly(BaselFaceModel *bfm, const std::string& path) {
+    auto color = bfm->getColorValues();
+    auto vertices = bfm->transformVertices(bfm->getVerticesWithoutTransformation());
+    auto faces = bfm->getFaces();
+    convertToPly(vertices, color, faces, path);
+}

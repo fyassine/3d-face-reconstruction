@@ -25,89 +25,9 @@ using namespace std;
 #define LEO_EXPRESSIONS "20250207_115412.bag"
 #define LEO_VID "20250205_172132.bag"
 
-BaselFaceModel processFace(InputData* inputData){
-    BaselFaceModel baselFaceModel;
-
-    baselFaceModel.computeTransformationMatrix(inputData);
-
-    auto verticesBeforeSparse = baselFaceModel.getVerticesWithoutTransformation();
-    auto colorBeforeSparse = baselFaceModel.getColorValues();
-    ModelConverter::convertToPly(verticesBeforeSparse, colorBeforeSparse, baselFaceModel.getFaces(), "BfmBeforeSparseTerms.ply");
-
-    auto landmarksBeforeSparse = baselFaceModel.getLandmarks();
-    ModelConverter::convertToPly(landmarksBeforeSparse, "LandmarksBeforeSparse.ply");
-
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesBeforeSparse), colorBeforeSparse, baselFaceModel.getFaces(), "ModelAfterProcrustes.ply");
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(landmarksBeforeSparse), "LandmarksAfterProcrustes.ply");
-
-    auto landmarksOfInputData = inputData->getMCurrentFrame().getMLandmarks();
-    ModelConverter::convertToPly(landmarksOfInputData, "LandmarksOfInputImage.ply");
-
-    ModelConverter::convertImageToPly(inputData->getMCurrentFrame().getMDepthData(), inputData->getMCurrentFrame().getMRgbData(), "BackprojectedImage.ply", inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix());
-
-    Optimizer optimizer(&baselFaceModel, inputData);
-    optimizer.optimizeSparseTerms();
-
-    auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
-    auto colorAfterTransformation = baselFaceModel.getColorValues();
-    auto mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
-    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
-    //Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix());
-
-    auto inputVertices = inputData->getAllCorrespondences(baselFaceModel.transformVertices(verticesAfterTransformation));
-    ModelConverter::convertToPly(inputVertices, colorAfterTransformation, baselFaceModel.getFaces(), "CorrespondencesBfm.ply");
-
-    auto landmarksAfterSparse = baselFaceModel.getLandmarks();
-    ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
-
-    //TODO: Smth wrong with reg for dense
-    optimizer.optimizeDenseTerms();
-
-    verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
-    auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
-    colorAfterTransformation = baselFaceModel.getColorValues();
-    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTerms.ply");
-    ModelConverter::convertToPly(transformedVerticesDense, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTermsProcrustes.ply");
-    auto landmarksAfterDense = baselFaceModel.getLandmarks();
-    ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
-    mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
-    Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), colorAfterTransformation, baselFaceModel.getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), "../../../Result/Source_Frames/0.png", "../../../Result/RenderedFace.png");
-
-    return baselFaceModel;
-}
-
 int main(){
     InputData inputSource = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
-    //InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
-    //BaselFaceModel sourceBaselFaceModel;
-    //BaselFaceModel targetBaselFaceModel;
-
-    //FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);
-
-    //FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
-    auto sourceFace = processFace(&inputSource);
-    /*auto sourceFace = processFace(&inputLeo);
-    auto targetFace = processFace(&inputNeli);
-    auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
-    auto mappedColor = inputNeli.getCorrespondingColors(targetFace.transformVertices(verticesAfterTransformation));
-
-    targetFace.expressionTransfer(&sourceFace);
-
-    verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
-
-    auto colorAfterTransformation = targetFace.getColorValues();
-
-    ModelConverter::convertToPly(targetFace.transformVertices(verticesAfterTransformation), colorAfterTransformation, targetFace.getFaces(), "ExpressionTransfer.ply");
-    ModelConverter::convertToPly(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), "ExpressionTransferMappedColor.ply");
-
-    Renderer::run(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), inputNeli.getMIntrinsicMatrix(), inputNeli.getMExtrinsicMatrix());
-*/
-    WeightSearch::runSparseWeightTrials(LEO_VID);
-    //WeightSearch::runSparseWeightTrial(LEO_VID, 1, 1);
-    //WeightSearch::runSparseWeightTrial(LEO_VID, 100, 10);
-    //WeightSearch::runDenseWeightTrials(dataFolderPath + LEO_VID);
-
+    BaselFaceModel sourceBaselFaceModel;
+    FaceReconstructor::reconstructFace(&sourceBaselFaceModel, &inputSource);
     return 0;
 }
