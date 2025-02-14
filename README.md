@@ -7,6 +7,8 @@ Neli Shahapuni
 
 Leo Keber
 
+## How to setup the project on your local machine:
+
 Face reconstruction project for 3DSMC Winter 24/25.
 
 Add the following to you CMakelists.txt
