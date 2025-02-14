@@ -78,19 +78,26 @@ BaselFaceModel processFace(InputData* inputData){
     Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), colorAfterTransformation, baselFaceModel.getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), "../../../Result/Source_Frames/0.png", "../../../Result/RenderedFace.png");
 
     std::cout << "END" << std::endl;
+
+    //ModelConverter::generateGeometricErrorModel(&baselFaceModel, inputData);
+    Renderer::generatePhotometricError("../../../Result/RenderedFace.png", "../../../Result/Source_Frames/0.png", "../../../Result/photometricError.png");
     return baselFaceModel;
 }
 
 int main(){
     InputData inputSource = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
+    //InputData inputSource = InputData::load("../../../Data/input_data.json");//
+    //inputSource.save("../../../Data/input_data.json");
+
     //InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
-    //BaselFaceModel sourceBaselFaceModel;
+    BaselFaceModel sourceBaselFaceModel;
     //BaselFaceModel targetBaselFaceModel;
 
     //FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);
 
-    //FaceReconstructor::reconstructFace(&inputBaselFaceModel, &inputLeo, "../../../Result/");
-    auto sourceFace = processFace(&inputSource);
+    FaceReconstructor::reconstructFace(&sourceBaselFaceModel, &inputSource);
+    //auto sourceFace = processFace(&inputSource);
+
     /*auto sourceFace = processFace(&inputLeo);
     auto targetFace = processFace(&inputNeli);
     auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
@@ -107,7 +114,7 @@ int main(){
 
     Renderer::run(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), inputNeli.getMIntrinsicMatrix(), inputNeli.getMExtrinsicMatrix());
 */
-    //WeightSearch::runSparseWeightTrials(LEO_VID);
+    //WeightSearch::runSparseWeightTrials(LEO_LOOKING_NORMAL);
     //WeightSearch::runSparseWeightTrial(LEO_VID, 1, 1);
     //WeightSearch::runSparseWeightTrial(LEO_VID, 100, 10);
     //WeightSearch::runDenseWeightTrials(dataFolderPath + LEO_VID);

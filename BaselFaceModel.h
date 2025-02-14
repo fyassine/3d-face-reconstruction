@@ -44,7 +44,7 @@ public:
     VectorXd &getExpressionParams();
     [[nodiscard]] const Matrix4d &getTransformation() const;
     [[nodiscard]] const std::vector<int> &getLandmarkIndices() const;
-    [[nodiscard]] const std::vector<int> &getFaces() const;
+    const std::vector<int> &getFaces() const;
 
 private:
     Matrix4d transformation;

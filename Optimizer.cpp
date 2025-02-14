@@ -49,11 +49,11 @@ void Optimizer::optimizeSparseTerms() {
     std::cout << "Adding Residual Blocks for Regularization" << std::endl;
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-            new ShapeRegularizerCost(SHAPE_REG_WEIGHT_SPARSE, m_baselFaceModel->getShapePcaVariance())
+            new ShapeRegularizerCost(m_shapeRegWeightSparse, m_baselFaceModel->getShapePcaVariance())
     ), loss_function, m_baselFaceModel->getShapeParams().data());
 
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-            new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_SPARSE, m_baselFaceModel->getExpressionPcaVariance())
+            new ExpressionRegularizerCost(m_expressionRegWeightSparse, m_baselFaceModel->getExpressionPcaVariance())
     ), loss_function, m_baselFaceModel->getExpressionParams().data());
 
     std::cout << "End of Adding Residual Blocks for Regularization" << std::endl;
@@ -131,15 +131,15 @@ void Optimizer::optimizeDenseTerms() {
         }
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ShapeRegularizerCost, 199, 199>(
-                new ShapeRegularizerCost(SHAPE_REG_WEIGHT_DENSE, m_baselFaceModel->getShapePcaVariance())
+                new ShapeRegularizerCost(m_shapeRegWeightDense, m_baselFaceModel->getShapePcaVariance())
         ), nullptr, shapeParams.data());
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ExpressionRegularizerCost, 100, 100>(
-                new ExpressionRegularizerCost(EXPRESSION_REG_WEIGHT_DENSE, m_baselFaceModel->getExpressionPcaVariance())
+                new ExpressionRegularizerCost(m_expressionRegWeightDense, m_baselFaceModel->getExpressionPcaVariance())
         ), nullptr, expressionParams.data());
 
         problem.AddResidualBlock(new ceres::AutoDiffCostFunction<ColorRegularizerCost, 199, 199>(
-                new ColorRegularizerCost(COLOR_REG_WEIGHT_DENSE, m_baselFaceModel->getColorPcaVariance())
+                new ColorRegularizerCost(m_colorRegWeightDense, m_baselFaceModel->getColorPcaVariance())
         ), nullptr, colorParams.data());
 
         ceres::Solver::Summary summary;
@@ -216,6 +216,8 @@ void WeightSearch::runSparseWeightTrial(const std::string &bagPath,
 
     // Write the output PLY file.
     ModelConverter::convertToPly(transformedVertices, mappedColor, baselFaceModel.getFaces(), fileName);
+    //ModelConverter::generateGeometricErrorModel(&baselFaceModel, &inputData);
+    std::cout << "Shape: " << shapeWeight << "; Expression: " << expressionWeight << std::endl;
 }
 
 void WeightSearch::runDenseWeightTrial(const std::string &bagPath,
@@ -250,16 +252,21 @@ void WeightSearch::runDenseWeightTrial(const std::string &bagPath,
 
 void WeightSearch::runSparseWeightTrials(const std::string &bagPath)
 {
-    std::vector<double> testValues = {1e-4, 1e-3, 1e-2, 1e-1, 1, 10, 100, 1000};
+    std::vector<double> testValues = {1, 0.8, 0.7, 0.6, 0.5};//, 0.4, 0.3, 0.2};
+    std::vector<double> approximator = {0.5, 0.4, 0.3, 0.2, 0.1, 0.01};
     double defaultValue = 1.0;
 
     // Vary the shape weight (while keeping expression weight at default).
-    for (double shapeWeight : testValues) {
+    /*for (double shapeWeight : testValues) {
         runSparseWeightTrial(bagPath, shapeWeight, defaultValue);
     }
     // Vary the expression weight (while keeping shape weight at default).
     for (double expressionWeight : testValues) {
         runSparseWeightTrial(bagPath, defaultValue, expressionWeight);
+    }*/
+
+    for (double app : approximator) {
+        runSparseWeightTrial(bagPath, 1 / app, 0.7 / app);
     }
 }
 

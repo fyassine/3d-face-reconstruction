@@ -33,11 +33,11 @@ void Renderer::run(const std::vector<Vector3d>& modelVertices, const std::vector
     renderModel(image, vertices, faces, intrinsics, R, t, colors);
     
     // Apply smoothing to the reconstructed face
-    cv::Mat smoothedImage;
-    cv::bilateralFilter(image, smoothedImage, 9, 75, 75);  // (d=9, sigmaColor=75, sigmaSpace=75)
+    //cv::Mat smoothedImage;
+    //cv::bilateralFilter(image, smoothedImage, 9, 75, 75);  // (d=9, sigmaColor=75, sigmaSpace=75)
 
     // Save the filtered image
-    cv::imwrite(outputPath, smoothedImage);
+    cv::imwrite(outputPath, image);
     cv::waitKey(0);
 }
 
@@ -126,12 +126,14 @@ void Renderer::generatePhotometricError(const std::string &inputPath1, const std
     cv::Mat errorMap(image1.size(), CV_8UC3);
 
     const float maxError = 3.0f;
+    float photometricErrorAvg = 0;
 
     for (int y = 0; y < image1.rows; ++y) {
         for (int x = 0; x < image1.cols; ++x) {
             cv::Vec3b pixel1 = image1.at<cv::Vec3b>(y, x);
             cv::Vec3b pixel2 = image2.at<cv::Vec3b>(y, x);
             float error = cv::norm(pixel1, pixel2, cv::NORM_L2);
+            photometricErrorAvg += maxError;
             float t = std::clamp(error / maxError, 0.0f, 1.0f);
             int r = static_cast<int>(255 * t);
             int g = 0;
@@ -140,5 +142,6 @@ void Renderer::generatePhotometricError(const std::string &inputPath1, const std
         }
     }
     cv::imwrite(outputPath, errorMap);
+    std::cout << "Photometric Error: " << photometricErrorAvg/(image1.rows * image1.cols) << std::endl;
 }
 
