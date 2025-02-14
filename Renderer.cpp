@@ -119,3 +119,26 @@ void Renderer::convertColorToPng(std::vector<Vector3d> colorValues, const std::s
     cv::imwrite(path, image);
 }
 
+void Renderer::generatePhotometricError(const std::string &inputPath1, const std::string &inputPath2,
+                                        const std::string &outputPath) {
+    cv::Mat image1 = cv::imread(inputPath1);
+    cv::Mat image2 = cv::imread(inputPath2);
+    cv::Mat errorMap(image1.size(), CV_8UC3);
+
+    const float maxError = 3.0f;
+
+    for (int y = 0; y < image1.rows; ++y) {
+        for (int x = 0; x < image1.cols; ++x) {
+            cv::Vec3b pixel1 = image1.at<cv::Vec3b>(y, x);
+            cv::Vec3b pixel2 = image2.at<cv::Vec3b>(y, x);
+            float error = cv::norm(pixel1, pixel2, cv::NORM_L2);
+            float t = std::clamp(error / maxError, 0.0f, 1.0f);
+            int r = static_cast<int>(255 * t);
+            int g = 0;
+            int b = static_cast<int>(255 * (1 - t));
+            errorMap.at<cv::Vec3b>(y, x) = cv::Vec3b(b, g, r);
+        }
+    }
+    cv::imwrite(outputPath, errorMap);
+}
+

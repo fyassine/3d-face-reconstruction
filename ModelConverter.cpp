@@ -104,3 +104,20 @@ void ModelConverter::convertImageToPly(const std::vector<double>& depth, const s
     }
     outFile.close();
 }
+
+void ModelConverter::generateGeometricErrorModel(BaselFaceModel *bfm, InputData *inputData) {
+    auto vertices = bfm->transformVertices(bfm->getVerticesWithoutTransformation());
+    auto correspondences = inputData->getAllCorrespondences(vertices);
+    std::vector<Vector3i> colorValues;
+    const float maxDistance = 5.0f; //TODO: Change to mm
+    for (int i = 0; i < vertices.size(); ++i) {
+        float distance = (vertices[i] - correspondences[i]).norm();
+        float t = std::clamp(distance / maxDistance, 0.0f, 1.0f);
+        int r = static_cast<int>(255 * t);
+        int g = 0;
+        int b = static_cast<int>(255 * (1 - t));
+        colorValues.emplace_back(r, g, b);
+    }
+    convertToPly(vertices, colorValues, bfm->getFaces(), "../../../Result/geometricDistance.ply");
+    //TODO: print mean and std deviations
+}
