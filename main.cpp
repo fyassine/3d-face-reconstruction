@@ -86,38 +86,7 @@ BaselFaceModel processFace(InputData* inputData){
 
 int main(){
     InputData inputSource = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
-    //InputData inputSource = InputData::load("../../../Data/input_data.json");//
-    //inputSource.save("../../../Data/input_data.json");
-
-    //InputData inputTarget = InputDataExtractor::extractInputData(NELI_LOOKING_SERIOUS);
     BaselFaceModel sourceBaselFaceModel;
-    //BaselFaceModel targetBaselFaceModel;
-
-    //FaceReconstructor::expressionTransfer(&sourceBaselFaceModel, &targetBaselFaceModel, &inputSource, &inputTarget);
-
     FaceReconstructor::reconstructFace(&sourceBaselFaceModel, &inputSource);
-    //auto sourceFace = processFace(&inputSource);
-
-    /*auto sourceFace = processFace(&inputLeo);
-    auto targetFace = processFace(&inputNeli);
-    auto verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
-    auto mappedColor = inputNeli.getCorrespondingColors(targetFace.transformVertices(verticesAfterTransformation));
-
-    targetFace.expressionTransfer(&sourceFace);
-
-    verticesAfterTransformation = targetFace.getVerticesWithoutTransformation();
-
-    auto colorAfterTransformation = targetFace.getColorValues();
-
-    ModelConverter::convertToPly(targetFace.transformVertices(verticesAfterTransformation), colorAfterTransformation, targetFace.getFaces(), "ExpressionTransfer.ply");
-    ModelConverter::convertToPly(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), "ExpressionTransferMappedColor.ply");
-
-    Renderer::run(targetFace.transformVertices(verticesAfterTransformation), mappedColor, targetFace.getFaces(), inputNeli.getMIntrinsicMatrix(), inputNeli.getMExtrinsicMatrix());
-*/
-    //WeightSearch::runSparseWeightTrials(LEO_LOOKING_NORMAL);
-    //WeightSearch::runSparseWeightTrial(LEO_VID, 1, 1);
-    //WeightSearch::runSparseWeightTrial(LEO_VID, 100, 10);
-    //WeightSearch::runDenseWeightTrials(dataFolderPath + LEO_VID);
-
     return 0;
 }
