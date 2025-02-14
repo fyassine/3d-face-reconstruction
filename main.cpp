@@ -25,65 +25,6 @@ using namespace std;
 #define LEO_EXPRESSIONS "20250207_115412.bag"
 #define LEO_VID "20250205_172132.bag"
 
-BaselFaceModel processFace(InputData* inputData){
-    BaselFaceModel baselFaceModel;
-
-    baselFaceModel.computeTransformationMatrix(inputData);
-
-    auto verticesBeforeSparse = baselFaceModel.getVerticesWithoutTransformation();
-    auto colorBeforeSparse = baselFaceModel.getColorValues();
-    ModelConverter::convertToPly(verticesBeforeSparse, colorBeforeSparse, baselFaceModel.getFaces(), "BfmBeforeSparseTerms.ply");
-
-    auto landmarksBeforeSparse = baselFaceModel.getLandmarks();
-    ModelConverter::convertToPly(landmarksBeforeSparse, "LandmarksBeforeSparse.ply");
-
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesBeforeSparse), colorBeforeSparse, baselFaceModel.getFaces(), "ModelAfterProcrustes.ply");
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(landmarksBeforeSparse), "LandmarksAfterProcrustes.ply");
-
-    auto landmarksOfInputData = inputData->getMCurrentFrame().getMLandmarks();
-    ModelConverter::convertToPly(landmarksOfInputData, "LandmarksOfInputImage.ply");
-
-    ModelConverter::convertImageToPly(inputData->getMCurrentFrame().getMDepthData(), inputData->getMCurrentFrame().getMRgbData(), "BackprojectedImage.ply", inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix());
-
-    Optimizer optimizer(&baselFaceModel, inputData);
-    optimizer.optimizeSparseTerms();
-
-    auto verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
-    auto colorAfterTransformation = baselFaceModel.getColorValues();
-    auto mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
-    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterSparseTerms.ply");
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterSparseTermsMappedColor.ply");
-    //Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix());
-
-    auto inputVertices = inputData->getAllCorrespondences(baselFaceModel.transformVertices(verticesAfterTransformation));
-    ModelConverter::convertToPly(inputVertices, colorAfterTransformation, baselFaceModel.getFaces(), "CorrespondencesBfm.ply");
-
-    auto landmarksAfterSparse = baselFaceModel.getLandmarks();
-    ModelConverter::convertToPly(landmarksAfterSparse, "LandmarksAfterSparse.ply");
-
-    //TODO: Smth wrong with reg for dense
-    optimizer.optimizeDenseTerms();
-
-    verticesAfterTransformation = baselFaceModel.getVerticesWithoutTransformation();
-    auto transformedVerticesDense = baselFaceModel.transformVertices(verticesAfterTransformation);
-    colorAfterTransformation = baselFaceModel.getColorValues();
-    ModelConverter::convertToPly(verticesAfterTransformation, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTerms.ply");
-    ModelConverter::convertToPly(transformedVerticesDense, colorAfterTransformation, baselFaceModel.getFaces(), "BfmAfterDenseTermsProcrustes.ply");
-    auto landmarksAfterDense = baselFaceModel.getLandmarks();
-    ModelConverter::convertToPly(landmarksAfterDense, "LandmarksAfterDense.ply");
-    mappedColor = inputData->getCorrespondingColors(baselFaceModel.transformVertices(verticesAfterTransformation));
-    ModelConverter::convertToPly(baselFaceModel.transformVertices(verticesAfterTransformation), mappedColor, baselFaceModel.getFaces(), "BfmAfterDenseTermsMappedColor.ply");
-    std::cout << "HELLO" << std::endl;
-
-    Renderer::run(baselFaceModel.transformVertices(verticesAfterTransformation), colorAfterTransformation, baselFaceModel.getFaces(), inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), "../../../Result/Source_Frames/0.png", "../../../Result/RenderedFace.png");
-
-    std::cout << "END" << std::endl;
-
-    //ModelConverter::generateGeometricErrorModel(&baselFaceModel, inputData);
-    Renderer::generatePhotometricError("../../../Result/RenderedFace.png", "../../../Result/Source_Frames/0.png", "../../../Result/photometricError.png");
-    return baselFaceModel;
-}
-
 int main(){
     InputData inputSource = InputDataExtractor::extractInputData(LEO_LOOKING_NORMAL);
     BaselFaceModel sourceBaselFaceModel;
