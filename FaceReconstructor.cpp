@@ -4,16 +4,21 @@ void FaceReconstructor::reconstructFace(BaselFaceModel *baselFaceModel, InputDat
     auto sourceFrames = inputData->getMFrames();
     int n = sourceFrames.size();
     std::string resultFolderPath = "../../../Result/";
-    baselFaceModel->computeTransformationMatrix(inputData);
 
     for (int i = 0; i < n - 1; ++i) {
+        baselFaceModel->computeTransformationMatrix(inputData);
         std::string sourceFramesInputPath = resultFolderPath + "Source_Frames/" + std::to_string(i) + ".png";
         std::string sourceFramesOutputPath = resultFolderPath + "Source_Frames_Reconstructed/" + std::to_string(i) + ".png";
         std::string sourceFramesTextureOutputPath = resultFolderPath + "Source_Frames_Reconstructed_Texture/" + std::to_string(i) + ".png";
+        std::string sourceFramesSparseOutputPath = resultFolderPath + "Source_Frames_Sparse/" + std::to_string(i) + ".png";
+        std::string sourceFramesProcrustesOutputPath = resultFolderPath + "Source_Frames_Procrustes/" + std::to_string(i) + ".png";
+        std::string sourceFramesPhotometricErrorProOutputPath = resultFolderPath + "Source_PhotometricError_Procrustes/" + std::to_string(i) + ".png";
+        std::string sourceFramesPhotometricErrorSpaOutputPath = resultFolderPath + "Source_PhotometricError_Sparse/" + std::to_string(i) + ".png";
+        std::string sourceFramesPhotometricErrorDenOutputPath = resultFolderPath + "Source_PhotometricError_Dense/" + std::to_string(i) + ".png";
+        std::string sourceFramesPhotometricErrorTexOutputPath = resultFolderPath + "Source_PhotometricError_Texture/" + std::to_string(i) + ".png";
 
         //Store Backprojection
         ModelConverter::convertImageToPly(inputData->getMCurrentFrame().getMDepthData(), inputData->getMCurrentFrame().getMRgbData(), "Source_Backprojections/" + std::to_string(i) + ".ply", inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix());
-
 
         //Store input frames
         Renderer::convertColorToPng(inputData->getMCurrentFrame().getMRgbData(), sourceFramesInputPath);
@@ -22,6 +27,12 @@ void FaceReconstructor::reconstructFace(BaselFaceModel *baselFaceModel, InputDat
         ModelConverter::convertBFMToPly(baselFaceModel, "Source_Models_Procrustes/" + std::to_string(i) + ".ply");
         ModelConverter::generateGeometricErrorModel(baselFaceModel, inputData, "Source_GeometricError_Procrustes/" + std::to_string(i) + ".ply");
 
+        auto sourceVerticesPro = baselFaceModel->transformVertices(baselFaceModel->getVerticesWithoutTransformation());
+        auto sourceColorPro = baselFaceModel->getColorValues();
+        auto sourceFacesPro = baselFaceModel->getFaces();
+        Renderer::run(sourceVerticesPro, sourceColorPro, sourceFacesPro, inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), sourceFramesInputPath, sourceFramesProcrustesOutputPath);
+        Renderer::generatePhotometricError(sourceFramesInputPath, sourceFramesProcrustesOutputPath, sourceFramesPhotometricErrorProOutputPath);
+
         //Optimization
         Optimizer optimizerSource(baselFaceModel, inputData);
         optimizerSource.optimizeSparseTerms();
@@ -29,6 +40,12 @@ void FaceReconstructor::reconstructFace(BaselFaceModel *baselFaceModel, InputDat
         //Store Results after Sparse
         ModelConverter::convertBFMToPly(baselFaceModel, "Source_Models_Sparse/" + std::to_string(i) + ".ply");
         ModelConverter::generateGeometricErrorModel(baselFaceModel, inputData, "Source_GeometricError_Sparse/" + std::to_string(i) + ".ply");
+
+        auto sourceVerticesSparse = baselFaceModel->transformVertices(baselFaceModel->getVerticesWithoutTransformation());
+        auto sourceColorSparse = baselFaceModel->getColorValues();
+        auto sourceFacesSparse = baselFaceModel->getFaces();
+        Renderer::run(sourceVerticesSparse, sourceColorSparse, sourceFacesSparse, inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), sourceFramesInputPath, sourceFramesSparseOutputPath);
+        Renderer::generatePhotometricError(sourceFramesInputPath, sourceFramesSparseOutputPath, sourceFramesPhotometricErrorSpaOutputPath);
 
         optimizerSource.optimizeDenseTerms();
 
@@ -45,9 +62,12 @@ void FaceReconstructor::reconstructFace(BaselFaceModel *baselFaceModel, InputDat
         auto sourceColor = baselFaceModel->getColorValues();
         auto sourceFaces = baselFaceModel->getFaces();
         Renderer::run(sourceVertices, sourceColor, sourceFaces, inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), sourceFramesInputPath, sourceFramesOutputPath);
-        Renderer::run(sourceVertices, colorMap, sourceFaces, inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), sourceFramesInputPath, sourceFramesOutputPath);
+        Renderer::run(sourceVertices, colorMap, sourceFaces, inputData->getMIntrinsicMatrix(), inputData->getMExtrinsicMatrix(), sourceFramesInputPath, sourceFramesTextureOutputPath);
 
+        Renderer::generatePhotometricError(sourceFramesInputPath, sourceFramesOutputPath, sourceFramesPhotometricErrorDenOutputPath);
+        Renderer::generatePhotometricError(sourceFramesInputPath, sourceFramesTextureOutputPath, sourceFramesPhotometricErrorTexOutputPath);
         inputData->processNextFrame();
+        auto newBfm = BaselFaceModel();
     }
 
     //Save final video

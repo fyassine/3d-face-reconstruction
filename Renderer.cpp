@@ -125,7 +125,7 @@ void Renderer::generatePhotometricError(const std::string &inputPath1, const std
     cv::Mat image2 = cv::imread(inputPath2);
     cv::Mat errorMap(image1.size(), CV_8UC3);
 
-    const float maxError = 3.0f;
+    const float maxError = 250.0f;
     float photometricErrorAvg = 0;
 
     for (int y = 0; y < image1.rows; ++y) {
