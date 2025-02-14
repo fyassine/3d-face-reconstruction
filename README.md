@@ -3,8 +3,6 @@ Members:
 
 Fraj Yassine Lakhal
 
-Luis Cardona Anaya 
-
 Neli Shahapuni
 
 Leo Keber
