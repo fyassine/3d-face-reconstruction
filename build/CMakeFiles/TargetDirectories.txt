@@ -1,6 +1,0 @@
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/CMakeFiles/face_reconstruction.dir
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/CMakeFiles/edit_cache.dir
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/CMakeFiles/rebuild_cache.dir
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build/CMakeFiles/dlib.dir
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build/CMakeFiles/edit_cache.dir
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build/CMakeFiles/rebuild_cache.dir

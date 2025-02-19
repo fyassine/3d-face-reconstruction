@@ -1,1 +1,0 @@
-/usr/bin/g++ CMakeFiles/libjpeg_test.dir/libjpeg_test.cpp.o -o libjpeg_test  /usr/lib/x86_64-linux-gnu/libjpeg.so 

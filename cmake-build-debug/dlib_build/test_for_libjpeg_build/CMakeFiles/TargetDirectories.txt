@@ -1,3 +1,0 @@
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/cmake-build-debug/dlib_build/test_for_libjpeg_build/CMakeFiles/libjpeg_test.dir
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/cmake-build-debug/dlib_build/test_for_libjpeg_build/CMakeFiles/edit_cache.dir
-/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/cmake-build-debug/dlib_build/test_for_libjpeg_build/CMakeFiles/rebuild_cache.dir
