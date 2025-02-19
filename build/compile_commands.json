@@ -1,0 +1,357 @@
+[
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/main.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/main.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/main.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/FreeImageHelper.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/FreeImageHelper.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/FreeImageHelper.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/Renderer.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/Renderer.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/Renderer.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/BaselFaceModel.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/BaselFaceModel.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/BaselFaceModel.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/FileReader.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/FileReader.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/FileReader.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/Optimizer.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/Optimizer.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/Optimizer.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/SingleInputFrame.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/SingleInputFrame.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/SingleInputFrame.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/InputData.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/InputData.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/InputData.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/InputDataExtractor.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/InputDataExtractor.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/InputDataExtractor.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/ModelConverter.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/ModelConverter.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/ModelConverter.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build",
+  "command": "/usr/bin/g++ -DCERES_EXPORT_INTERNAL_SYMBOLS -DDATA_FOLDER_PATH=\\\"../../Data/\\\" -DELPP_NO_DEFAULT_LOG_FILE -DGFLAGS_IS_A_DLL=0 -DGOOGLE_GLOG_DLL_DECL=\"\" -DGOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=\"\" -DRESULT_FOLDER_PATH=\\\"../../Result/\\\" -D_DISABLE_EXTENDED_ALIGNED_STORAGE -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/cereal/include -I/usr/include/hdf5/serial -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/FreeImage-3.18.0/Dist/x64 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/../Libs/Flann-1.8.4 -I/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/.. -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -std=gnu++17 -o CMakeFiles/face_reconstruction.dir/FaceReconstructor.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/FaceReconstructor.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/FaceReconstructor.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/base64/base64_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/base64/base64_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/base64/base64_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/bigint/bigint_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bigint/bigint_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bigint/bigint_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/bigint/bigint_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bigint/bigint_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bigint/bigint_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/bit_stream/bit_stream_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bit_stream/bit_stream_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bit_stream/bit_stream_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/entropy_decoder/entropy_decoder_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_decoder/entropy_decoder_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_decoder/entropy_decoder_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/entropy_decoder/entropy_decoder_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_decoder/entropy_decoder_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_decoder/entropy_decoder_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/entropy_encoder/entropy_encoder_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_encoder/entropy_encoder_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_encoder/entropy_encoder_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/entropy_encoder/entropy_encoder_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_encoder/entropy_encoder_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_encoder/entropy_encoder_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/md5/md5_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/md5/md5_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/md5/md5_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/tokenizer/tokenizer_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/tokenizer/tokenizer_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/tokenizer/tokenizer_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/unicode/unicode.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/unicode/unicode.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/unicode/unicode.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/test_for_odr_violations.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/test_for_odr_violations.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/test_for_odr_violations.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/fft/fft.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/fft/fft.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/fft/fft.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/sockets/sockets_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/bsp/bsp.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bsp/bsp.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bsp/bsp.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/dir_nav/dir_nav_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/dir_nav/dir_nav_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/dir_nav/dir_nav_extensions.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_extensions.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_extensions.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_widgets/fonts.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/fonts.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/fonts.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/linker/linker_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/linker/linker_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/linker/linker_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/logger/extra_logger_headers.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/extra_logger_headers.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/extra_logger_headers.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/logger/logger_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/logger_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/logger_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/logger/logger_config_file.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/logger_config_file.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/logger_config_file.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/misc_api/misc_api_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/misc_api/misc_api_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/misc_api/misc_api_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/misc_api/misc_api_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/misc_api/misc_api_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/misc_api/misc_api_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/sockets/sockets_extensions.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_extensions.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_extensions.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/sockets/sockets_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/sockstreambuf/sockstreambuf.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockstreambuf/sockstreambuf.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockstreambuf/sockstreambuf.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/sockstreambuf/sockstreambuf_unbuffered.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockstreambuf/sockstreambuf_unbuffered.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockstreambuf/sockstreambuf_unbuffered.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/server/server_kernel.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_kernel.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_kernel.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/server/server_iostream.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_iostream.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_iostream.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/server/server_http.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_http.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_http.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/threads/multithreaded_object_extension.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/multithreaded_object_extension.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/multithreaded_object_extension.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/threads/threaded_object_extension.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threaded_object_extension.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threaded_object_extension.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/threads/threads_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/threads/threads_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/threads/threads_kernel_shared.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_shared.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_shared.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/threads/thread_pool_extension.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/thread_pool_extension.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/thread_pool_extension.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/threads/async.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/async.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/async.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/timer/timer.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/timer/timer.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/timer/timer.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/stack_trace.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/stack_trace.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/stack_trace.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/cuda/cpu_dlib.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/cuda/cpu_dlib.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/cuda/cpu_dlib.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/cuda/tensor_tools.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/cuda/tensor_tools.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/cuda/tensor_tools.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/data_io/image_dataset_metadata.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/image_dataset_metadata.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/image_dataset_metadata.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/data_io/mnist.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/mnist.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/mnist.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/data_io/cifar.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/cifar.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/cifar.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/global_optimization/global_function_search.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/global_optimization/global_function_search.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/global_optimization/global_function_search.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/filtering/kalman_filter.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/filtering/kalman_filter.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/filtering/kalman_filter.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/svm/auto.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/svm/auto.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/svm/auto.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_widgets/widgets.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/widgets.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/widgets.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_widgets/drawable.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/drawable.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/drawable.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_widgets/canvas_drawing.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/canvas_drawing.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/canvas_drawing.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_widgets/style.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/style.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/style.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_widgets/base_widgets.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/base_widgets.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/base_widgets.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_core/gui_core_kernel_1.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_core/gui_core_kernel_1.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_core/gui_core_kernel_1.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/gui_core/gui_core_kernel_2.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_core/gui_core_kernel_2.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_core/gui_core_kernel_2.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/image_loader/png_loader.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_loader/png_loader.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_loader/png_loader.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/image_saver/save_png.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_saver/save_png.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_saver/save_png.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/image_loader/jpeg_loader.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_loader/jpeg_loader.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_loader/jpeg_loader.cpp"
+},
+{
+  "directory": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/3DSMC-Face-Reconstruction/build/dlib_build",
+  "command": "/usr/bin/g++   -g -DDLIB_JPEG_SUPPORT -DDLIB_USE_BLAS -DDLIB_USE_LAPACK -DDLIB_PNG_SUPPORT -DLAPACK_FORCE_UNDERSCORE -Wreturn-type -o CMakeFiles/dlib.dir/image_saver/save_jpeg.cpp.o -c /home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_saver/save_jpeg.cpp",
+  "file": "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_saver/save_jpeg.cpp"
+}
+]

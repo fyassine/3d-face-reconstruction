@@ -1,0 +1,586 @@
+{
+	"archive" : {},
+	"artifacts" : 
+	[
+		{
+			"path" : "dlib_build/libdlib.a"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"target_compile_options"
+		],
+		"files" : 
+		[
+			"/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 885,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 901,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 934,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-DDLIB_JPEG_SUPPORT"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-DDLIB_USE_BLAS"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-DDLIB_USE_LAPACK"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-DDLIB_PNG_SUPPORT"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-DLAPACK_FORCE_UNDERSCORE"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wreturn-type"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44,
+				45,
+				46,
+				47,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59
+			]
+		}
+	],
+	"id" : "dlib::@6b70ea1b49788bfdb362",
+	"name" : "dlib",
+	"nameOnDisk" : "libdlib.a",
+	"paths" : 
+	{
+		"build" : "dlib_build",
+		"source" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44,
+				45,
+				46,
+				47,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/base64/base64_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bigint/bigint_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bigint/bigint_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bit_stream/bit_stream_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_decoder/entropy_decoder_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_decoder/entropy_decoder_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_encoder/entropy_encoder_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/entropy_encoder/entropy_encoder_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/md5/md5_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/tokenizer/tokenizer_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/unicode/unicode.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/test_for_odr_violations.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/fft/fft.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/bsp/bsp.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/dir_nav/dir_nav_extensions.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/fonts.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/linker/linker_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/extra_logger_headers.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/logger_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/logger/logger_config_file.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/misc_api/misc_api_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/misc_api/misc_api_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_extensions.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockets/sockets_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockstreambuf/sockstreambuf.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/sockstreambuf/sockstreambuf_unbuffered.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_kernel.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_iostream.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/server/server_http.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/multithreaded_object_extension.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threaded_object_extension.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/threads_kernel_shared.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/thread_pool_extension.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/threads/async.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/timer/timer.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/stack_trace.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/cuda/cpu_dlib.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/cuda/tensor_tools.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/image_dataset_metadata.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/mnist.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/data_io/cifar.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/global_optimization/global_function_search.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/filtering/kalman_filter.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/svm/auto.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/widgets.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/drawable.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/canvas_drawing.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/style.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_widgets/base_widgets.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_core/gui_core_kernel_1.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/gui_core/gui_core_kernel_2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_loader/png_loader.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_saver/save_png.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_loader/jpeg_loader.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/flakhal/university/3dsmc-team/3dsmc-env/3DSMC-Face-Reconstruction-Cloned/Libs/dlib/dlib/image_saver/save_jpeg.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "STATIC_LIBRARY"
+}
